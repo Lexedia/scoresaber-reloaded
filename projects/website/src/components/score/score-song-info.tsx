@@ -1,5 +1,6 @@
 import { cn } from "@/common/utils";
 import FallbackLink from "@/components/fallback-link";
+import { env } from "@ssr/common/env";
 import { BeatSaverMap } from "@ssr/common/schemas/beatsaver/map/map";
 import { MapDifficulty } from "@ssr/common/schemas/map/map-difficulty";
 import { getDifficulty } from "@ssr/common/utils/song-utils";
@@ -40,7 +41,7 @@ export default function ScoreSongInfo({
   className,
 }: ScoreSongInfoProps) {
   const mappersProfile =
-    beatSaverMap != undefined ? `https://beatsaver.com/profile/${beatSaverMap.author.id}` : undefined;
+    beatSaverMap != undefined ? `${env.NEXT_PUBLIC_BEATSAVER_URL}/profile/${beatSaverMap.author.id}` : undefined;
 
   const diff = getDifficulty(level.difficulty);
   const MetricIcon = metric?.icon;

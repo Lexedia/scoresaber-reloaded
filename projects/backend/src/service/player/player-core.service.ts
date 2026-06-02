@@ -62,26 +62,7 @@ export class PlayerCoreService {
       }
     }
 
-    const isOculusAccount =
-      playerToken?.id.length === 16 ||
-      playerToken?.profilePicture === "https://cdn.scoresaber.com/avatars/oculus.png";
-    let avatar = playerToken?.profilePicture ?? "https://cdn.fascinated.cc/assets/unknown.png";
-    if (isOculusAccount) {
-      avatar = "https://cdn.fascinated.cc/assets/oculus-avatar.jpg";
-    } else if (playerToken?.profilePicture === "https://cdn.scoresaber.com/avatars/steam.png") {
-      avatar = "https://cdn.fascinated.cc/assets/unknown.png";
-    } else if (account) {
-      avatar = `${env.NEXT_PUBLIC_CDN_URL}/${getS3BucketName(StorageBucket.PlayerAvatars)}/${id}.jpg`;
-    }
-
-    if (
-      account &&
-      !isOculusAccount &&
-      !account.cachedProfilePicture &&
-      playerToken?.profilePicture !== "https://cdn.scoresaber.com/avatars/steam.png"
-    ) {
-      await PlayerCoreService.cachePlayerProfilePicture(id);
-    }
+    const avatar = playerToken?.profilePicture ?? "/assets/unknown.png";
 
     let shouldSave = false;
     const updates: Partial<Pick<ScoreSaberAccountRow, "country" | "banned" | "avatar">> = {};
@@ -149,12 +130,11 @@ export class PlayerCoreService {
               id: id,
               name: token.name,
               country: token.country,
-              avatar: "https://cdn.fascinated.cc/assets/unknown.png",
+              avatar: "/assets/unknown.png",
               peakRank: token.rank,
               peakRankTimestamp: new Date(),
               seededScores: false,
               seededBeatLeaderScores: false,
-              cachedProfilePicture: false,
               trackReplays: false,
               inactive: token.inactive,
               banned: token.banned,
@@ -248,10 +228,6 @@ export class PlayerCoreService {
         CacheService.invalidate(playerCacheKey(id, "full")),
       ]);
 
-      const isOculusAccount = id.length === 16;
-      if (!isOculusAccount) {
-        await PlayerCoreService.cachePlayerProfilePicture(id, true);
-      }
       return response;
     }
     return { result: false };
@@ -309,35 +285,6 @@ export class PlayerCoreService {
     }
 
     return scoreSaberAccountRowToType(account);
-  }
-
-  /**
-   * Caches the profile picture for a player.
-   *
-   * @param playerId the player's id
-   * @param force when true, re-downloads even if already cached
-   */
-  public static async cachePlayerProfilePicture(playerId: string, force = false): Promise<void> {
-    const exists = await StorageService.fileExists(StorageBucket.PlayerAvatars, `${playerId}.jpg`);
-    if (!exists || force) {
-      const request = await Request.get<ArrayBuffer>(`https://cdn.scoresaber.com/avatars/${playerId}.jpg`, {
-        returns: "arraybuffer",
-      });
-      if (request) {
-        await StorageService.saveFile(StorageBucket.PlayerAvatars, `${playerId}.jpg`, Buffer.from(request));
-        await ScoreSaberAccountsRepository.updateAccount(playerId, { cachedProfilePicture: true });
-        await Promise.all([
-          CacheService.invalidate(playerCacheKey(playerId, "basic")),
-          CacheService.invalidate(playerCacheKey(playerId, "full")),
-        ]);
-        PlayerCoreService.logger.info(
-          `Cached profile picture for player ${playerId}${force ? " (force)" : ""}`
-        );
-        return;
-      }
-
-      PlayerCoreService.logger.warn(`Failed to cache profile picture for player ${playerId}`);
-    }
   }
 
   /**

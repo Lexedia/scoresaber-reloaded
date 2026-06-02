@@ -1,166 +1,177 @@
-"use client";
+'use client'
 
-import { cn } from "@/common/utils";
-import useDatabase from "@/hooks/use-database";
-import { useStableLiveQuery } from "@/hooks/use-stable-live-query";
-import { TimeUnit } from "@ssr/common/utils/time-utils";
-import Image from "next/image";
-import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { cn } from '@/common/utils'
+import useDatabase from '@/hooks/use-database'
+import { useStableLiveQuery } from '@/hooks/use-stable-live-query'
+import { TimeUnit } from '@ssr/common/utils/time-utils'
+import Image from 'next/image'
+import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
-const IMAGE_CHANGE_INTERVAL = TimeUnit.toMillis(TimeUnit.Second, 30);
-const TRANSITION_DURATION = 500;
+const IMAGE_CHANGE_INTERVAL = TimeUnit.toMillis(TimeUnit.Second, 30)
+const TRANSITION_DURATION = 500
 
 type BackgroundCover = {
   name: string;
   id: string;
-  type: "color" | "image" | "rotating-images" | "random";
+  type: 'color' | 'image' | 'rotating-images' | 'random';
   value?: string;
-};
+}
 
 export const BACKGROUND_COVERS: BackgroundCover[] = [
   {
-    name: "Forest",
-    id: "forest",
-    type: "image",
-    value: "https://cdn.fascinated.cc/assets/backgrounds/forest.jpg",
+    name: 'Forest',
+    id: 'forest',
+    type: 'image',
+    value: '/assets/backgrounds/forest.jpg',
   },
   {
-    name: "Alone",
-    id: "alone",
-    type: "image",
-    value: "https://cdn.fascinated.cc/assets/backgrounds/alone.jpg",
+    name: 'Alone',
+    id: 'alone',
+    type: 'image',
+    value: '/assets/backgrounds/alone.jpg',
   },
   {
-    name: "Car Wreck",
-    id: "car-wreck",
-    type: "image",
-    value: "https://cdn.fascinated.cc/assets/backgrounds/car-wreck.png",
+    name: 'Car Wreck',
+    id: 'car-wreck',
+    type: 'image',
+    value: '/assets/backgrounds/car-wreck.png',
   },
   {
-    name: "Foggy Swamp",
-    id: "foggy-swampland",
-    type: "image",
-    value: "https://cdn.fascinated.cc/assets/backgrounds/foggy-swampland.jpg",
+    name: 'Foggy Swamp',
+    id: 'foggy-swampland',
+    type: 'image',
+    value: '/assets/backgrounds/foggy-swampland.jpg',
   },
   {
-    name: "Forest Trail",
-    id: "forest-trail",
-    type: "image",
-    value: "https://cdn.fascinated.cc/assets/backgrounds/forest-trail.jpg",
+    name: 'Forest Trail',
+    id: 'forest-trail',
+    type: 'image',
+    value: '/assets/backgrounds/forest-trail.jpg',
   },
   {
-    name: "Snowy Mountains",
-    id: "snowy-mountains",
-    type: "image",
-    value: "https://cdn.fascinated.cc/assets/backgrounds/snowy-mountains.jpg",
+    name: 'Snowy Mountains',
+    id: 'snowy-mountains',
+    type: 'image',
+    value: '/assets/backgrounds/snowy-mountains.jpg',
   },
   {
-    name: "Fantasy Mountains",
-    id: "fantasy-mountains",
-    type: "image",
-    value: "https://cdn.fascinated.cc/assets/backgrounds/fantasy-mountains.jpg",
+    name: 'Fantasy Mountains',
+    id: 'fantasy-mountains',
+    type: 'image',
+    value: '/assets/backgrounds/fantasy-mountains.jpg',
   },
   {
-    name: "Rotating Backgrounds",
-    id: "rotating-images",
-    type: "rotating-images",
+    name: 'Rotating Backgrounds',
+    id: 'rotating-images',
+    type: 'rotating-images',
   },
   {
-    name: "Random",
-    id: "random",
-    type: "random",
+    name: 'Random',
+    id: 'random',
+    type: 'random',
   },
   {
-    name: "None",
-    id: "none",
-    type: "color",
-    value: "transparent",
+    name: 'None',
+    id: 'none',
+    type: 'color',
+    value: 'transparent',
   },
-];
+]
 
-const ALL_IMAGES = BACKGROUND_COVERS.filter(cover => cover.type === "image").map(cover => cover.value);
+const ALL_IMAGES = BACKGROUND_COVERS.filter(cover => cover.type === 'image').map(cover => cover.value)
 
 const getRandomIndex = (excludeIndex?: number): number => {
   if (ALL_IMAGES.length === 0) {
-    return 0;
+    return 0
   }
   if (ALL_IMAGES.length === 1) {
-    return 0;
+    return 0
   }
 
-  let newIndex: number;
+  let newIndex: number
   do {
-    newIndex = Math.floor(Math.random() * ALL_IMAGES.length);
-  } while (newIndex === excludeIndex && excludeIndex !== undefined);
+    newIndex = Math.floor(Math.random() * ALL_IMAGES.length)
+  } while (newIndex === excludeIndex && excludeIndex !== undefined)
 
-  return newIndex;
-};
+  return newIndex
+}
 
 export default function BackgroundCover() {
-  const database = useDatabase();
-  const pathname = usePathname();
+  const database = useDatabase()
+  const pathname = usePathname()
 
-  const backgroundCover = useStableLiveQuery(async () => database.getBackgroundCover());
-  const blur = useStableLiveQuery(async () => database.getBackgroundCoverBlur());
-  const brightness = useStableLiveQuery(async () => database.getBackgroundCoverBrightness());
-  const customBackgroundUrl = useStableLiveQuery(async () => database.getCustomBackgroundUrl());
+  const backgroundCover = useStableLiveQuery(async () => database.getBackgroundCover())
+  const blur = useStableLiveQuery(async () => database.getBackgroundCoverBlur())
+  const brightness = useStableLiveQuery(async () => database.getBackgroundCoverBrightness())
+  const customBackgroundUrl = useStableLiveQuery(async () => database.getCustomBackgroundUrl())
 
-  const [currentImageIndex, setCurrentImageIndex] = useState(() => getRandomIndex());
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [
+    currentImageIndex,
+    setCurrentImageIndex,
+  ] = useState(() => getRandomIndex())
+  const [
+    isTransitioning,
+    setIsTransitioning,
+  ] = useState(false)
 
   const cover =
-    backgroundCover === "custom"
-      ? { name: "Custom", id: "custom", type: "image" as const, value: customBackgroundUrl }
-      : BACKGROUND_COVERS.find(cover => cover.id === backgroundCover);
+    backgroundCover === 'custom'
+      ? {
+        name: 'Custom',
+        id: 'custom',
+        type: 'image' as const,
+        value: customBackgroundUrl,
+      }
+      : BACKGROUND_COVERS.find(cover => cover.id === backgroundCover)
 
   // Initialize random index when cover type changes to rotating or random
   useEffect(() => {
-    if (cover?.type === "rotating-images" || cover?.type === "random") {
+    if (cover?.type === 'rotating-images' || cover?.type === 'random') {
       queueMicrotask(() => {
-        setCurrentImageIndex(getRandomIndex());
-      });
+        setCurrentImageIndex(getRandomIndex())
+      })
     }
-  }, [cover?.type]);
+  }, [ cover?.type ])
 
   // Handle image rotation interval
   useEffect(() => {
-    if (cover?.type !== "rotating-images") {
-      return;
+    if (cover?.type !== 'rotating-images') {
+      return
     }
 
     const interval = setInterval(() => {
-      setIsTransitioning(true);
+      setIsTransitioning(true)
       setTimeout(() => {
-        setCurrentImageIndex(prevIndex => getRandomIndex(prevIndex));
-        setIsTransitioning(false);
-      }, TRANSITION_DURATION);
-    }, IMAGE_CHANGE_INTERVAL);
+        setCurrentImageIndex(prevIndex => getRandomIndex(prevIndex))
+        setIsTransitioning(false)
+      }, TRANSITION_DURATION)
+    }, IMAGE_CHANGE_INTERVAL)
 
-    return () => clearInterval(interval);
-  }, [cover?.type]);
+    return () => clearInterval(interval)
+  }, [ cover?.type ])
 
-  if (!cover || pathname === "/") {
-    return null;
+  if (!cover || pathname === '/') {
+    return null
   }
 
-  if (cover.type === "color") {
+  if (cover.type === 'color') {
     return (
       <div
         className={cn(
-          "pointer-events-none fixed -z-50 h-screen w-screen object-cover select-none",
-          cover.id === "none" ? "bg-background" : ""
+          'pointer-events-none fixed -z-50 h-screen w-screen object-cover select-none',
+          cover.id === 'none' ? 'bg-background' : '',
         )}
-        style={cover.id !== "none" ? { backgroundColor: backgroundCover } : {}}
+        style={cover.id !== 'none' ? { backgroundColor: backgroundCover } : {}}
       />
-    );
+    )
   }
 
   const imageUrl =
-    cover.type === "rotating-images" || cover.type === "random" ? ALL_IMAGES[currentImageIndex] : cover.value;
+    cover.type === 'rotating-images' || cover.type === 'random' ? ALL_IMAGES[currentImageIndex] : cover.value
 
   if (!imageUrl) {
-    return null;
+    return null
   }
 
   return (
@@ -171,14 +182,14 @@ export default function BackgroundCover() {
         fetchPriority="high"
         fill
         className={cn(
-          "object-cover",
-          cover.type === "rotating-images" && "transition-opacity duration-1000 ease-in-out",
-          cover.type === "rotating-images" && (isTransitioning ? "opacity-10" : "opacity-100")
+          'object-cover',
+          cover.type === 'rotating-images' && 'transition-opacity duration-1000 ease-in-out',
+          cover.type === 'rotating-images' && (isTransitioning ? 'opacity-10' : 'opacity-100'),
         )}
         style={{
           filter: `blur(${blur}px) brightness(${brightness}%)`,
         }}
       />
     </div>
-  );
+  )
 }

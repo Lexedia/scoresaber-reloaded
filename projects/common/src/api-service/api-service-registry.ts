@@ -1,26 +1,26 @@
-import ApiService from "./api-service";
-import { AccSaberService } from "./impl/accsaber";
-import { BeatSaverService } from "./impl/beatsaver";
+import ApiService from './api-service'
+import { AccSaberService } from './impl/accsaber'
+import { BeatSaverService } from './impl/beatsaver'
 
 export enum ApiServiceName {
-  BEAT_SAVER = "beatsaver",
-  ACCSABER = "accsaber",
+  BEAT_SAVER = 'beatsaver',
+  ACCSABER = 'accsaber',
 }
 
 export default class ApiServiceRegistry {
-  private static instance: ApiServiceRegistry;
-  private static services: Map<ApiServiceName, ApiService> = new Map();
+  private static instance: ApiServiceRegistry
+  private static services: Map<ApiServiceName, ApiService> = new Map()
 
   public constructor() {
-    this.registerService(new BeatSaverService());
-    this.registerService(new AccSaberService());
+    this.registerService(new BeatSaverService())
+    this.registerService(new AccSaberService())
   }
 
   public static getInstance(): ApiServiceRegistry {
     if (!ApiServiceRegistry.instance) {
-      ApiServiceRegistry.instance = new ApiServiceRegistry();
+      ApiServiceRegistry.instance = new ApiServiceRegistry()
     }
-    return ApiServiceRegistry.instance;
+    return ApiServiceRegistry.instance
   }
 
   /**
@@ -30,7 +30,7 @@ export default class ApiServiceRegistry {
    * @param service the service to register
    */
   public registerService(service: ApiService) {
-    ApiServiceRegistry.services.set(service.getName(), service);
+    ApiServiceRegistry.services.set(service.getName(), service)
   }
 
   /**
@@ -39,16 +39,16 @@ export default class ApiServiceRegistry {
    * @returns all registered services
    */
   public getAllServices(): Map<ApiServiceName, ApiService> {
-    return ApiServiceRegistry.services;
+    return ApiServiceRegistry.services
   }
 
   public getBeatSaverService(): BeatSaverService {
-    return ApiServiceRegistry.services.get(ApiServiceName.BEAT_SAVER) as BeatSaverService;
+    return ApiServiceRegistry.services.get(ApiServiceName.BEAT_SAVER) as BeatSaverService
   }
 
   public getAccSaberService(): AccSaberService {
-    return ApiServiceRegistry.services.get(ApiServiceName.ACCSABER) as AccSaberService;
+    return ApiServiceRegistry.services.get(ApiServiceName.ACCSABER) as AccSaberService
   }
 }
 
-new ApiServiceRegistry();
+new ApiServiceRegistry()

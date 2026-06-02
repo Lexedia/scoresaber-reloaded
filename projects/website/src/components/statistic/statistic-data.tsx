@@ -43,7 +43,7 @@ export default function StatisticData() {
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <h3 className="text-foreground text-lg font-semibold">Game Statistics</h3>
                 <SimpleLink
-                  href="https://ssr-grafana.fascinated.cc/public-dashboards/19a90072026f442fafa6c371192dddff"
+                  href={`${env.NEXT_PUBLIC_GRAFANA_URL}/public-dashboards/8cb0b6d0553945cab26d5ddadd29d868`}
                   target="_blank"
                   className="text-primary hover:text-primary/80 text-sm font-medium transition-colors duration-200"
                 >

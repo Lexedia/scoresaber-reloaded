@@ -1,0 +1,1 @@
+ALTER TABLE "scoresaber-accounts" ALTER COLUMN "avatar" SET DEFAULT '/assets/unknown.png';

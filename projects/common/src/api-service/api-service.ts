@@ -1,9 +1,9 @@
-import { Cooldown, CooldownPriority } from "../cooldown";
-import Logger from "../logger";
-import { CLIENT_PROXY, SERVER_PROXIES } from "../shared-consts";
-import Request, { RequestOptions } from "../utils/request";
-import { isServer } from "../utils/utils";
-import { ApiServiceName } from "./api-service-registry";
+import { Cooldown, CooldownPriority } from '../cooldown'
+import Logger from '../logger'
+import { CLIENT_PROXY, SERVER_PROXIES } from '../shared-consts'
+import Request, { RequestOptions } from '../utils/request'
+import { isServer } from '../utils/utils'
+import { ApiServiceName } from './api-service-registry'
 
 export interface ServiceConfig {
   useProxy: boolean;
@@ -15,58 +15,58 @@ export default class ApiService {
   /**
    * In-flight GraphQL request coalescing (same URL/query/variables).
    */
-  private static readonly pendingGqlRequests = new Map<string, Promise<unknown>>();
+  private static readonly pendingGqlRequests = new Map<string, Promise<unknown>>()
 
   /**
    * The cooldown for the service.
    */
-  private readonly cooldown: Cooldown;
+  private readonly cooldown: Cooldown
 
   /**
    * The name of the service.
    */
-  private readonly name: ApiServiceName;
+  private readonly name: ApiServiceName
 
   /**
    * The configuration for the service.
    */
-  private readonly config: ServiceConfig;
+  private readonly config: ServiceConfig
 
   /**
    * The number of times this service has been called.
    * Only tracked on the server.
    */
-  private callCount: number = 0;
-  private failedCallCount: number = 0;
-  private totalLatencyMs: number = 0;
+  private callCount: number = 0
+  private failedCallCount: number = 0
+  private totalLatencyMs: number = 0
 
   /**
    * The current proxy to use.
    */
-  private currentProxy: string = ""; // No proxy by default
+  private currentProxy: string = '' // No proxy by default
 
   /**
    * The last rate limit seen.
    */
-  private lastRateLimitSeen: number | undefined = undefined;
+  private lastRateLimitSeen: number | undefined = undefined
 
   constructor(cooldown: Cooldown, name: ApiServiceName, config: ServiceConfig) {
-    this.cooldown = cooldown;
-    this.name = name;
-    this.config = config;
+    this.cooldown = cooldown
+    this.name = name
+    this.config = config
 
     if (config.useProxy) {
       setInterval(() => {
         if (
           this.lastRateLimitSeen &&
           this.lastRateLimitSeen > config.proxyResetThreshold &&
-          this.currentProxy !== "" // Already not using a proxy
+          this.currentProxy !== '' // Already not using a proxy
         ) {
           // Reset to no proxy
-          this.currentProxy = "";
-          Logger.info("Switched back to no proxy for api service requests");
+          this.currentProxy = ''
+          Logger.info('Switched back to no proxy for api service requests')
         }
-      }, 1000 * 30);
+      }, 1000 * 30)
     }
   }
 
@@ -76,25 +76,25 @@ export default class ApiService {
    * @returns the name of the service
    */
   public getName(): ApiServiceName {
-    return this.name;
+    return this.name
   }
 
   /**
    * Gets the current call count.
    */
   public getCallCount(): number {
-    return this.callCount;
+    return this.callCount
   }
 
   public getFailedCallCount(): number {
-    return this.failedCallCount;
+    return this.failedCallCount
   }
 
   public getAverageLatencyMs(): number {
     if (this.callCount <= 0) {
-      return 0;
+      return 0
     }
-    return this.totalLatencyMs / this.callCount;
+    return this.totalLatencyMs / this.callCount
   }
 
   /**
@@ -103,7 +103,7 @@ export default class ApiService {
    * @param data the data to log
    */
   public log(data: unknown) {
-    Logger.debug(`[${this.name.toUpperCase()}] ${data}`);
+    Logger.debug(`[${this.name.toUpperCase()}] ${data}`)
   }
 
   /**
@@ -113,7 +113,7 @@ export default class ApiService {
    * @returns the request url
    */
   private buildRequestUrl(url: string): string {
-    return (isServer() ? (this.config.useProxy ? this.currentProxy : "") : CLIENT_PROXY) + url;
+    return (isServer() ? (this.config.useProxy ? this.currentProxy : '') : CLIENT_PROXY) + url
   }
 
   /**
@@ -125,45 +125,45 @@ export default class ApiService {
    */
   public async fetch<T>(
     url: string,
-    options?: RequestOptions & { priority?: CooldownPriority }
+    options?: RequestOptions & { priority?: CooldownPriority },
   ): Promise<T | undefined> {
-    const startedAt = performance.now();
-    await this.cooldown.waitAndUse(options?.priority || CooldownPriority.NORMAL);
+    const startedAt = performance.now()
+    await this.cooldown.waitAndUse(options?.priority || CooldownPriority.NORMAL)
 
     // Increment the call count if we're on the server
     if (isServer()) {
-      this.callCount++;
+      this.callCount++
     }
 
-    const response = await Request.executeRequest(this.buildRequestUrl(url), "GET", {
+    const response = await Request.executeRequest(this.buildRequestUrl(url), 'GET', {
       ...options,
-    });
-    this.totalLatencyMs += Math.max(0, performance.now() - startedAt);
+    })
+    this.totalLatencyMs += Math.max(0, performance.now() - startedAt)
 
     // Handle rate limit errors
-    const remaining = response?.headers.get("x-ratelimit-remaining");
+    const remaining = response?.headers.get('x-ratelimit-remaining')
     if (isServer() && this.config.useProxy) {
       if (remaining && Number(remaining) <= this.config.proxySwitchThreshold) {
         // Get the next proxy in the list (circular)
-        const currentIndex = SERVER_PROXIES.indexOf(this.currentProxy);
-        const nextIndex = (currentIndex + 1) % SERVER_PROXIES.length;
-        const nextProxy = SERVER_PROXIES[nextIndex];
-        this.currentProxy = nextProxy;
+        const currentIndex = SERVER_PROXIES.indexOf(this.currentProxy)
+        const nextIndex = (currentIndex + 1) % SERVER_PROXIES.length
+        const nextProxy = SERVER_PROXIES[nextIndex]
+        this.currentProxy = nextProxy
         Logger.info(
-          `Rate limit exceeded for ${this.name}, switching to another proxy for api service: ${nextProxy}`
-        );
+          `Rate limit exceeded for ${this.name}, switching to another proxy for api service: ${nextProxy}`,
+        )
       }
 
       // Update the last rate limit seen
-      this.lastRateLimitSeen = Number(remaining);
+      this.lastRateLimitSeen = Number(remaining)
     }
 
     if (!response) {
-      this.failedCallCount++;
-      return undefined;
+      this.failedCallCount++
+      return undefined
     }
 
-    return response.json() as Promise<T>;
+    return response.json() as Promise<T>
   }
 
   /**
@@ -177,59 +177,59 @@ export default class ApiService {
     url: string,
     query: string,
     variables: Record<string, unknown>,
-    options?: RequestOptions
+    options?: RequestOptions,
   ): Promise<T | undefined> {
     const cacheKey = JSON.stringify({
       url,
       query: query.trim(),
       variables: variables ?? {},
-    });
-    const existing = ApiService.pendingGqlRequests.get(cacheKey);
+    })
+    const existing = ApiService.pendingGqlRequests.get(cacheKey)
     if (existing) {
-      return existing as Promise<T | undefined>;
+      return existing as Promise<T | undefined>
     }
 
     const promise = (async (): Promise<T | undefined> => {
-      const startedAt = performance.now();
-      await this.cooldown.waitAndUse();
+      const startedAt = performance.now()
+      await this.cooldown.waitAndUse()
 
       if (isServer()) {
-        this.callCount++;
+        this.callCount++
       }
 
       try {
         const response = await fetch(url, {
-          method: "POST",
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             ...((options?.headers as Record<string, string>) || {}),
           },
           body: JSON.stringify({
             query: query.trim(),
             variables: variables ?? {},
           }),
-        });
+        })
 
-        this.totalLatencyMs += Math.max(0, performance.now() - startedAt);
+        this.totalLatencyMs += Math.max(0, performance.now() - startedAt)
         if (!response.ok) {
-          this.failedCallCount++;
-          return undefined;
+          this.failedCallCount++
+          return undefined
         }
 
-        return response.json() as Promise<T>;
+        return response.json() as Promise<T>
       } catch {
-        this.totalLatencyMs += Math.max(0, performance.now() - startedAt);
-        this.failedCallCount++;
-        return undefined;
+        this.totalLatencyMs += Math.max(0, performance.now() - startedAt)
+        this.failedCallCount++
+        return undefined
       }
-    })();
+    })()
 
-    ApiService.pendingGqlRequests.set(cacheKey, promise);
+    ApiService.pendingGqlRequests.set(cacheKey, promise)
     promise.finally(() => {
-      ApiService.pendingGqlRequests.delete(cacheKey);
-    });
+      ApiService.pendingGqlRequests.delete(cacheKey)
+    })
 
-    return promise;
+    return promise
   }
 
   /**
@@ -238,6 +238,6 @@ export default class ApiService {
    * @returns the total number of server proxies
    */
   public static getTotalServerProxies(): number {
-    return SERVER_PROXIES.length;
+    return SERVER_PROXIES.length
   }
 }

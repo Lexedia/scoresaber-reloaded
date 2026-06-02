@@ -1,5 +1,6 @@
 import AddFriend from "@/components/friend/add-friend";
 import SimpleLink from "@/components/simple-link";
+import { env } from "@ssr/common/env";
 import ScoreSaberPlayer from "@ssr/common/player/impl/scoresaber-player";
 import { getScoreSaberRoles } from "@ssr/common/utils/scoresaber.util";
 import Card from "../../card";
@@ -32,7 +33,7 @@ export default function PlayerHeader({ player }: PlayerHeaderProps) {
           <div className="flex w-full flex-col">
             <div className="flex items-center justify-center gap-3 lg:justify-start">
               <SimpleLink
-                href={`https://steamcommunity.com/profiles/${player.id}`}
+                href={`${env.NEXT_PUBLIC_STEAM_URL}/profiles/${player.id}`}
                 target="_blank"
                 className="hover:text-primary/80 max-w-[300px] truncate text-2xl font-semibold transition-colors duration-200"
                 style={{

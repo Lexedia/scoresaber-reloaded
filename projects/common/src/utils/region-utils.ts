@@ -1,4 +1,4 @@
-const regionNames = new Intl.DisplayNames(["en"], { type: "region" });
+const regionNames = new Intl.DisplayNames([ 'en' ], { type: 'region' })
 
 /**
  * Returns the normalized region name
@@ -8,8 +8,8 @@ const regionNames = new Intl.DisplayNames(["en"], { type: "region" });
  */
 export function normalizedRegionName(region: string) {
   try {
-    return regionNames.of(region) || region;
+    return regionNames.of(region) ?? region
   } catch {
-    return region;
+    return region
   }
 }

@@ -1,5 +1,5 @@
-import { ScoreSaberAccount, ScoreSaberAccountSchema } from "@ssr/common/schemas/scoresaber/account";
-import { ScoreSaberAccountRow } from "../schema";
+import { ScoreSaberAccount, ScoreSaberAccountSchema } from '@ssr/common/schemas/scoresaber/account'
+import { ScoreSaberAccountRow } from '../schema'
 
 /**
  * Converts a ScoreSaberAccountRow to a ScoreSaberAccount.
@@ -15,11 +15,13 @@ export function scoreSaberAccountRowToType(row: ScoreSaberAccountRow): ScoreSabe
     country: row.country,
     peakRank:
       row.peakRank && row.peakRankTimestamp
-        ? { rank: row.peakRank, timestamp: new Date(row.peakRankTimestamp) }
+        ? {
+          rank: row.peakRank,
+          timestamp: new Date(row.peakRankTimestamp),
+        }
         : undefined,
     seededScores: row.seededScores,
     seededBeatLeaderScores: row.seededBeatLeaderScores,
-    cachedProfilePicture: row.cachedProfilePicture,
     trackReplays: row.trackReplays,
     inactive: row.inactive,
     banned: row.banned,
@@ -32,5 +34,5 @@ export function scoreSaberAccountRowToType(row: ScoreSaberAccountRow): ScoreSabe
     longestStreak: row.longestStreak,
     trackedSince: row.trackedSince?.toISOString(),
     joinedDate: row.joinedDate?.toISOString(),
-  });
+  })
 }

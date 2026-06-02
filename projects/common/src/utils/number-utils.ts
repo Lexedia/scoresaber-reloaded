@@ -14,7 +14,8 @@ export function isWholeNumber(number: number) {
  * @param num the number to format
  * @returns the formatted number
  */
-export function formatNumberWithCommas(num: number) {
+export function formatNumberWithCommas(num: number | undefined | null) {
+  if (num === undefined || num === null) return "0";
   return num.toLocaleString();
 }
 
@@ -25,7 +26,8 @@ export function formatNumberWithCommas(num: number) {
  * @param fractionDigits the amount of fraction digits
  * @returns the formatted pp
  */
-export function formatPp(num: number, fractionDigits: number = 2) {
+export function formatPp(num: number | undefined | null, fractionDigits: number = 2) {
+  if (num === undefined || num === null) return "0";
   return num.toLocaleString(undefined, {
     minimumFractionDigits: fractionDigits,
     maximumFractionDigits: fractionDigits,
@@ -39,7 +41,8 @@ export function formatPp(num: number, fractionDigits: number = 2) {
  * @param type the type of number to format
  * @returns the formatted number
  */
-export function formatNumber(num: number, type: "number" | "pp" = "number") {
+export function formatNumber(num: number | undefined | null, type: "number" | "pp" = "number") {
+  if (num === undefined || num === null) return "0";
   if (type == "pp") {
     return formatPp(num);
   }

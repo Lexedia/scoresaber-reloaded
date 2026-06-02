@@ -1,7 +1,7 @@
-import { env } from "../env";
-import { NotFoundError } from "../error/not-found-error";
-import { getS3BucketName, StorageBucket } from "../minio-buckets";
-import { BeatLeaderScore } from "../schemas/beatleader/score/score";
+import { env } from '../env'
+import { NotFoundError } from '../error/not-found-error'
+import { getS3BucketName, StorageBucket } from '../minio-buckets'
+import { BeatLeaderScore } from '../schemas/beatleader/score/score'
 
 /**
  * Get the redirect URL of a BeatLeader replay.
@@ -11,9 +11,9 @@ import { BeatLeaderScore } from "../schemas/beatleader/score/score";
  */
 export function getBeatLeaderReplayRedirectUrl(score: BeatLeaderScore): string | undefined {
   if (score.savedReplay) {
-    return `${env.NEXT_PUBLIC_API_URL}/beatleader/replay/${score.scoreId}.bsor`;
+    return `${env.NEXT_PUBLIC_API_URL}/beatleader/replay/${score.scoreId}.bsor`
   }
-  return undefined;
+  return undefined
 }
 
 /**
@@ -23,7 +23,8 @@ export function getBeatLeaderReplayRedirectUrl(score: BeatLeaderScore): string |
  * @returns the ID of the replay
  */
 export function getBeatLeaderReplayId(beatLeaderScore: BeatLeaderScore): string {
-  return `${beatLeaderScore.scoreId}-${beatLeaderScore.playerId}-${beatLeaderScore.difficulty}-${beatLeaderScore.characteristic}-${beatLeaderScore.songHash.toUpperCase()}.bsor`;
+  // eslint-disable-next-line @stylistic/max-len
+  return `${beatLeaderScore.scoreId}-${beatLeaderScore.playerId}-${beatLeaderScore.difficulty}-${beatLeaderScore.characteristic}-${beatLeaderScore.songHash.toUpperCase()}.bsor`
 }
 
 /**
@@ -34,7 +35,7 @@ export function getBeatLeaderReplayId(beatLeaderScore: BeatLeaderScore): string 
  */
 export function getBeatLeaderReplayCdnUrl(beatLeaderScore: BeatLeaderScore): string {
   if (beatLeaderScore.savedReplay) {
-    return `${env.NEXT_PUBLIC_CDN_URL}/${getS3BucketName(StorageBucket.BeatLeaderReplays)}/${getBeatLeaderReplayId(beatLeaderScore)}`;
+    return `${env.NEXT_PUBLIC_CDN_URL}/${getS3BucketName(StorageBucket.BeatLeaderReplays)}/${getBeatLeaderReplayId(beatLeaderScore)}`
   }
-  throw new NotFoundError(`No saved replay found for ${beatLeaderScore.scoreId}`);
+  throw new NotFoundError(`No saved replay found for ${beatLeaderScore.scoreId}`)
 }

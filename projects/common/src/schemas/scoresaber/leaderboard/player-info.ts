@@ -8,7 +8,7 @@ export const ScoreSaberLeaderboardPlayerInfoSchema = z.object({
   avatar: z
     .string()
     .nullish()
-    .transform(avatar => avatar ?? "https://cdn.fascinated.cc/assets/unknown.png"),
+    .transform(avatar => avatar ?? "/assets/unknown.png"),
 });
 
 export type ScoreSaberLeaderboardPlayerInfo = z.infer<typeof ScoreSaberLeaderboardPlayerInfoSchema>;

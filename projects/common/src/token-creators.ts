@@ -1,19 +1,19 @@
-import { env } from "./env";
-import type { HMD } from "./hmds";
-import { getS3BucketName, StorageBucket } from "./minio-buckets";
-import { MapCharacteristic } from "./schemas/map/map-characteristic";
-import { ScoreSaberLeaderboardDifficulty } from "./schemas/scoresaber/leaderboard/difficulty";
+import { env } from './env'
+import type { HMD } from './hmds'
+import { getS3BucketName, StorageBucket } from './minio-buckets'
+import { MapCharacteristic } from './schemas/map/map-characteristic'
+import { ScoreSaberLeaderboardDifficulty } from './schemas/scoresaber/leaderboard/difficulty'
 import {
   ScoreSaberLeaderboard,
   ScoreSaberLeaderboardSchema,
-} from "./schemas/scoresaber/leaderboard/leaderboard";
-import { ScoreSaberLeaderboardStatus } from "./schemas/scoresaber/leaderboard/status";
-import { ScoreSaberScore, ScoreSaberScoreSchema } from "./schemas/scoresaber/score/score";
-import { Modifier } from "./score/modifier";
-import ScoreSaberLeaderboardToken from "./types/token/scoresaber/leaderboard";
-import ScoreSaberScoreToken from "./types/token/scoresaber/score";
-import { getDifficultyFromScoreSaberDifficulty, ScoreSaberHMDs } from "./utils/scoresaber.util";
-import { parseDate } from "./utils/time-utils";
+} from './schemas/scoresaber/leaderboard/leaderboard'
+import { ScoreSaberLeaderboardStatus } from './schemas/scoresaber/leaderboard/status'
+import { ScoreSaberScore, ScoreSaberScoreSchema } from './schemas/scoresaber/score/score'
+import { Modifier } from './score/modifier'
+import ScoreSaberLeaderboardToken from './types/token/scoresaber/leaderboard'
+import ScoreSaberScoreToken from './types/token/scoresaber/score'
+import { getDifficultyFromScoreSaberDifficulty, ScoreSaberHMDs } from './utils/scoresaber.util'
+import { parseDate } from './utils/time-utils'
 
 /**
  * Parses a {@link ScoreSaberLeaderboardToken} into a {@link ScoreSaberLeaderboard}.
@@ -21,22 +21,22 @@ import { parseDate } from "./utils/time-utils";
  * @param token the token to parse
  */
 export function getScoreSaberLeaderboardFromToken(token: ScoreSaberLeaderboardToken): ScoreSaberLeaderboard {
-  const characteristic = token.difficulty.gameMode.replace("Solo", "");
+  const characteristic = token.difficulty.gameMode.replace('Solo', '')
   const difficulty: ScoreSaberLeaderboardDifficulty = {
     id: token.difficulty.leaderboardId,
     stars: token.stars,
     difficulty: getDifficultyFromScoreSaberDifficulty(token.difficulty.difficulty),
     characteristic:
-      characteristic == "" || characteristic == undefined
-        ? "Standard"
+      characteristic == '' || characteristic == undefined
+        ? 'Standard'
         : (characteristic as MapCharacteristic),
-  };
+  }
 
-  let status: ScoreSaberLeaderboardStatus = "Unranked";
+  let status: ScoreSaberLeaderboardStatus = 'Unranked'
   if (token.qualified) {
-    status = "Qualified";
+    status = 'Qualified'
   } else if (token.ranked) {
-    status = "Ranked";
+    status = 'Ranked'
   }
 
   return ScoreSaberLeaderboardSchema.parse(
@@ -62,8 +62,8 @@ export function getScoreSaberLeaderboardFromToken(token: ScoreSaberLeaderboardTo
       rankedDate: token.rankedDate ? parseDate(token.rankedDate) : undefined,
       qualifiedDate: token.qualifiedDate ? parseDate(token.qualifiedDate) : undefined,
     },
-    { reportInput: true }
-  );
+    { reportInput: true },
+  )
 }
 
 /**
@@ -76,19 +76,19 @@ export function getScoreSaberLeaderboardFromToken(token: ScoreSaberLeaderboardTo
 export function getScoreSaberScoreFromToken(
   token: ScoreSaberScoreToken,
   leaderboard: ScoreSaberLeaderboard,
-  playerId?: string
+  playerId?: string,
 ): ScoreSaberScore {
   const modifiers: Modifier[] =
-    token.modifiers == undefined || token.modifiers === ""
+    token.modifiers == undefined || token.modifiers === ''
       ? []
-      : token.modifiers.split(",").map(mod => {
-          mod = mod.toUpperCase();
-          const modifier = Modifier[mod as keyof typeof Modifier];
-          if (modifier === undefined) {
-            throw new Error(`Unknown modifier: ${mod}`);
-          }
-          return modifier;
-        });
+      : token.modifiers.split(',').map(mod => {
+        mod = mod.toUpperCase()
+        const modifier = Modifier[mod as keyof typeof Modifier]
+        if (modifier === undefined) {
+          throw new Error(`Unknown modifier: ${mod}`)
+        }
+        return modifier
+      })
 
   return ScoreSaberScoreSchema.parse(
     {
@@ -96,7 +96,7 @@ export function getScoreSaberScoreFromToken(
       leaderboardId: leaderboard.id,
       scoreId: token.id,
       difficulty: leaderboard.difficulty.difficulty,
-      characteristic: leaderboard.difficulty.characteristic ?? "Standard",
+      characteristic: leaderboard.difficulty.characteristic ?? 'Standard',
       score: token.baseScore,
       accuracy: leaderboard.maxScore ? (token.baseScore / leaderboard.maxScore) * 100 : -1,
       pp: token.pp,
@@ -114,6 +114,6 @@ export function getScoreSaberScoreFromToken(
       ...(token.leaderboardPlayerInfo ? { playerInfo: token.leaderboardPlayerInfo } : {}),
       timestamp: new Date(token.timeSet),
     },
-    { reportInput: true }
-  );
+    { reportInput: true },
+  )
 }

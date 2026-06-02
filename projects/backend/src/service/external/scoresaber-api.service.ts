@@ -104,7 +104,7 @@ export class ScoreSaberApiService {
           let response: Response | undefined;
           try {
             response = await fetch(
-              `https://p.fascinated.cc/${encodeURIComponent(`${url}${getQueryParamsFromObject(options?.searchParams || {})}`)}`,
+              `${url}${getQueryParamsFromObject(options?.searchParams || {})}`,
               {
                 signal: controller.signal,
               }

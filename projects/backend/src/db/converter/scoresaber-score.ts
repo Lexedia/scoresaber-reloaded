@@ -1,6 +1,6 @@
-import { ScoreSaberScore } from "@ssr/common/schemas/scoresaber/score/score";
-import { normalizeModifiers } from "@ssr/common/score/modifier";
-import { ScoreSaberScoreHistoryRow, ScoreSaberScoreRow } from "../schema";
+import { ScoreSaberScore } from '@ssr/common/schemas/scoresaber/score/score'
+import { normalizeModifiers } from '@ssr/common/score/modifier'
+import { ScoreSaberScoreHistoryRow, ScoreSaberScoreRow } from '../schema'
 
 /**
  * Converts a ScoreSaberScoreRow to a ScoreSaberScore.
@@ -9,7 +9,7 @@ import { ScoreSaberScoreHistoryRow, ScoreSaberScoreRow } from "../schema";
  * @returns the converted ScoreSaberScore
  */
 export function scoreSaberScoreRowToType(
-  row: ScoreSaberScoreRow | ScoreSaberScoreHistoryRow
+  row: ScoreSaberScoreRow | ScoreSaberScoreHistoryRow,
 ): ScoreSaberScore {
   return {
     playerId: row.playerId,
@@ -30,11 +30,11 @@ export function scoreSaberScoreRowToType(
     modifiers: normalizeModifiers(row.modifiers ?? []),
     playerInfo: {
       id: row.playerId,
-      avatar: "https://cdn.fascinated.cc/assets/unknown.png",
+      avatar: '/assets/unknown.png',
     },
     hmd: row.hmd ?? null,
     rightController: row.rightController ?? null,
     leftController: row.leftController ?? null,
     timestamp: row.timestamp,
-  };
+  }
 }

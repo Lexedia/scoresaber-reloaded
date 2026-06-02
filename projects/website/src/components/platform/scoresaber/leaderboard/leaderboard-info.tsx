@@ -3,6 +3,7 @@
 import Card from "@/components/card";
 import FallbackLink from "@/components/fallback-link";
 import LeaderboardButtons from "@/components/platform/scoresaber/leaderboard/leaderboard-buttons";
+import { env } from "@ssr/common/env";
 import { LeaderboardStarChange } from "@ssr/common/schemas/leaderboard/leaderboard-star-change";
 import { LeaderboardResponse } from "@ssr/common/schemas/response/leaderboard/leaderboard";
 import { getBeatSaverMapperProfileUrl } from "@ssr/common/utils/beatsaver.util";
@@ -47,7 +48,7 @@ export function LeaderboardInfo({ leaderboard, starChangeHistory }: LeaderboardI
         <div className="flex max-w-[900px] min-w-0 flex-col items-center gap-1">
           {/* Song Name */}
           <FallbackLink
-            href={beatsaver ? `https://beatsaver.com/maps/${beatsaver.bsr}` : undefined}
+            href={beatsaver ? `${env.NEXT_PUBLIC_BEATSAVER_URL}/maps/${beatsaver.bsr}` : undefined}
             className="hover:text-primary/80 text-song-name w-fit max-w-full min-w-0 transition-all"
           >
             <h3 className="line-clamp-2 text-2xl leading-tight font-bold wrap-break-word">

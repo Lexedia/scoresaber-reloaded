@@ -1,8 +1,9 @@
-import { BeatSaverMap } from "../schemas/beatsaver/map/map";
-import { MapCharacteristic } from "../schemas/map/map-characteristic";
-import { MapDifficulty } from "../schemas/map/map-difficulty";
-import BeatSaverMapToken from "../types/token/beatsaver/map";
-import BeatSaverMapDifficultyToken from "../types/token/beatsaver/map-difficulty";
+import { env } from '../env'
+import { BeatSaverMap } from '../schemas/beatsaver/map/map'
+import { MapCharacteristic } from '../schemas/map/map-characteristic'
+import { MapDifficulty } from '../schemas/map/map-difficulty'
+import BeatSaverMapToken from '../types/token/beatsaver/map'
+import BeatSaverMapDifficultyToken from '../types/token/beatsaver/map-difficulty'
 
 /**
  * Gets the BeatSaver mapper profile url.
@@ -11,7 +12,7 @@ import BeatSaverMapDifficultyToken from "../types/token/beatsaver/map-difficulty
  * @returns the beatsaver mapper profile url
  */
 export function getBeatSaverMapperProfileUrl(map?: BeatSaverMap) {
-  return map != undefined ? `https://beatsaver.com/profile/${map?.author.id}` : undefined;
+  return map != undefined ? `${env.NEXT_PUBLIC_BEATSAVER_URL}/profile/${map?.author.id}` : undefined
 }
 
 /**
@@ -26,13 +27,13 @@ export function getBeatSaverDifficulty(
   map: BeatSaverMapToken,
   hash: string,
   difficulty: MapDifficulty,
-  characteristic: MapCharacteristic
+  characteristic: MapCharacteristic,
 ): BeatSaverMapDifficultyToken | undefined {
-  const version = map.versions.find(v => v.hash === hash);
+  const version = map.versions.find(v => v.hash === hash)
 
   // Fallback to the latest version if the version is undefined
   return (
     version ??
     map.versions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0]
-  ).diffs.find(d => d.difficulty === difficulty && d.characteristic === characteristic);
+  ).diffs.find(d => d.difficulty === difficulty && d.characteristic === characteristic)
 }

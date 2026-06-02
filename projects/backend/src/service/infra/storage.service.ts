@@ -17,6 +17,8 @@ export default class StorageService {
     endpoint: env.S3_ENDPOINT,
   });
 
+  private static readonly isS3Configured = Boolean(env.S3_ACCESS_KEY && env.S3_SECRET_KEY);
+
   private static getFileRef(bucket: StorageBucket, filename: string) {
     return StorageService.S3_CLIENT.file(filename, {
       bucket: getS3BucketName(bucket),
@@ -46,6 +48,8 @@ export default class StorageService {
     }
     CachePerformanceMetric.recordMiss(StorageService.STORAGE_FILE_CACHE_ID, "MEMORY");
 
+    if (!StorageService.isS3Configured) return undefined;
+
     try {
       const s3file = StorageService.getFileRef(bucket, filename);
       const bytes = await s3file.arrayBuffer();
@@ -67,9 +71,12 @@ export default class StorageService {
    */
   public static async saveFile(bucket: StorageBucket, filename: string, data: Buffer) {
     try {
+      StorageService.CACHE.set(`${bucket}:${filename}`, data);
+      
+      if (!StorageService.isS3Configured) return;
+      
       const s3file = StorageService.getFileRef(bucket, filename);
       await s3file.write(data);
-      StorageService.CACHE.set(`${bucket}:${filename}`, data);
     } catch (error) {
       StorageService.logger.error(`Failed to save file to S3: ${error}`);
     }
@@ -83,9 +90,12 @@ export default class StorageService {
    */
   public static async deleteFile(bucket: StorageBucket, filename: string) {
     try {
+      StorageService.CACHE.remove(`${bucket}:${filename}`);
+      
+      if (!StorageService.isS3Configured) return;
+      
       const s3file = StorageService.getFileRef(bucket, filename);
       await s3file.delete();
-      StorageService.CACHE.remove(`${bucket}:${filename}`);
     } catch (error) {
       StorageService.logger.error(`Failed to delete file from S3: ${error}`);
     }
@@ -99,6 +109,8 @@ export default class StorageService {
    * @returns true if the file exists, false otherwise
    */
   public static async fileExists(bucket: StorageBucket, filename: string): Promise<boolean> {
+    if (!StorageService.isS3Configured) return false;
+
     try {
       const s3file = StorageService.getFileRef(bucket, filename);
       return await s3file.exists();
@@ -108,6 +120,11 @@ export default class StorageService {
   }
 
   public async initBuckets() {
+    if (!StorageService.isS3Configured) {
+      StorageService.logger.warn("S3 credentials not configured. S3 storage will be disabled.");
+      return;
+    }
+
     for (const bucket of Object.values(StorageBucket)) {
       try {
         // Bun's S3 client currently focuses on object operations (read/write/delete/list) and does not expose

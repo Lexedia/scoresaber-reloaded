@@ -1,21 +1,18 @@
-import { env } from "../env";
-import { formatNumberWithCommas, formatPp } from "./number-utils";
+import { env } from '../env'
+import { formatNumberWithCommas, formatPp } from './number-utils'
 
 /**
  * Checks if we're in production
  */
 export function isProduction() {
-  return env.NEXT_PUBLIC_APP_ENV === "production";
+  return env.NEXT_PUBLIC_APP_ENV === 'production'
 }
 
 /**
  * Checks if we're running on the server
  */
 export function isServer() {
-  return (
-    env.NEXT_PUBLIC_APPLICATION_NAME === "backend" ||
-    (!("window" in globalThis) && typeof window == undefined)
-  );
+  return env.NEXT_PUBLIC_APPLICATION_NAME === 'backend' || !('window' in globalThis)
 }
 
 /**
@@ -26,7 +23,7 @@ export function isServer() {
  * @returns the page number
  */
 export function getPageFromRank(rank: number, itemsPerPage: number) {
-  return Math.floor((rank - 1) / itemsPerPage) + 1;
+  return Math.floor((rank - 1) / itemsPerPage) + 1
 }
 
 /**
@@ -39,21 +36,21 @@ export function getPageFromRank(rank: number, itemsPerPage: number) {
 export function formatChange(
   change: number | undefined,
   formatValue?: (value: number) => string,
-  isPp = false
+  isPp = false,
 ): string | undefined {
   if (change === 0 || change === undefined) {
-    return undefined;
+    return undefined
   }
 
   // Default formats
   if (!formatValue) {
-    formatValue = formatNumberWithCommas;
+    formatValue = formatNumberWithCommas
     if (isPp) {
-      formatValue = formatPp;
+      formatValue = formatPp
     }
   }
 
-  return (change > 0 ? "+" : "") + formatValue(change) + (isPp ? "pp" : "");
+  return (change > 0 ? '+' : '') + formatValue(change) + (isPp ? 'pp' : '')
 }
 
 /**
@@ -64,14 +61,14 @@ export function formatChange(
  * @returns a color in HSL format
  */
 export function stringToColor(str: string): string {
-  let hash = 0;
+  let hash = 0
   for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    hash = str.charCodeAt(i) + ((hash << 5) - hash)
   }
 
   // Convert to HSL for better color distribution
-  const h = hash % 360;
-  return `hsl(${h}, 70%, 60%)`;
+  const h = hash % 360
+  return `hsl(${h}, 70%, 60%)`
 }
 
 /**
@@ -82,11 +79,11 @@ export function stringToColor(str: string): string {
  * @returns the darkened hex color string
  */
 export function darkenColor(hex: string, amount: number): string {
-  const num = parseInt(hex.replace("#", ""), 16);
-  const r = Math.max(0, ((num >> 16) & 0xff) - amount);
-  const g = Math.max(0, ((num >> 8) & 0xff) - amount);
-  const b = Math.max(0, (num & 0xff) - amount);
-  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, "0")}`;
+  const num = parseInt(hex.replace('#', ''), 16)
+  const r = Math.max(0, ((num >> 16) & 0xff) - amount)
+  const g = Math.max(0, ((num >> 8) & 0xff) - amount)
+  const b = Math.max(0, (num & 0xff) - amount)
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`
 }
 
 /**
@@ -98,11 +95,11 @@ export function darkenColor(hex: string, amount: number): string {
 export function getQueryParamsFromObject(params: Record<string, string>) {
   // Filter out undefined values and empty strings from the query params
   const filteredQueryParams = Object.fromEntries(
-    Object.entries(params || {}).filter(([, value]) => value !== undefined && value !== "")
-  );
+    Object.entries(params || {}).filter(([ , value ]) => value !== undefined && value !== ''),
+  )
   return filteredQueryParams && Object.keys(filteredQueryParams).length > 0
     ? `?${new URLSearchParams(params)}`
-    : "";
+    : ''
 }
 
 /**
@@ -114,18 +111,18 @@ export function getQueryParamsFromObject(params: Record<string, string>) {
  */
 export function convertObjectId(id: unknown): string | number | undefined {
   if (id === undefined || id === null) {
-    return undefined;
+    return undefined
   }
-  if (typeof id === "string" || typeof id === "number") {
-    return id;
+  if (typeof id === 'string' || typeof id === 'number') {
+    return id
   }
-  if (typeof id === "object" && "toString" in id) {
-    const idObj = id as { toString(): string };
-    const idStr = idObj.toString();
+  if (typeof id === 'object' && 'toString' in id) {
+    const idObj = id as { toString(): string }
+    const idStr = idObj.toString()
     // Try to convert to number if it's numeric, otherwise use string
-    return /^\d+$/.test(idStr) ? Number(idStr) : idStr;
+    return /^\d+$/.test(idStr) ? Number(idStr) : idStr
   }
-  return String(id);
+  return String(id)
 }
 
 /**
@@ -137,11 +134,11 @@ export function convertObjectId(id: unknown): string | number | undefined {
  */
 export function chunkArray<T>(array: T[], size: number): T[][] {
   return array.reduce((result, item, index) => {
-    const chunkIndex = Math.floor(index / size);
+    const chunkIndex = Math.floor(index / size)
     if (!result[chunkIndex]) {
-      result[chunkIndex] = [];
+      result[chunkIndex] = []
     }
-    result[chunkIndex].push(item);
-    return result;
-  }, [] as T[][]);
+    result[chunkIndex].push(item)
+    return result
+  }, [] as T[][])
 }

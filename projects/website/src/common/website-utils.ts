@@ -13,11 +13,10 @@ export function isProduction() {
  * @returns the build information
  */
 export function getBuildInformation() {
-  const buildId = process.env.NEXT_PUBLIC_BUILD_ID
-    ? isProduction()
-      ? process.env.NEXT_PUBLIC_BUILD_ID.slice(0, 7)
-      : "dev"
-    : "";
+  const envBuildId = process.env.NEXT_PUBLIC_BUILD_ID;
+  const buildId = envBuildId && envBuildId !== "dev"
+    ? envBuildId.slice(0, 7)
+    : "dev";
   const buildTime = process.env.NEXT_PUBLIC_BUILD_TIME;
   const buildTimeShort = process.env.NEXT_PUBLIC_BUILD_TIME_SHORT;
 

@@ -1,3 +1,5 @@
+import { env } from './env'
+
 export type ReplayViewer = {
   /**
    * The id of the replay viewer.
@@ -16,24 +18,24 @@ export type ReplayViewer = {
    * @returns the URL
    */
   generateUrl: (id: number, customParams?: string) => string;
-};
+}
 
 /**
  * The replay viewers.
  */
 export const ReplayViewers: Record<string, ReplayViewer> = {
   beatleader: {
-    id: "beatleader",
-    name: "BeatLeader",
+    id: 'beatleader',
+    name: 'BeatLeader',
     generateUrl: (id, replayUrl) =>
-      `https://replay.beatleader.xyz/${replayUrl ? `?link=${replayUrl}` : `?scoreId=${id}`}`,
+      `${env.NEXT_PUBLIC_BEATLEADER_REPLAY_URL}/${replayUrl ? `?link=${replayUrl}` : `?scoreId=${id}`}`,
   },
   arcviewer: {
-    id: "arcviewer",
-    name: "ArcViewer",
+    id: 'arcviewer',
+    name: 'ArcViewer',
     generateUrl: (id, replayUrl) =>
-      `https://allpoland.github.io/ArcViewer/${replayUrl ? `?replayURL=${replayUrl}` : `?scoreID=${id}`}`,
+      `${env.NEXT_PUBLIC_ARCVIEWER_URL}/${replayUrl ? `?replayURL=${replayUrl}` : `?scoreID=${id}`}`,
   },
-};
+}
 
-export type ReplayViewerTypes = keyof typeof ReplayViewers;
+export type ReplayViewerTypes = keyof typeof ReplayViewers

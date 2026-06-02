@@ -1,6 +1,6 @@
-import SimpleLink from "@/components/simple-link";
-import { Button } from "@/components/ui/button";
-import Image from "next/image";
+import SimpleLink from '@/components/simple-link'
+import { Button } from '@/components/ui/button'
+import Image from 'next/image'
 
 export function DiscordButton() {
   return (
@@ -11,7 +11,7 @@ export function DiscordButton() {
       >
         <Image
           className="size-6"
-          src="https://cdn.fascinated.cc/assets/logos/discord.svg"
+          src="/assets/logos/discord.svg"
           alt="Discord Logo"
           width={24}
           height={24}
@@ -19,5 +19,5 @@ export function DiscordButton() {
         <span>Join our Discord</span>
       </Button>
     </SimpleLink>
-  );
+  )
 }

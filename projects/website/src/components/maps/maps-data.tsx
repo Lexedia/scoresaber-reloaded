@@ -12,6 +12,7 @@ import { TrophyIcon } from "@heroicons/react/24/solid";
 import { ExternalLinkIcon, TrendingUpIcon } from "lucide-react";
 import { ElementType, ReactNode } from "react";
 import Card from "../card";
+import { env } from "@ssr/common/env";
 
 type Category = {
   name: string;
@@ -83,7 +84,7 @@ export function MapsData({ type }: MapsDataProps) {
           {selectedCategory.id === "ranking-queue" && (
             <Card>
               <SimpleTooltip display={<p>Click to open the Ranking Queue on ScoreSaber</p>} side="bottom">
-                <SimpleLink href="https://scoresaber.com/ranking/requests" target="_blank" className="w-full">
+                <SimpleLink href={`${env.NEXT_PUBLIC_SCORESABER_URL}/ranking/requests`} target="_blank" className="w-full">
                   <Button className="flex w-full items-center justify-center gap-2">
                     <ExternalLinkIcon className="h-4 w-4" />
                     <span>ScoreSaber Ranking Queue</span>

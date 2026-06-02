@@ -52,17 +52,12 @@ const links: {
     {
       name: "Source Code",
       shortName: "Source",
-      href: "https://github.com/RealFascinated/scoresaber-reloaded",
+      href: env.NEXT_PUBLIC_GITHUB_URL!,
     },
     {
       name: "API Documentation",
       shortName: "API",
       href: `${env.NEXT_PUBLIC_API_URL}/swagger`,
-    },
-    {
-      name: "System Status",
-      shortName: "Status",
-      href: "https://status.fascinated.cc/status/scoresaber-reloaded",
     },
   ],
   App: [
@@ -72,34 +67,35 @@ const links: {
     },
     {
       name: "Statistics",
-      href: "https://grafana.fascinated.cc/d/5783f85b-a2b3-49d8-854d-b67bb524053d/ssr-public?orgId=2",
+      // TODO: Don't hardcode the dashboard id.
+      href: `${env.NEXT_PUBLIC_GRAFANA_URL}/public-dashboards/8cb0b6d0553945cab26d5ddadd29d868`,
     },
   ],
 };
 
 const socialLinks: SocialLinkType[] = [
-  {
+  ...(env.NEXT_PUBLIC_TWITTER_URL && [{
     name: "Twitter",
     logo: <TwitterLogo className="size-5 lg:size-6" />,
-    href: "https://x.com/ssr_reloaded",
-  },
-  {
+    href: env.NEXT_PUBLIC_TWITTER_URL!,
+  }]) || [],
+  ...(env.NEXT_PUBLIC_DISCORD_URL && [{
     name: "Discord",
     logo: (
       <Image
         className="size-6 lg:size-7"
-        src="https://cdn.fascinated.cc/assets/logos/discord.svg"
+        src="/assets/logos/discord.svg"
         alt="Discord Logo"
         width={24}
         height={24}
       />
     ),
-    href: "https://discord.gg/kmNfWGA4A8",
-  },
+    href: env.NEXT_PUBLIC_DISCORD_URL!,
+  }]) || [],
   {
     name: "GitHub",
     logo: <GithubLogo className="size-5 lg:size-6" />,
-    href: "https://github.com/RealFascinated/scoresaber-reloaded",
+    href: env.NEXT_PUBLIC_GITHUB_URL!,
   },
 ];
 
@@ -131,7 +127,7 @@ export default function Footer({
                 draggable={false}
               >
                 <Image
-                  src="https://cdn.fascinated.cc/assets/logos/scoresaber.png"
+                  src="/assets/logos/scoresaber.png"
                   alt="Scoresaber Logo"
                   width={36}
                   height={36}
@@ -187,15 +183,19 @@ export default function Footer({
         </div>
       </div>
 
-      {/* Bottom Section */}
       <div className="flex justify-center">
-        {/* Build Ifo */}
-        <SimpleLink
-          className="text-sm opacity-50"
-          href={`https://github.com/RealFascinated/scoresaber-reloaded/commit/${buildId}`}
-        >
-          Build {buildId} ({buildTimeShort})
-        </SimpleLink>
+        {buildId === "dev" ? (
+          <span className="text-sm opacity-50">
+            Build {buildId} ({buildTimeShort})
+          </span>
+        ) : (
+          <SimpleLink
+            className="text-sm opacity-50"
+            href={`${env.NEXT_PUBLIC_GITHUB_URL}/commit/${buildId}`}
+          >
+            Build {buildId} ({buildTimeShort})
+          </SimpleLink>
+        )}
       </div>
     </footer>
   );

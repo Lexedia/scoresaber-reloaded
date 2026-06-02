@@ -1,8 +1,8 @@
 export enum StorageBucket {
-  BeatLeaderReplays = "ssr-beatleader-replays",
-  LeaderboardSongArt = "ssr-leaderboard-song-art",
-  PlayerAvatars = "ssr-player-avatars",
-  BeatLeaderScoreStats = "ssr-beatleader-score-stats",
+  BeatLeaderReplays = 'ssr-beatleader-replays',
+  LeaderboardSongArt = 'ssr-leaderboard-song-art',
+  PlayerAvatars = 'ssr-player-avatars',
+  BeatLeaderScoreStats = 'ssr-beatleader-score-stats',
 }
 
 /**
@@ -11,5 +11,5 @@ export enum StorageBucket {
  * @param bucket the bucket to get the name of
  */
 export function getS3BucketName(bucket: StorageBucket) {
-  return bucket;
+  return bucket
 }

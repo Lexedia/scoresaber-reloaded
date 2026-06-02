@@ -1,72 +1,77 @@
-import dayjs from "dayjs";
-import duration from "dayjs/plugin/duration.js";
-import localeData from "dayjs/plugin/localeData.js";
-import relativeTime from "dayjs/plugin/relativeTime.js";
-import utc from "dayjs/plugin/utc.js";
+import dayjs from 'dayjs'
+import duration from 'dayjs/plugin/duration.js'
+import localeData from 'dayjs/plugin/localeData.js'
+import relativeTime from 'dayjs/plugin/relativeTime.js'
+import utc from 'dayjs/plugin/utc.js'
 
-dayjs.extend(utc);
-dayjs.extend(relativeTime);
-dayjs.extend(duration);
-dayjs.extend(localeData);
+dayjs.extend(utc)
+dayjs.extend(relativeTime)
+dayjs.extend(duration)
+dayjs.extend(localeData)
 
 // Configure ordinal numbers
-const locale = dayjs.localeData();
+const locale = dayjs.localeData()
 locale.ordinal = (n: number) => {
-  const s = ["th", "st", "nd", "rd"];
-  const v = n % 100;
-  return n + (s[(v - 20) % 10] || s[v] || s[0]);
-};
+  const s = [
+    'th',
+    'st',
+    'nd',
+    'rd',
+  ]
+  const v = n % 100
+  return n + (s[(v - 20) % 10] || s[v] || s[0])
+}
 
 export const Months = [
   {
-    name: "January",
+    name: 'January',
     number: 1,
   },
   {
-    name: "February",
+    name: 'February',
     number: 2,
   },
   {
-    name: "March",
+    name: 'March',
     number: 3,
   },
   {
-    name: "April",
+    name: 'April',
     number: 4,
   },
   {
-    name: "May",
+    name: 'May',
     number: 5,
   },
   {
-    name: "June",
+    name: 'June',
     number: 6,
   },
   {
-    name: "July",
+    name: 'July',
     number: 7,
   },
   {
-    name: "August",
+    name: 'August',
     number: 8,
   },
   {
-    name: "September",
+    name: 'September',
     number: 9,
   },
   {
-    name: "October",
+    name: 'October',
     number: 10,
   },
   {
-    name: "November",
+    name: 'November',
     number: 11,
   },
   {
-    name: "December",
+    name: 'December',
     number: 12,
   },
-];
+]
 
 /**
  * This function returns the time ago of the input date
@@ -75,40 +80,58 @@ export const Months = [
  * @returns the format of the time ago
  */
 export function timeAgo(input: Date, maxUnits: number = 2) {
-  const inputDate = new Date(input).getTime(); // Convert input to a Date object if it's not already
-  const now = new Date().getTime();
-  const deltaSeconds = Math.floor((now - inputDate) / 1000); // Get time difference in seconds
+  const inputDate = new Date(input).getTime() // Convert input to a Date object if it's not already
+  const now = new Date().getTime()
+  const deltaSeconds = Math.floor((now - inputDate) / 1000) // Get time difference in seconds
 
   if (deltaSeconds <= 5) {
-    return "just now";
+    return 'just now'
   }
 
   const timeUnits = [
-    { unit: "y", seconds: 60 * 60 * 24 * 365 }, // years
-    { unit: "mo", seconds: 60 * 60 * 24 * 30 }, // months
-    { unit: "d", seconds: 60 * 60 * 24 }, // days
-    { unit: "h", seconds: 60 * 60 }, // hours
-    { unit: "m", seconds: 60 }, // minutes
-    { unit: "s", seconds: 1 }, // seconds
-  ];
+    {
+      unit: 'y',
+      seconds: 60 * 60 * 24 * 365,
+    }, // years
+    {
+      unit: 'mo',
+      seconds: 60 * 60 * 24 * 30,
+    }, // months
+    {
+      unit: 'd',
+      seconds: 60 * 60 * 24,
+    }, // days
+    {
+      unit: 'h',
+      seconds: 60 * 60,
+    }, // hours
+    {
+      unit: 'm',
+      seconds: 60,
+    }, // minutes
+    {
+      unit: 's',
+      seconds: 1,
+    }, // seconds
+  ]
 
-  const result = [];
-  let remainingSeconds = deltaSeconds;
+  const result = []
+  let remainingSeconds = deltaSeconds
 
   for (const { unit, seconds } of timeUnits) {
-    const count = Math.floor(remainingSeconds / seconds);
+    const count = Math.floor(remainingSeconds / seconds)
     if (count > 0) {
-      result.push(`${count}${unit}`);
-      remainingSeconds -= count * seconds;
+      result.push(`${count}${unit}`)
+      remainingSeconds -= count * seconds
     }
     // Stop after two units have been added
     if (result.length === maxUnits) {
-      break;
+      break
     }
   }
 
   // Return formatted result with at most two units
-  return result.join(" ") + " ago";
+  return result.join(' ') + ' ago'
 }
 
 /**
@@ -118,9 +141,9 @@ export function timeAgo(input: Date, maxUnits: number = 2) {
  * @returns the amount of milliseconds ago
  */
 export function getMsAgo(input: Date) {
-  const inputDate = new Date(input).getTime(); // Convert input to a Date object if it's not already
-  const now = new Date().getTime();
-  return now - inputDate;
+  const inputDate = new Date(input).getTime() // Convert input to a Date object if it's not already
+  const now = new Date().getTime()
+  return now - inputDate
 }
 
 /**
@@ -129,7 +152,7 @@ export function getMsAgo(input: Date) {
  * @param date the date
  */
 export function formatDateMinimal(date: Date) {
-  return dayjs(date).utc().format("MMM D, YYYY");
+  return dayjs(date).utc().format('MMM D, YYYY')
 }
 
 /**
@@ -138,24 +161,24 @@ export function formatDateMinimal(date: Date) {
  * @param date the date
  */
 export function formatChartDate(date: Date) {
-  const currentYear = dayjs().utc().year();
-  const year = dayjs(date).utc().year();
-  return dayjs(date).format(`MMM D${currentYear === year ? "" : ", YYYY"}`);
+  const currentYear = dayjs().utc().year()
+  const year = dayjs(date).utc().year()
+  return dayjs(date).format(`MMM D${currentYear === year ? '' : ', YYYY'}`)
 }
 
 function getOrdinalSuffix(day: number): string {
   if (day > 3 && day < 21) {
-    return "th";
+    return 'th'
   }
   switch (day % 10) {
     case 1:
-      return "st";
+      return 'st'
     case 2:
-      return "nd";
+      return 'nd'
     case 3:
-      return "rd";
+      return 'rd'
     default:
-      return "th";
+      return 'th'
   }
 }
 
@@ -169,45 +192,45 @@ function getOrdinalSuffix(day: number): string {
 export function formatDate(
   date: Date,
   format:
-    | "MMMM YYYY"
-    | "DD MMMM YYYY"
-    | "DD-MM-YYYY"
-    | "dddd, DD MMM, YYYY"
-    | "DD MMMM YYYY HH:mm"
-    | "DD/MM/YYYY, HH:mm:ss"
-    | "Do MMMM, YYYY"
-    | "Do MMMM, YYYY HH:mm"
-    | "Do MM, YYYY HH:mm a"
-    | "Do MMMM, YYYY HH:mm a"
-    | "MMM D, YYYY"
-    | "Do MM, YYYY" = "MMMM YYYY"
+    | 'MMMM YYYY'
+    | 'DD MMMM YYYY'
+    | 'DD-MM-YYYY'
+    | 'dddd, DD MMM, YYYY'
+    | 'DD MMMM YYYY HH:mm'
+    | 'DD/MM/YYYY, HH:mm:ss'
+    | 'Do MMMM, YYYY'
+    | 'Do MMMM, YYYY HH:mm'
+    | 'Do MM, YYYY HH:mm a'
+    | 'Do MMMM, YYYY HH:mm a'
+    | 'MMM D, YYYY'
+    | 'Do MM, YYYY' = 'MMMM YYYY',
 ) {
   const formatMap = {
-    "MMMM YYYY": "MMMM YYYY",
-    "DD MMMM YYYY": "D MMMM YYYY",
-    "DD-MM-YYYY": "DD-MM-YYYY",
-    "dddd, DD MMM, YYYY": "dddd, D MMM, YYYY",
-    "DD MMMM YYYY HH:mm": "D MMMM YYYY HH:mm",
-    "DD/MM/YYYY, HH:mm:ss": "DD/MM/YYYY, HH:mm:ss",
-    "Do MMMM, YYYY": "D MMMM, YYYY",
-    "Do MMMM, YYYY HH:mm": "D MMMM, YYYY HH:mm",
-    "Do MMMM, YYYY HH:mm a": "D MMMM, YYYY HH:mm a",
-    "Do MM, YYYY": "D MMM, YYYY",
-    "Do MM, YYYY HH:mm a": "D MM, YYYY HH:mm a",
-    "MMM D, YYYY": "MMM D, YYYY",
-  };
+    'MMMM YYYY': 'MMMM YYYY',
+    'DD MMMM YYYY': 'D MMMM YYYY',
+    'DD-MM-YYYY': 'DD-MM-YYYY',
+    'dddd, DD MMM, YYYY': 'dddd, D MMM, YYYY',
+    'DD MMMM YYYY HH:mm': 'D MMMM YYYY HH:mm',
+    'DD/MM/YYYY, HH:mm:ss': 'DD/MM/YYYY, HH:mm:ss',
+    'Do MMMM, YYYY': 'D MMMM, YYYY',
+    'Do MMMM, YYYY HH:mm': 'D MMMM, YYYY HH:mm',
+    'Do MMMM, YYYY HH:mm a': 'D MMMM, YYYY HH:mm a',
+    'Do MM, YYYY': 'D MMM, YYYY',
+    'Do MM, YYYY HH:mm a': 'D MM, YYYY HH:mm a',
+    'MMM D, YYYY': 'MMM D, YYYY',
+  }
 
   const formatted = dayjs(date)
     .utc()
-    .format(formatMap[format] || "MMM D, YYYY");
+    .format(formatMap[format] || 'MMM D, YYYY')
 
-  if (format === "Do MMMM, YYYY" || format === "Do MMMM, YYYY HH:mm" || format === "Do MMMM, YYYY HH:mm a") {
-    const day = dayjs(date).date();
-    const suffix = getOrdinalSuffix(day);
-    return formatted.replace(day.toString(), day + suffix);
+  if (format === 'Do MMMM, YYYY' || format === 'Do MMMM, YYYY HH:mm' || format === 'Do MMMM, YYYY HH:mm a') {
+    const day = dayjs(date).date()
+    const suffix = getOrdinalSuffix(day)
+    return formatted.replace(day.toString(), day + suffix)
   }
 
-  return formatted;
+  return formatted
 }
 
 /**
@@ -216,7 +239,7 @@ export function formatDate(
  * @param date the date
  */
 export function getMidnightAlignedDate(date: Date) {
-  return dayjs(date).utc().startOf("day").toDate();
+  return dayjs(date).utc().startOf('day').toDate()
 }
 
 /**
@@ -226,7 +249,7 @@ export function getMidnightAlignedDate(date: Date) {
  * @returns {Date} A Date object representing the date X days ago in UTC
  */
 export function getDaysAgoDate(days: number): Date {
-  return dayjs().utc().subtract(days, "day").toDate();
+  return dayjs().utc().subtract(days, 'day').toDate()
 }
 
 /**
@@ -236,7 +259,7 @@ export function getDaysAgoDate(days: number): Date {
  * @returns the amount of days
  */
 export function getDaysAgo(date: Date): number {
-  return dayjs().diff(dayjs(date).utc(), "day");
+  return dayjs().diff(dayjs(date).utc(), 'day')
 }
 
 /**
@@ -247,14 +270,14 @@ export function getDaysAgo(date: Date): number {
  */
 export function parseDate(date: string | undefined): Date {
   if (date == undefined) {
-    throw new Error("Date is undefined");
+    throw new Error('Date is undefined')
   }
 
   // Handle the format returned by formatDateMinimal (e.g., "Jan 1, 2024")
   if (date.match(/^[A-Za-z]{3} \d{1,2}, \d{4}$/)) {
-    return dayjs(date, "MMM D, YYYY").utc().toDate();
+    return dayjs(date, 'MMM D, YYYY').utc().toDate()
   }
-  return dayjs(date).utc().toDate();
+  return dayjs(date).utc().toDate()
 }
 
 /**
@@ -264,7 +287,7 @@ export function parseDate(date: string | undefined): Date {
  * @returns the formatted time in "MM:SS" format
  */
 export function formatTime(seconds: number): string {
-  return dayjs.utc(seconds * 1000).format("mm:ss");
+  return dayjs.utc(seconds * 1000).format('mm:ss')
 }
 
 /**
@@ -276,24 +299,39 @@ export function formatTime(seconds: number): string {
  */
 export function formatDuration(ms: number, long: boolean = false): string {
   if (ms < 0) {
-    ms = -ms;
+    ms = -ms
   }
 
-  const duration = dayjs.duration(ms);
+  const duration = dayjs.duration(ms)
   const units = [
-    { value: duration.days(), unit: long ? "Days" : "d" },
-    { value: duration.hours(), unit: long ? "Hours" : "h" },
-    { value: duration.minutes(), unit: long ? "Minutes" : "m" },
-    { value: duration.seconds(), unit: long ? "Seconds" : "s" },
-    { value: duration.milliseconds(), unit: long ? "Milliseconds" : "ms" },
-  ];
+    {
+      value: duration.days(),
+      unit: long ? 'Days' : 'd',
+    },
+    {
+      value: duration.hours(),
+      unit: long ? 'Hours' : 'h',
+    },
+    {
+      value: duration.minutes(),
+      unit: long ? 'Minutes' : 'm',
+    },
+    {
+      value: duration.seconds(),
+      unit: long ? 'Seconds' : 's',
+    },
+    {
+      value: duration.milliseconds(),
+      unit: long ? 'Milliseconds' : 'ms',
+    },
+  ]
 
   const result = units
     .filter(u => u.value > 0)
     .slice(0, 2)
-    .map(u => `${u.value.toFixed(0)}${u.unit}`);
+    .map(u => `${u.value.toFixed(0)}${u.unit}`)
 
-  return result.join(", ") || (long ? "0 Seconds" : "0s");
+  return result.join(', ') || (long ? '0 Seconds' : '0s')
 }
 
 /**
@@ -303,7 +341,7 @@ export function formatDuration(ms: number, long: boolean = false): string {
  * @param year the year
  */
 export function getDaysInMonth(month: number, year: number) {
-  return dayjs(`${year}-${month}-01`).utc().daysInMonth();
+  return dayjs(`${year}-${month}-01`).utc().daysInMonth()
 }
 
 /**
@@ -313,49 +351,44 @@ export function getDaysInMonth(month: number, year: number) {
  * @returns the date in UTC
  */
 export function forceUTC(date: Date) {
-  return dayjs(date).utc().toDate();
+  return dayjs(date).utc().toDate()
 }
 
 export type TimeUnitValue = {
   unit: TimeUnit;
   value: number;
-};
+}
 
 /**
  * Enum representing different time units
  */
 export enum TimeUnit {
-  Millisecond = "millisecond",
-  Second = "second",
-  Minute = "minute",
-  Hour = "hour",
-  Day = "day",
-  Week = "week",
-  Month = "month",
-  Year = "year",
+  Millisecond = 'millisecond',
+  Second = 'second',
+  Minute = 'minute',
+  Hour = 'hour',
+  Day = 'day',
+  Week = 'week',
+  Month = 'month',
+  Year = 'year',
 }
 
-/**
- * Namespace for TimeUnit methods
- */
-export namespace TimeUnit {
-  export function toMillis(unit: TimeUnit, value: number): number {
-    const multipliers: Record<TimeUnit, number> = {
-      [TimeUnit.Millisecond]: 1,
-      [TimeUnit.Second]: 1000,
-      [TimeUnit.Minute]: 60 * 1000,
-      [TimeUnit.Hour]: 60 * 60 * 1000,
-      [TimeUnit.Day]: 24 * 60 * 60 * 1000,
-      [TimeUnit.Week]: 7 * 24 * 60 * 60 * 1000,
-      [TimeUnit.Month]: 30 * 24 * 60 * 60 * 1000,
-      [TimeUnit.Year]: 365 * 24 * 60 * 60 * 1000,
-    };
-    return value * multipliers[unit];
+export function toMillis(unit: TimeUnit, value: number): number {
+  const multipliers: Record<TimeUnit, number> = {
+    [TimeUnit.Millisecond]: 1,
+    [TimeUnit.Second]: 1000,
+    [TimeUnit.Minute]: 60 * 1000,
+    [TimeUnit.Hour]: 60 * 60 * 1000,
+    [TimeUnit.Day]: 24 * 60 * 60 * 1000,
+    [TimeUnit.Week]: 7 * 24 * 60 * 60 * 1000,
+    [TimeUnit.Month]: 30 * 24 * 60 * 60 * 1000,
+    [TimeUnit.Year]: 365 * 24 * 60 * 60 * 1000,
   }
+  return value * multipliers[unit]
+}
 
-  export function toSeconds(unit: TimeUnit, value: number): number {
-    return toMillis(unit, value) / 1000;
-  }
+export function toSeconds(unit: TimeUnit, value: number): number {
+  return toMillis(unit, value) / 1000
 }
 
 /**
@@ -365,5 +398,5 @@ export namespace TimeUnit {
  * @returns true if the date is today, false otherwise
  */
 export function isToday(date: Date) {
-  return dayjs(date).isSame(dayjs().utc(), "day");
+  return dayjs(date).isSame(dayjs().utc(), 'day')
 }

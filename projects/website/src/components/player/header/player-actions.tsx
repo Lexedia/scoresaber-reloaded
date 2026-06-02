@@ -9,6 +9,7 @@ import SimpleTooltip from "@/components/simple-tooltip";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import useDatabase from "@/hooks/use-database";
 import { useStableLiveQuery } from "@/hooks/use-stable-live-query";
+import { env } from "@ssr/common/env";
 import ScoreSaberPlayer from "@ssr/common/player/impl/scoresaber-player";
 import { ssrConfig } from "config";
 import { ReactNode } from "react";
@@ -69,19 +70,19 @@ export default function PlayerActions({ player }: { player: ScoreSaberPlayer }) 
       <PlayerLink
         playerName={player.name}
         name="ScoreSaber"
-        url={`https://scoresaber.com/u/${player.id}`}
+        url={`${env.NEXT_PUBLIC_SCORESABER_URL}/u/${player.id}`}
         icon={<ScoresaberLogo size={20} className="select-none" />}
       />
       <PlayerLink
         playerName={player.name}
         name="BeatLeader"
-        url={`https://beatleader.xyz/u/${player.id}`}
+        url={`${env.NEXT_PUBLIC_BEATLEADER_URL}/u/${player.id}`}
         icon={<BeatLeaderLogo size={20} className="select-none" />}
       />
       <PlayerLink
         playerName={player.name}
         name="AccSaber"
-        url={`https://accsaber.com/profile/${player.id}`}
+        url={`${env.NEXT_PUBLIC_ACCSABER_URL}/profile/${player.id}`}
         icon={<AccSaberLogo size={20} className="select-none" />}
       />
 
@@ -90,7 +91,7 @@ export default function PlayerActions({ player }: { player: ScoreSaberPlayer }) 
         <PlayerLink
           playerName={player.name}
           name="Twitch"
-          url={`https://twitch.tv/${twitchName}`}
+          url={`${env.NEXT_PUBLIC_TWITCH_URL}/${twitchName}`}
           icon={<TwitchIcon className="size-[20px] select-none" />}
         />
       )}

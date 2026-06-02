@@ -1,7 +1,7 @@
 export enum CooldownPriority {
-  NORMAL = "normal",
-  LOW = "low",
-  BACKGROUND = "background",
+  NORMAL = 'normal',
+  LOW = 'low',
+  BACKGROUND = 'background',
 }
 
 /**
@@ -13,40 +13,40 @@ export enum CooldownPriority {
  */
 export function cooldownRequestsPerMinute(requestsPerMinute: number): number {
   if (requestsPerMinute <= 0) {
-    throw new Error(`requestsPerMinute must be positive, got: ${requestsPerMinute}`);
+    throw new Error(`requestsPerMinute must be positive, got: ${requestsPerMinute}`)
   }
 
   // Ensure we don't get extremely small values that could cause timing issues
-  const cooldownMs = 60_000 / requestsPerMinute;
+  const cooldownMs = 60_000 / requestsPerMinute
 
   // Cap at a reasonable minimum (e.g., 1ms) to prevent timing issues
-  return Math.max(1, Math.round(cooldownMs));
+  return Math.max(1, Math.round(cooldownMs))
 }
 
 export class Cooldown {
-  private lastUsed: number;
-  private lastRefresh: number;
-  private remainingBursts: number;
+  private lastUsed: number
+  private lastRefresh: number
+  private remainingBursts: number
 
   // Separate burst buckets for different priorities
-  private backgroundBursts: number;
-  private backgroundLastRefresh: number;
+  private backgroundBursts: number
+  private backgroundLastRefresh: number
 
   constructor(
     private readonly cooldownMs: number,
     private readonly maxBursts: number = 1,
     private readonly backgroundCooldownMs?: number,
-    private readonly maxBackgroundBursts: number = 1
+    private readonly maxBackgroundBursts: number = 1,
   ) {
-    const now = Date.now();
-    this.lastUsed = now;
-    this.lastRefresh = now;
-    this.remainingBursts = maxBursts;
+    const now = Date.now()
+    this.lastUsed = now
+    this.lastRefresh = now
+    this.remainingBursts = maxBursts
 
     // Background cooldown defaults to 10x slower if not specified
-    this.backgroundCooldownMs = backgroundCooldownMs || cooldownMs * 10;
-    this.backgroundLastRefresh = now;
-    this.backgroundBursts = maxBackgroundBursts;
+    this.backgroundCooldownMs = backgroundCooldownMs || cooldownMs * 10
+    this.backgroundLastRefresh = now
+    this.backgroundBursts = maxBackgroundBursts
   }
 
   /**
@@ -56,69 +56,69 @@ export class Cooldown {
    */
   use(priority: CooldownPriority = CooldownPriority.NORMAL): boolean {
     if (priority === CooldownPriority.BACKGROUND) {
-      return this.useBackground();
+      return this.useBackground()
     }
 
-    this.refreshBursts();
+    this.refreshBursts()
 
     if (this.remainingBursts > 0) {
-      this.remainingBursts--;
-      this.lastUsed = Date.now(); // Update global lastUsed
-      return true;
+      this.remainingBursts--
+      this.lastUsed = Date.now() // Update global lastUsed
+      return true
     }
 
-    const now = Date.now();
+    const now = Date.now()
     if (now - this.lastUsed >= this.cooldownMs) {
-      this.lastUsed = now;
-      return true;
+      this.lastUsed = now
+      return true
     }
-    return false;
+    return false
   }
 
   private useBackground(): boolean {
-    this.refreshBackgroundBursts();
+    this.refreshBackgroundBursts()
 
     if (this.backgroundBursts > 0) {
-      this.backgroundBursts--;
-      this.lastUsed = Date.now(); // Update global lastUsed
-      return true;
+      this.backgroundBursts--
+      this.lastUsed = Date.now() // Update global lastUsed
+      return true
     }
 
-    const now = Date.now();
+    const now = Date.now()
     if (now - this.lastUsed >= this.backgroundCooldownMs!) {
-      this.lastUsed = now;
-      return true;
+      this.lastUsed = now
+      return true
     }
-    return false;
+    return false
   }
 
   private refreshBursts(): void {
-    const now = Date.now();
-    const timeSinceRefresh = now - this.lastRefresh;
+    const now = Date.now()
+    const timeSinceRefresh = now - this.lastRefresh
 
     if (timeSinceRefresh >= this.cooldownMs) {
-      const newTokens = Math.floor(timeSinceRefresh / this.cooldownMs);
+      const newTokens = Math.floor(timeSinceRefresh / this.cooldownMs)
 
       // Update the refresh timestamp to account for the tokens we're adding
-      this.lastRefresh += newTokens * this.cooldownMs;
+      this.lastRefresh += newTokens * this.cooldownMs
 
       // Add new tokens, up to maxBursts
-      this.remainingBursts = Math.min(this.maxBursts, this.remainingBursts + newTokens);
+      this.remainingBursts = Math.min(this.maxBursts, this.remainingBursts + newTokens)
     }
   }
 
   private refreshBackgroundBursts(): void {
-    const now = Date.now();
-    const timeSinceRefresh = now - this.backgroundLastRefresh;
+    const now = Date.now()
+    const timeSinceRefresh = now - this.backgroundLastRefresh
 
     if (timeSinceRefresh >= this.backgroundCooldownMs!) {
-      const newTokens = Math.floor(timeSinceRefresh / this.backgroundCooldownMs!);
+      const newTokens = Math.floor(timeSinceRefresh / this.backgroundCooldownMs!)
 
       // Update the refresh timestamp to account for the tokens we're adding
-      this.backgroundLastRefresh += newTokens * this.backgroundCooldownMs!;
+      this.backgroundLastRefresh += newTokens * this.backgroundCooldownMs!
 
       // Add new tokens, up to maxBackgroundBursts
-      this.backgroundBursts = Math.min(this.maxBackgroundBursts, this.backgroundBursts + newTokens);
+      this.backgroundBursts = Math.min(this.maxBackgroundBursts, this.backgroundBursts + newTokens)
     }
   }
 
@@ -127,12 +127,12 @@ export class Cooldown {
    */
   isReady(priority: CooldownPriority = CooldownPriority.NORMAL): boolean {
     if (priority === CooldownPriority.BACKGROUND) {
-      this.refreshBackgroundBursts();
-      return this.backgroundBursts > 0 || Date.now() - this.lastUsed >= this.backgroundCooldownMs!;
+      this.refreshBackgroundBursts()
+      return this.backgroundBursts > 0 || Date.now() - this.lastUsed >= this.backgroundCooldownMs!
     }
 
-    this.refreshBursts();
-    return this.remainingBursts > 0 || Date.now() - this.lastUsed >= this.cooldownMs;
+    this.refreshBursts()
+    return this.remainingBursts > 0 || Date.now() - this.lastUsed >= this.cooldownMs
   }
 
   /**
@@ -140,24 +140,24 @@ export class Cooldown {
    */
   getRemainingTime(priority: CooldownPriority = CooldownPriority.NORMAL): number {
     if (priority === CooldownPriority.BACKGROUND) {
-      this.refreshBackgroundBursts();
+      this.refreshBackgroundBursts()
       if (this.backgroundBursts > 0) {
-        return 0;
+        return 0
       }
 
-      const timeSinceUse = Date.now() - this.lastUsed;
-      const remaining = this.backgroundCooldownMs! - timeSinceUse;
-      return Math.max(0, remaining);
+      const timeSinceUse = Date.now() - this.lastUsed
+      const remaining = this.backgroundCooldownMs! - timeSinceUse
+      return Math.max(0, remaining)
     }
 
-    this.refreshBursts();
+    this.refreshBursts()
     if (this.remainingBursts > 0) {
-      return 0;
+      return 0
     }
 
-    const timeSinceUse = Date.now() - this.lastUsed;
-    const remaining = this.cooldownMs - timeSinceUse;
-    return Math.max(0, remaining);
+    const timeSinceUse = Date.now() - this.lastUsed
+    const remaining = this.cooldownMs - timeSinceUse
+    return Math.max(0, remaining)
   }
 
   /**
@@ -167,7 +167,7 @@ export class Cooldown {
    */
   async waitAndUse(priority: CooldownPriority = CooldownPriority.NORMAL): Promise<void> {
     while (!this.use(priority)) {
-      await this.awaitCooldown(priority);
+      await this.awaitCooldown(priority)
     }
   }
 
@@ -178,16 +178,16 @@ export class Cooldown {
    * @returns promise that resolves when the cooldown is ready
    */
   async awaitCooldown(priority: CooldownPriority = CooldownPriority.NORMAL): Promise<void> {
-    const remainingTime = this.getRemainingTime(priority) * this.getCooldownMultiplier(priority);
+    const remainingTime = this.getRemainingTime(priority) * this.getCooldownMultiplier(priority)
     if (remainingTime > 0) {
-      let timeoutId: NodeJS.Timeout | undefined;
+      let timeoutId: NodeJS.Timeout | undefined
       try {
         await new Promise<void>(resolve => {
-          timeoutId = setTimeout(resolve, remainingTime);
-        });
+          timeoutId = setTimeout(resolve, remainingTime)
+        })
       } finally {
         if (timeoutId) {
-          clearTimeout(timeoutId);
+          clearTimeout(timeoutId)
         }
       }
     }
@@ -201,23 +201,23 @@ export class Cooldown {
    */
   public getCooldownMultiplier(priority: CooldownPriority): number {
     // Adjust cooldown based on priority
-    let cooldownMultiplier = 1;
+    let cooldownMultiplier = 1
     if (priority === CooldownPriority.LOW) {
-      cooldownMultiplier = 2;
+      cooldownMultiplier = 2
     }
 
-    return cooldownMultiplier;
+    return cooldownMultiplier
   }
 
   /**
    * Reset the cooldown and restore all bursts
    */
   reset(): void {
-    const now = Date.now();
-    this.lastUsed = now;
-    this.remainingBursts = this.maxBursts;
+    const now = Date.now()
+    this.lastUsed = now
+    this.remainingBursts = this.maxBursts
 
-    this.backgroundBursts = this.maxBackgroundBursts;
+    this.backgroundBursts = this.maxBackgroundBursts
   }
 
   /**
@@ -226,11 +226,11 @@ export class Cooldown {
    */
   getRemainingBursts(priority: CooldownPriority = CooldownPriority.NORMAL): number {
     if (priority === CooldownPriority.BACKGROUND) {
-      this.refreshBackgroundBursts();
-      return this.backgroundBursts;
+      this.refreshBackgroundBursts()
+      return this.backgroundBursts
     }
 
-    this.refreshBursts();
-    return this.remainingBursts;
+    this.refreshBursts()
+    return this.remainingBursts
   }
 }

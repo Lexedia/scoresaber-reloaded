@@ -1,6 +1,7 @@
 import BeatSaverLogo from "@/components/logos/logos/beatsaver-logo";
 import ScoreButton from "@/components/score/button/score-button";
 import SimpleLink from "@/components/simple-link";
+import { env } from "@ssr/common/env";
 import { BeatSaverMap } from "@ssr/common/schemas/beatsaver/map/map";
 
 type BeatSaverMapProps = {
@@ -8,7 +9,7 @@ type BeatSaverMapProps = {
 };
 
 export function BeatSaverMapButton({ beatSaverMap }: BeatSaverMapProps) {
-  const url = `https://beatsaver.com/maps/${beatSaverMap.bsr}`;
+  const url = `${env.NEXT_PUBLIC_BEATSAVER_URL}/maps/${beatSaverMap.bsr}`;
 
   return (
     <SimpleLink href={url} target="_blank">
