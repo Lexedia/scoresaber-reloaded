@@ -1,37 +1,37 @@
-"use client";
+'use client'
 
-import { env } from "@ssr/common/env";
-import { AppStatisticsResponse } from "@ssr/common/schemas/response/ssr/app-statistics";
-import Request from "@ssr/common/utils/request";
-import { ssrApi } from "@ssr/common/utils/ssr-api";
-import { useQuery } from "@tanstack/react-query";
-import dynamic from "next/dynamic";
-import Card from "../card";
-import { AppStats } from "../landing/app-statistics";
-import ScoreSaberStatisticsChart from "../score/charts/scoresaber-statistics-chart";
-import SimpleLink from "../simple-link";
-import { Spinner } from "../spinner";
+import { env } from '@ssr/common/env'
+import { AppStatisticsResponse } from '@ssr/common/schemas/response/ssr/app-statistics'
+import Request from '@ssr/common/utils/request'
+import { ssrApi } from '@ssr/common/utils/ssr-api'
+import { useQuery } from '@tanstack/react-query'
+import dynamic from 'next/dynamic'
+import Card from '../card'
+import { AppStats } from '../landing/app-statistics'
+import ScoreSaberStatisticsChart from '../score/charts/scoresaber-statistics-chart'
+import SimpleLink from '../simple-link'
+import { Spinner } from '../spinner'
 
-const HmdUsageChart = dynamic(() => import("../score/charts/hmd-usage-chart"), { ssr: false });
+const HmdUsageChart = dynamic(() => import('../score/charts/hmd-usage-chart'), { ssr: false })
 
 export default function StatisticData() {
   const { data: statistics } = useQuery({
-    queryKey: ["statistics"],
+    queryKey: [ 'statistics' ],
     queryFn: () => ssrApi.getScoreSaberStatistics(),
     placeholderData: data => data,
-  });
+  })
   const { data: appStatistics } = useQuery({
-    queryKey: ["app-statistics"],
-    queryFn: () => Request.get<AppStatisticsResponse>(env.NEXT_PUBLIC_API_URL + "/statistics"),
+    queryKey: [ 'app-statistics' ],
+    queryFn: () => Request.get<AppStatisticsResponse>(env.NEXT_PUBLIC_API_URL + '/statistics'),
     placeholderData: data => data,
-  });
+  })
 
   if (statistics == undefined || appStatistics == undefined) {
     return (
       <Card className="flex h-32 items-center justify-center">
         <Spinner />
       </Card>
-    );
+    )
   }
 
   return (
@@ -69,5 +69,5 @@ export default function StatisticData() {
         )}
       </article>
     </div>
-  );
+  )
 }

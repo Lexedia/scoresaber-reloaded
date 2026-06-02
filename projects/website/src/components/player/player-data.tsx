@@ -1,87 +1,99 @@
-"use client";
+'use client'
 
-import { PlatformRepository, PlatformType } from "@/common/platform/platform-repository";
-import Card from "@/components/card";
-import PlayerBadges from "@/components/player/player-badges";
-import PlayerViews from "@/components/player/views/player-views";
-import { useIsMobile } from "@/contexts/viewport-context";
-import { useQueryParamSelector } from "@/hooks/use-query-param-selector";
-import type ScoreSaberPlayer from "@ssr/common/player/impl/scoresaber-player";
-import { ssrApi } from "@ssr/common/utils/ssr-api";
-import { useQuery } from "@tanstack/react-query";
-import { parseAsStringEnum } from "nuqs";
-import { useMemo } from "react";
-import AccSaberPlayerScores from "../platform/accsaber/accsaber-player-scores";
-import ScoreSaberPlayerScoresLive from "../platform/scoresaber/scoresaber-player-scores-live";
-import ScoreSaberPlayerMedalScores from "../platform/scoresaber/scoresaber-player-scores-medals";
-import ScoreSaberPlayerScoresSSR from "../platform/scoresaber/scoresaber-player-scores-ssr";
-import { Button } from "../ui/button";
-import PlayerHeader from "./header/player-header";
-import PlayerMiniRankings from "./mini-ranking/player-mini-ranking";
+import { PlatformRepository, PlatformType } from '@/common/platform/platform-repository'
+import Card from '@/components/card'
+import PlayerBadges from '@/components/player/player-badges'
+import PlayerViews from '@/components/player/views/player-views'
+import { useIsMobile } from '@/contexts/viewport-context'
+import { useQueryParamSelector } from '@/hooks/use-query-param-selector'
+import type ScoreSaberPlayer from '@ssr/common/player/impl/scoresaber-player'
+import { ssrApi } from '@ssr/common/utils/ssr-api'
+import { useQuery } from '@tanstack/react-query'
+import { parseAsStringEnum } from 'nuqs'
+import { useMemo } from 'react'
+import AccSaberPlayerScores from '../platform/accsaber/accsaber-player-scores'
+import ScoreSaberPlayerScoresLive from '../platform/scoresaber/scoresaber-player-scores-live'
+import ScoreSaberPlayerMedalScores from '../platform/scoresaber/scoresaber-player-scores-medals'
+import ScoreSaberPlayerScoresSSR from '../platform/scoresaber/scoresaber-player-scores-ssr'
+import { Button } from '../ui/button'
+import PlayerHeader from './header/player-header'
+import PlayerMiniRankings from './mini-ranking/player-mini-ranking'
 
-const platformRepository = PlatformRepository.getInstance();
+const platformRepository = PlatformRepository.getInstance()
 const PLATFORM_QUERY = parseAsStringEnum<PlatformType>(Object.values(PlatformType)).withDefault(
-  PlatformType.ScoreSaber
-);
+  PlatformType.ScoreSaber,
+)
 
 interface PlayerDataProps {
   player: ScoreSaberPlayer;
 }
 
 export default function PlayerData({ player }: PlayerDataProps) {
-  const isMobile = useIsMobile("2xl");
+  const isMobile = useIsMobile('2xl')
 
   const { value: selectedPlatform, setValue: setSelectedPlatform } = useQueryParamSelector({
-    param: "platform",
+    param: 'platform',
     parser: PLATFORM_QUERY,
     clearOtherParams: true,
     omitParamWhen: v => v === PlatformType.ScoreSaber,
-  });
+  })
 
   const { data: playerData } = useQuery({
-    queryKey: ["player", player.id],
-    queryFn: () => ssrApi.getScoreSaberPlayer(player.id, "full"),
+    queryKey: [
+      'player',
+      player.id,
+    ],
+    queryFn: () => ssrApi.getScoreSaberPlayer(player.id, 'full'),
     initialData: player,
     staleTime: 60_000,
     refetchOnMount: false,
-  });
-  player = playerData ?? player;
+  })
+  player = playerData ?? player
 
   const { data: availablePlatforms = [] } = useQuery({
-    queryKey: ["available-platforms", player.id],
+    queryKey: [
+      'available-platforms',
+      player.id,
+    ],
     queryFn: async () => {
-      const platforms = platformRepository.getPlatforms();
+      const platforms = platformRepository.getPlatforms()
       const available = await Promise.all(
         platforms.map(async p => {
           try {
             return {
               platform: p,
               available: await p.getOptions().displayPredicate(player.id),
-            };
+            }
           } catch {
-            return { platform: p, available: false };
+            return {
+              platform: p,
+              available: false,
+            }
           }
-        })
-      );
-      return available.filter(p => p.available).map(p => p.platform);
+        }),
+      )
+      return available.filter(p => p.available).map(p => p.platform)
     },
     placeholderData: data => data,
-  });
+  })
 
   const platform = useMemo(() => {
     switch (selectedPlatform) {
       case PlatformType.ScoreSaber:
-        return <ScoreSaberPlayerScoresLive player={player} />;
+        return <ScoreSaberPlayerScoresLive player={player} />
       case PlatformType.SSR:
-        return <ScoreSaberPlayerScoresSSR player={player} />;
+        return <ScoreSaberPlayerScoresSSR player={player} />
       case PlatformType.MedalScores:
-        return <ScoreSaberPlayerMedalScores player={player} />;
+        return <ScoreSaberPlayerMedalScores player={player} />
       case PlatformType.AccSaber:
-        return <AccSaberPlayerScores player={player} />;
+        return <AccSaberPlayerScores player={player} />
     }
-  }, [selectedPlatform, player]);
+  }, [
+    selectedPlatform,
+    player,
+  ])
 
-  const showRankings = !isMobile && !player.inactive && !player.banned;
+  const showRankings = !isMobile && !player.inactive && !player.banned
   return (
     <div className="flex w-full justify-center gap-(--spacing-sm)">
       <article className="flex w-full flex-1 flex-col gap-(--spacing-sm)">
@@ -109,7 +121,7 @@ export default function PlayerData({ player }: PlayerDataProps) {
               {availablePlatforms.map(platform => (
                 <Button
                   key={platform.getDisplayName()}
-                  variant={selectedPlatform === platform.getType() ? "default" : "secondary"}
+                  variant={selectedPlatform === platform.getType() ? 'default' : 'secondary'}
                   className="flex items-center gap-(--spacing-sm) rounded-b-none"
                   onClick={() => setSelectedPlatform(platform.getType())}
                 >
@@ -131,5 +143,5 @@ export default function PlayerData({ player }: PlayerDataProps) {
         </aside>
       )}
     </div>
-  );
+  )
 }

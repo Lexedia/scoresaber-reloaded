@@ -15,4 +15,4 @@ export type BeatSaberPlus_MapInfoEvent = {
     time: number;
     timeMultiplier: number;
   };
-};
+}

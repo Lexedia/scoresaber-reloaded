@@ -1,26 +1,26 @@
-import { OverlayData } from "@/common/overlay/overlay-data";
-import { ScoreSaberCurve } from "@ssr/common/leaderboard-curve/scoresaber-curve";
-import { formatPp } from "@ssr/common/utils/number-utils";
-import { getScoreBadgeFromAccuracy } from "@ssr/common/utils/song-utils";
+import { OverlayData } from '@/common/overlay/overlay-data'
+import { ScoreSaberCurve } from '@ssr/common/leaderboard-curve/scoresaber-curve'
+import { formatPp } from '@ssr/common/utils/number-utils'
+import { getScoreBadgeFromAccuracy } from '@ssr/common/utils/song-utils'
 
 type OverlayScoreDataProps = {
   /**
    * The data for the current score.
    */
   overlayData: OverlayData;
-};
+}
 
 export default function OverlayScoreDataView({ overlayData }: OverlayScoreDataProps) {
-  const scoreData = overlayData.score;
-  const leaderboard = overlayData.map?.leaderboard;
+  const scoreData = overlayData.score
+  const leaderboard = overlayData.map?.leaderboard
   const pp =
     !leaderboard || leaderboard.stars === 0 || !scoreData
       ? undefined
-      : ScoreSaberCurve.getPp(leaderboard.stars, scoreData.accuracy);
+      : ScoreSaberCurve.getPp(leaderboard.stars, scoreData.accuracy)
 
   // No score data, nothing to display
   if (!scoreData) {
-    return null;
+    return null
   }
 
   return (
@@ -40,5 +40,5 @@ export default function OverlayScoreDataView({ overlayData }: OverlayScoreDataPr
       {/* Paused */}
       {overlayData.paused && <p className="text-md text-red-500 italic">Currently Paused</p>}
     </div>
-  );
+  )
 }

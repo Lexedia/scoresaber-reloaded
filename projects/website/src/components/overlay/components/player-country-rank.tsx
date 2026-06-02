@@ -1,19 +1,19 @@
-import { getRankColor } from "@/common/rank-color-utils";
-import { cn } from "@/common/utils";
-import { DailyChange } from "@/components/statistic/daily-change";
-import CountryFlag from "@/components/ui/country-flag";
-import ScoreSaberPlayer from "@ssr/common/player/impl/scoresaber-player";
-import { PlayerStatChange } from "@ssr/common/player/player-stat-change";
-import { formatNumberWithCommas } from "@ssr/common/utils/number-utils";
+import { getRankColor } from '@/common/rank-color-utils'
+import { cn } from '@/common/utils'
+import { DailyChange } from '@/components/statistic/daily-change'
+import CountryFlag from '@/components/ui/country-flag'
+import ScoreSaberPlayer from '@ssr/common/player/impl/scoresaber-player'
+import { PlayerStatChange } from '@ssr/common/player/player-stat-change'
+import { formatNumberWithCommas } from '@ssr/common/utils/number-utils'
 
 type OverlayPlayerRankProps = {
   /**
    * The player to display information for.
    */
   player: ScoreSaberPlayer;
-};
+}
 export default function OverlayPlayerCountryRank({ player }: OverlayPlayerRankProps) {
-  const { countryRank, country } = player;
+  const { countryRank, country } = player
 
   return (
     <div className="flex items-center gap-2">
@@ -21,7 +21,7 @@ export default function OverlayPlayerCountryRank({ player }: OverlayPlayerRankPr
         <div className="flex w-6 justify-center">
           <CountryFlag code={country} size={12} />
         </div>
-        <p className={cn(getRankColor(countryRank), "text-2xl font-bold")}>
+        <p className={cn(getRankColor(countryRank), 'text-2xl font-bold')}>
           #{formatNumberWithCommas(countryRank)}
         </p>
       </div>
@@ -32,5 +32,5 @@ export default function OverlayPlayerCountryRank({ player }: OverlayPlayerRankPr
         useTooltip={false}
       />
     </div>
-  );
+  )
 }

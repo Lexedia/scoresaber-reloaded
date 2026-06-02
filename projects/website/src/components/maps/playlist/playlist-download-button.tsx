@@ -1,9 +1,9 @@
-"use client";
+'use client'
 
-import { downloadFile } from "@/common/browser-utils";
-import SimpleLink from "@/components/simple-link";
-import { Button } from "@/components/ui/button";
-import { ElementType } from "react";
+import { downloadFile } from '@/common/browser-utils'
+import SimpleLink from '@/components/simple-link'
+import { Button } from '@/components/ui/button'
+import { ElementType } from 'react'
 
 export default function PlaylistDownloadButton({
   name,
@@ -18,7 +18,7 @@ export default function PlaylistDownloadButton({
     <SimpleLink href={url} onClick={e => e.preventDefault()}>
       <Button
         onClick={() => {
-          downloadFile(url, `${name}.bplist`);
+          downloadFile(url, `${name}.bplist`)
         }}
         className="flex w-full items-center gap-2"
       >
@@ -26,5 +26,5 @@ export default function PlaylistDownloadButton({
         {name}
       </Button>
     </SimpleLink>
-  );
+  )
 }

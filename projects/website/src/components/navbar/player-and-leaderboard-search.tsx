@@ -1,44 +1,61 @@
-"use client";
+'use client'
 
-import Avatar from "@/components/avatar";
-import PlayerSearchResultItem from "@/components/player/player-search-result-item";
-import { useSearch } from "@/components/providers/search-provider";
-import SearchDialog from "@/components/ui/search-dialog";
-import { StarIcon } from "@heroicons/react/24/solid";
-import ScoreSaberPlayer from "@ssr/common/player/impl/scoresaber-player";
-import type { ScoreSaberLeaderboard } from "@ssr/common/schemas/scoresaber/leaderboard/leaderboard";
-import { truncateText } from "@ssr/common/string-utils";
-import { getDifficulty, getDifficultyName } from "@ssr/common/utils/song-utils";
-import { ssrApi } from "@ssr/common/utils/ssr-api";
-import { useQuery } from "@tanstack/react-query";
-import { useDebounce } from "@uidotdev/usehooks";
-import { LoaderCircle, Music, SearchX, Users, UserSearch } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import Avatar from '@/components/avatar'
+import PlayerSearchResultItem from '@/components/player/player-search-result-item'
+import { useSearch } from '@/components/providers/search-provider'
+import SearchDialog from '@/components/ui/search-dialog'
+import { StarIcon } from '@heroicons/react/24/solid'
+import ScoreSaberPlayer from '@ssr/common/player/impl/scoresaber-player'
+import type { ScoreSaberLeaderboard } from '@ssr/common/schemas/scoresaber/leaderboard/leaderboard'
+import { truncateText } from '@ssr/common/string-utils'
+import { getDifficulty, getDifficultyName } from '@ssr/common/utils/song-utils'
+import { ssrApi } from '@ssr/common/utils/ssr-api'
+import { useQuery } from '@tanstack/react-query'
+import { useDebounce } from '@uidotdev/usehooks'
+import {
+  LoaderCircle, Music, SearchX, Users, UserSearch,
+} from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 export default function PlayerAndLeaderboardSearch() {
-  const router = useRouter();
-  const { isOpen, openSearch, closeSearch } = useSearch();
+  const router = useRouter()
+  const { isOpen, openSearch, closeSearch } = useSearch()
 
-  const [query, setQuery] = useState<string>("");
-  const debouncedQuery = useDebounce(query, 200);
-  const trimmedQuery = debouncedQuery.trim();
+  const [
+    query,
+    setQuery,
+  ] = useState<string>('')
+  const debouncedQuery = useDebounce(query, 200)
+  const trimmedQuery = debouncedQuery.trim()
 
   const { data: results, isLoading } = useQuery({
-    queryKey: ["playerAndLeaderboardSearch", trimmedQuery],
+    queryKey: [
+      'playerAndLeaderboardSearch',
+      trimmedQuery,
+    ],
     queryFn: async (): Promise<{
       players: ScoreSaberPlayer[];
       leaderboards: ScoreSaberLeaderboard[];
     }> => {
       if (trimmedQuery.length > 0 && trimmedQuery.length <= 3) {
-        return { players: [], leaderboards: [] };
+        return {
+          players: [],
+          leaderboards: [],
+        }
       }
-      const playerPromise = ssrApi.searchPlayers(trimmedQuery);
+      const playerPromise = ssrApi.searchPlayers(trimmedQuery)
       const leaderboardPromise = ssrApi.searchLeaderboards(1, {
         query: trimmedQuery,
-      });
+      })
 
-      const [playerResults, leaderboardResults] = await Promise.all([playerPromise, leaderboardPromise]);
+      const [
+        playerResults,
+        leaderboardResults,
+      ] = await Promise.all([
+        playerPromise,
+        leaderboardPromise,
+      ])
 
       return {
         players: playerResults?.players || [],
@@ -46,46 +63,51 @@ export default function PlayerAndLeaderboardSearch() {
           leaderboardResults?.items?.toSorted((a, b) => {
             const getStatusPriority = (leaderboard: ScoreSaberLeaderboard) => {
               if (leaderboard.ranked) {
-                return 2;
+                return 2
               }
               if (leaderboard.qualified) {
-                return 1;
+                return 1
               }
-              return 0;
-            };
-
-            const priorityDifference = getStatusPriority(b) - getStatusPriority(a);
-            if (priorityDifference !== 0) {
-              return priorityDifference;
+              return 0
             }
 
-            return b.stars - a.stars;
+            const priorityDifference = getStatusPriority(b) - getStatusPriority(a)
+            if (priorityDifference !== 0) {
+              return priorityDifference
+            }
+
+            return b.stars - a.stars
           }) ?? [],
-      };
+      }
     },
     refetchInterval: false,
     enabled: isOpen,
-  });
+  })
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent): void => {
-      if ((event.ctrlKey || event.metaKey) && event.key === "k") {
-        event.preventDefault();
+      if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+        event.preventDefault()
         if (isOpen) {
-          closeSearch();
+          closeSearch()
         } else {
-          openSearch();
+          openSearch()
         }
       }
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, openSearch, closeSearch]);
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [
+    isOpen,
+    openSearch,
+    closeSearch,
+  ])
 
   return (
     <>
       <div
-        className="group bg-card border-border hover:border-primary/50 relative flex h-9 w-full cursor-pointer items-center justify-center rounded-xl border px-2 backdrop-blur-xs transition-all duration-200 select-none sm:min-w-16 xl:w-48 xl:justify-start xl:px-(--spacing-sm)"
+        className="group bg-card border-border hover:border-primary/50 relative flex h-9 w-full cursor-pointer items-center justify-center rounded-xl
+        border px-2 backdrop-blur-xs transition-all duration-200 select-none sm:min-w-16 xl:w-48 xl:justify-start xl:px-(--spacing-sm)"
         onClick={openSearch}
       >
         <UserSearch className="text-muted-foreground size-5" />
@@ -95,7 +117,8 @@ export default function PlayerAndLeaderboardSearch() {
         </p>
 
         <div className="hidden shrink-0 xl:flex">
-          <kbd className="bg-muted/80 text-muted-foreground pointer-events-none inline-flex h-6 items-center gap-1 rounded-md px-2 text-xs font-medium shadow-xs select-none">
+          <kbd className="bg-muted/80 text-muted-foreground pointer-events-none inline-flex h-6 items-center gap-1 rounded-md px-2 text-xs font-medium
+          shadow-xs select-none">
             <span className="text-xs">⌘</span>K
           </kbd>
         </div>
@@ -120,8 +143,8 @@ export default function PlayerAndLeaderboardSearch() {
             <p className="text-muted-foreground mb-1 text-sm font-medium">No results found</p>
             <p className="text-muted-foreground/70 text-center text-xs">
               {query.trim().length > 0
-                ? "Try adjusting your search query"
-                : "Start typing to search for players or leaderboards"}
+                ? 'Try adjusting your search query'
+                : 'Start typing to search for players or leaderboards'}
             </p>
           </div>
         ) : (
@@ -139,8 +162,8 @@ export default function PlayerAndLeaderboardSearch() {
                       key={player.id}
                       player={player}
                       onClick={() => {
-                        closeSearch();
-                        router.push(`/player/${player.id}`);
+                        closeSearch()
+                        router.push(`/player/${player.id}`)
                       }}
                       showInactiveLabel
                     />
@@ -160,10 +183,11 @@ export default function PlayerAndLeaderboardSearch() {
                   {results.leaderboards.map(leaderboard => (
                     <div
                       key={leaderboard.id}
-                      className="group hover:bg-accent flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200 hover:shadow-xs active:scale-[0.98]"
+                      className="group hover:bg-accent flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm
+                      transition-all duration-200 hover:shadow-xs active:scale-[0.98]"
                       onClick={() => {
-                        closeSearch();
-                        router.push(`/leaderboard/${leaderboard.id}`);
+                        closeSearch()
+                        router.push(`/leaderboard/${leaderboard.id}`)
                       }}
                     >
                       <Avatar
@@ -180,7 +204,7 @@ export default function PlayerAndLeaderboardSearch() {
                             <span
                               className="font-medium"
                               style={{
-                                color: getDifficulty(leaderboard.difficulty.difficulty).color + "f0",
+                                color: getDifficulty(leaderboard.difficulty.difficulty).color + 'f0',
                               }}
                             >
                               {getDifficultyName(leaderboard.difficulty.difficulty)}
@@ -215,5 +239,5 @@ export default function PlayerAndLeaderboardSearch() {
         )}
       </SearchDialog>
     </>
-  );
+  )
 }

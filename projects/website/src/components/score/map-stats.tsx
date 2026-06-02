@@ -1,23 +1,24 @@
-import StatValue from "@/components/statistic/stat-value";
-import { CubeIcon } from "@heroicons/react/24/solid";
-import { BeatSaverMap } from "@ssr/common/schemas/beatsaver/map/map";
-import { formatNumberWithCommas } from "@ssr/common/utils/number-utils";
-import { formatTime } from "@ssr/common/utils/time-utils";
-import { BombIcon, BrickWallIcon, DrumIcon, GaugeIcon, MusicIcon, TimerIcon } from "lucide-react";
+import StatValue from '@/components/statistic/stat-value'
+import { CubeIcon } from '@heroicons/react/24/solid'
+import { BeatSaverMap } from '@ssr/common/schemas/beatsaver/map/map'
+import { formatNumberWithCommas } from '@ssr/common/utils/number-utils'
+import { formatTime } from '@ssr/common/utils/time-utils'
+import {
+  BombIcon, BrickWallIcon, DrumIcon, GaugeIcon, MusicIcon, TimerIcon,
+} from 'lucide-react'
 
 type MapAndScoreData = {
   /**
    * The map that the score was set on.
    */
   beatSaver: BeatSaverMap;
-};
+}
 
 export function MapStats({ beatSaver }: MapAndScoreData) {
-  const metadata = beatSaver.metadata;
+  const metadata = beatSaver.metadata
 
   return (
     <div className="flex flex-col gap-2">
-      {/* Map Stats */}
       {beatSaver.difficulty && (
         <div className="flex flex-wrap justify-center gap-2">
           <StatValue
@@ -58,5 +59,5 @@ export function MapStats({ beatSaver }: MapAndScoreData) {
         </div>
       )}
     </div>
-  );
+  )
 }

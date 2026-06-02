@@ -1,36 +1,44 @@
-"use client";
+'use client'
 
-import PlayerScoreHeader from "@/components/score/player-score-header";
-import useDatabase from "@/hooks/use-database";
-import { useStableLiveQuery } from "@/hooks/use-stable-live-query";
-import { ssrApi } from "@ssr/common/utils/ssr-api";
-import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
-import Card from "../../card";
-import ScoreSaberScoreDisplay from "../../platform/scoresaber/score/scoresaber-score";
-import SimplePagination from "../../simple-pagination";
-import { Spinner } from "../../spinner";
+import PlayerScoreHeader from '@/components/score/player-score-header'
+import useDatabase from '@/hooks/use-database'
+import { useStableLiveQuery } from '@/hooks/use-stable-live-query'
+import { ssrApi } from '@ssr/common/utils/ssr-api'
+import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
+import Card from '../../card'
+import ScoreSaberScoreDisplay from '../../platform/scoresaber/score/scoresaber-score'
+import SimplePagination from '../../simple-pagination'
+import { Spinner } from '../../spinner'
 
 export function FriendScores() {
-  const database = useDatabase();
-  const mainPlayerId = useStableLiveQuery(() => database.getMainPlayerId());
-  const friendIds = useStableLiveQuery(async () => database.getFriendIds(true));
+  const database = useDatabase()
+  const mainPlayerId = useStableLiveQuery(() => database.getMainPlayerId())
+  const friendIds = useStableLiveQuery(async () => database.getFriendIds(true))
 
-  const [page, setPage] = useState(1);
+  const [
+    page,
+    setPage,
+  ] = useState(1)
 
   const {
     data: scoreData,
     isLoading,
     isFetching,
   } = useQuery({
-    queryKey: ["friend-scores", friendIds, page, mainPlayerId],
+    queryKey: [
+      'friend-scores',
+      friendIds,
+      page,
+      mainPlayerId,
+    ],
     queryFn: async () =>
-      ssrApi.fetchPlayerScoreSaberScores(mainPlayerId!, page, "date", "desc", {
+      ssrApi.fetchPlayerScoreSaberScores(mainPlayerId!, page, 'date', 'desc', {
         playerIds: friendIds,
       }),
     enabled: friendIds !== undefined && friendIds.length > 0 && mainPlayerId !== undefined,
     placeholderData: prev => prev,
-  });
+  })
 
   return (
     <Card className="flex h-fit flex-col">
@@ -53,9 +61,9 @@ export function FriendScores() {
         <div className="flex flex-col gap-(--spacing-lg)">
           <div className="flex flex-col gap-(--spacing-md)">
             {scoreData.items.map(playerScore => {
-              const score = playerScore.score;
-              const leaderboard = playerScore.leaderboard;
-              const beatSaverMap = playerScore.beatSaver;
+              const score = playerScore.score
+              const leaderboard = playerScore.leaderboard
+              const beatSaverMap = playerScore.beatSaver
               return (
                 <div key={score.scoreId} className="flex flex-col">
                   <PlayerScoreHeader player={playerScore.score.playerInfo!} />
@@ -71,7 +79,7 @@ export function FriendScores() {
                     />
                   </Card>
                 </div>
-              );
+              )
             })}
           </div>
 
@@ -85,5 +93,5 @@ export function FriendScores() {
         </div>
       )}
     </Card>
-  );
+  )
 }

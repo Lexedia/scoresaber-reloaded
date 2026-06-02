@@ -1,9 +1,9 @@
-"use client";
+'use client'
 
-import { countryFilter } from "@ssr/common/utils/country.util";
-import { pluralize } from "@ssr/common/utils/string.util";
-import Combobox from "./ui/combo-box";
-import CountryFlag from "./ui/country-flag";
+import { countryFilter } from '@ssr/common/utils/country.util'
+import { pluralize } from '@ssr/common/utils/string.util'
+import Combobox from './ui/combo-box'
+import CountryFlag from './ui/country-flag'
 
 type CountrySelectorProps = {
   value?: string;
@@ -14,7 +14,7 @@ type CountrySelectorProps = {
   prioritizeCountry?: string;
   counts?: Record<string, number>;
   countNoun?: string;
-};
+}
 
 export default function CountrySelector({
   value,
@@ -24,9 +24,9 @@ export default function CountrySelector({
   placeholder,
   prioritizeCountry,
   counts,
-  countNoun = "player",
+  countNoun = 'player',
 }: CountrySelectorProps) {
-  const hasCounts = counts != undefined;
+  const hasCounts = counts != undefined
 
   return (
     <Combobox<string | undefined>
@@ -34,7 +34,7 @@ export default function CountrySelector({
       clearable={clearable}
       items={countryFilter
         .map(country => {
-          const count = counts?.[country.key];
+          const count = counts?.[country.key]
 
           return {
             value: country.key,
@@ -50,20 +50,20 @@ export default function CountrySelector({
             ),
             displayName: country.friendlyName,
             icon: <CountryFlag code={country.key} size={12} />,
-          };
+          }
         })
         .sort((a, b) => {
           if (prioritizeCountry && a.value === prioritizeCountry) {
-            return -1;
+            return -1
           }
           if (prioritizeCountry && b.value === prioritizeCountry) {
-            return 1;
+            return 1
           }
-          return 0;
+          return 0
         })}
       value={value}
       onValueChange={onValueChange}
       placeholder={placeholder}
     />
-  );
+  )
 }

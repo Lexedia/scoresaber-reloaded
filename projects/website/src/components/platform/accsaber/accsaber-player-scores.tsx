@@ -1,17 +1,17 @@
-"use client";
+'use client'
 
-import { Spinner } from "@/components/spinner";
-import { Pagination } from "@ssr/common/pagination";
-import ScoreSaberPlayer from "@ssr/common/player/impl/scoresaber-player";
-import type { AccSaberScoreSort, AccSaberScoreType } from "@ssr/common/schemas/accsaber/tokens/query/query";
-import { AccSaberScore } from "@ssr/common/schemas/accsaber/tokens/score/score";
-import type { AccSaberScoresPageResponse } from "@ssr/common/schemas/response/score/accsaber-scores-page";
-import { SortDirection } from "@ssr/common/schemas/score/query/sort/sort-direction";
-import { capitalizeFirstLetter } from "@ssr/common/string-utils";
-import { ssrApi } from "@ssr/common/utils/ssr-api";
-import { useQuery } from "@tanstack/react-query";
-import { useDocumentTitle } from "@uidotdev/usehooks";
-import { ssrConfig } from "config";
+import { Spinner } from '@/components/spinner'
+import { Pagination } from '@ssr/common/pagination'
+import ScoreSaberPlayer from '@ssr/common/player/impl/scoresaber-player'
+import type { AccSaberScoreSort, AccSaberScoreType } from '@ssr/common/schemas/accsaber/tokens/query/query'
+import { AccSaberScore } from '@ssr/common/schemas/accsaber/tokens/score/score'
+import type { AccSaberScoresPageResponse } from '@ssr/common/schemas/response/score/accsaber-scores-page'
+import { SortDirection } from '@ssr/common/schemas/score/query/sort/sort-direction'
+import { capitalizeFirstLetter } from '@ssr/common/string-utils'
+import { ssrApi } from '@ssr/common/utils/ssr-api'
+import { useQuery } from '@tanstack/react-query'
+import { useDocumentTitle } from '@uidotdev/usehooks'
+import { ssrConfig } from 'config'
 import {
   ArrowDown,
   ArrowUp,
@@ -23,64 +23,111 @@ import {
   Target,
   Trophy,
   Zap,
-} from "lucide-react";
-import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
-import { useCallback, useEffect } from "react";
-import { usePageTransition } from "../../../contexts/page-transition-context";
-import ScoresCard from "../../score/scores-card";
-import SimplePagination from "../../simple-pagination";
-import { ButtonGroup, ControlButton, ControlPanel, ControlRow, Tab, TabGroup } from "../../ui/control-panel";
-import { EmptyState } from "../../ui/empty-state";
-import PageTransition from "../../ui/page-transition";
-import AccSaberScoreComponent from "./score/accsaber-score";
+} from 'lucide-react'
+import { parseAsInteger, parseAsString, useQueryState } from 'nuqs'
+import { useCallback, useEffect } from 'react'
+import { usePageTransition } from '../../../contexts/page-transition-context'
+import ScoresCard from '../../score/scores-card'
+import SimplePagination from '../../simple-pagination'
+import {
+  ButtonGroup, ControlButton, ControlPanel, ControlRow, Tab, TabGroup,
+} from '../../ui/control-panel'
+import { EmptyState } from '../../ui/empty-state'
+import PageTransition from '../../ui/page-transition'
+import AccSaberScoreComponent from './score/accsaber-score'
 
-const DEFAULT_SORT: AccSaberScoreSort = "date";
-const DEFAULT_TYPE: AccSaberScoreType = "overall";
-const DEFAULT_DIRECTION: SortDirection = "desc";
-const DEFAULT_PAGE = 1;
+const DEFAULT_SORT: AccSaberScoreSort = 'date'
+const DEFAULT_TYPE: AccSaberScoreType = 'overall'
+const DEFAULT_DIRECTION: SortDirection = 'desc'
+const DEFAULT_PAGE = 1
 
 const scoreSort = [
-  { name: "AP", value: "ap", icon: <Trophy className="h-4 w-4" /> },
-  { name: "Date", value: "date", icon: <ClockIcon className="h-4 w-4" /> },
-  { name: "Acc", value: "acc", icon: <Target className="h-4 w-4" /> },
-  { name: "Rank", value: "ranking", icon: <Trophy className="h-4 w-4" />, defaultOrder: "asc" },
-];
+  {
+    name: 'AP',
+    value: 'ap',
+    icon: <Trophy className="h-4 w-4" />,
+  },
+  {
+    name: 'Date',
+    value: 'date',
+    icon: <ClockIcon className="h-4 w-4" />,
+  },
+  {
+    name: 'Acc',
+    value: 'acc',
+    icon: <Target className="h-4 w-4" />,
+  },
+  {
+    name: 'Rank',
+    value: 'ranking',
+    icon: <Trophy className="h-4 w-4" />,
+    defaultOrder: 'asc',
+  },
+]
 
 const scoreTypes = [
-  { name: "Overall", value: "overall", icon: <BarChart3 className="h-4 w-4" /> },
-  { name: "Tech Acc", value: "tech", icon: <Zap className="h-4 w-4" /> },
-  { name: "Standard Acc", value: "standard", icon: <Gauge className="h-4 w-4" /> },
-  { name: "True Acc", value: "true", icon: <Crosshair className="h-4 w-4" /> },
-];
+  {
+    name: 'Overall',
+    value: 'overall',
+    icon: <BarChart3 className="h-4 w-4" />,
+  },
+  {
+    name: 'Tech Acc',
+    value: 'tech',
+    icon: <Zap className="h-4 w-4" />,
+  },
+  {
+    name: 'Standard Acc',
+    value: 'standard',
+    icon: <Gauge className="h-4 w-4" />,
+  },
+  {
+    name: 'True Acc',
+    value: 'true',
+    icon: <Crosshair className="h-4 w-4" />,
+  },
+]
 
 type Props = {
   player: ScoreSaberPlayer;
-};
+}
 
 export default function AccSaberPlayerScores({ player }: Props) {
-  const { animateLeft, animateRight, setIsLoading } = usePageTransition();
+  const { animateLeft, animateRight, setIsLoading } = usePageTransition()
 
   // Query params
-  const [sort, setSort] = useQueryState("sort", parseAsString.withDefault(DEFAULT_SORT)) as [
+  const [
+    sort,
+    setSort,
+  ] = useQueryState('sort', parseAsString.withDefault(DEFAULT_SORT)) as [
     AccSaberScoreSort,
     (value: AccSaberScoreSort | null) => void,
-  ];
-  const [type, setType] = useQueryState("type", parseAsString.withDefault(DEFAULT_TYPE)) as [
+  ]
+  const [
+    type,
+    setType,
+  ] = useQueryState('type', parseAsString.withDefault(DEFAULT_TYPE)) as [
     AccSaberScoreType,
     (value: AccSaberScoreType | null) => void,
-  ];
-  const [direction, setOrder] = useQueryState("direction", parseAsString.withDefault(DEFAULT_DIRECTION)) as [
+  ]
+  const [
+    direction,
+    setOrder,
+  ] = useQueryState('direction', parseAsString.withDefault(DEFAULT_DIRECTION)) as [
     SortDirection,
     (value: SortDirection | null) => void,
-  ];
-  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(DEFAULT_PAGE));
+  ]
+  const [
+    page,
+    setPage,
+  ] = useQueryState('page', parseAsInteger.withDefault(DEFAULT_PAGE))
 
   useDocumentTitle(
     ssrConfig.siteTitleTemplate.replace(
-      "%s",
-      `${player.name} / AccSaber / ${page} / ${capitalizeFirstLetter(type)} / ${scoreSort.find(s => s.value === sort)?.name}`
-    )
-  );
+      '%s',
+      `${player.name} / AccSaber / ${page} / ${capitalizeFirstLetter(type)} / ${scoreSort.find(s => s.value === sort)?.name}`,
+    ),
+  )
 
   const {
     data: scores,
@@ -88,76 +135,110 @@ export default function AccSaberPlayerScores({ player }: Props) {
     isLoading,
     isRefetching,
   } = useQuery<AccSaberScoresPageResponse>({
-    queryKey: ["playerScores:accsaber", player.id, page, type, sort, direction],
+    queryKey: [
+      'playerScores:accsaber',
+      player.id,
+      page,
+      type,
+      sort,
+      direction,
+    ],
     queryFn: async () =>
       (await ssrApi.fetchAccSaberPlayerScores(player.id, page, sort, direction, type)) ??
       Pagination.empty<AccSaberScore>(),
     placeholderData: prev => prev,
-  });
+  })
 
   useEffect(() => {
-    setIsLoading(isLoading || isRefetching);
-  }, [isLoading, isRefetching, scores, setIsLoading]);
+    setIsLoading(isLoading || isRefetching)
+  }, [
+    isLoading,
+    isRefetching,
+    scores,
+    setIsLoading,
+  ])
 
   const handleSortChange = useCallback(
     async (newSort: AccSaberScoreSort, defaultOrder: SortDirection) => {
       if (newSort !== sort) {
-        setSort(newSort);
-        setOrder(defaultOrder);
-        setPage(1);
-        animateLeft();
+        setSort(newSort)
+        setOrder(defaultOrder)
+        setPage(1)
+        animateLeft()
       } else {
-        setOrder(direction === "desc" ? "asc" : "desc");
-        animateLeft();
+        setOrder(direction === 'desc' ? 'asc' : 'desc')
+        animateLeft()
       }
     },
-    [sort, direction, animateLeft, setSort, setOrder, setPage]
-  );
+    [
+      sort,
+      direction,
+      animateLeft,
+      setSort,
+      setOrder,
+      setPage,
+    ],
+  )
 
   const handleTypeChange = useCallback(
     (newType: AccSaberScoreType) => {
       if (newType !== type) {
-        setType(newType);
-        setPage(1);
-        animateLeft();
+        setType(newType)
+        setPage(1)
+        animateLeft()
       }
     },
-    [type, animateLeft, setType, setPage]
-  );
+    [
+      type,
+      animateLeft,
+      setType,
+      setPage,
+    ],
+  )
 
   const handlePageChange = useCallback(
     (newPage: number) => {
       if (newPage > page) {
-        animateLeft();
+        animateLeft()
       } else {
-        animateRight();
+        animateRight()
       }
-      setPage(newPage);
+      setPage(newPage)
     },
-    [page, animateLeft, animateRight, setPage]
-  );
+    [
+      page,
+      animateLeft,
+      animateRight,
+      setPage,
+    ],
+  )
 
   const buildUrl = useCallback(
     (pageNum: number) => {
-      const params = new URLSearchParams();
-      params.set("platform", "accsaber");
-      if (sort !== "date") {
-        params.set("sort", sort);
+      const params = new URLSearchParams()
+      params.set('platform', 'accsaber')
+      if (sort !== 'date') {
+        params.set('sort', sort)
       }
-      if (type !== "overall") {
-        params.set("type", type);
+      if (type !== 'overall') {
+        params.set('type', type)
       }
-      if (direction !== "desc") {
-        params.set("order", direction);
+      if (direction !== 'desc') {
+        params.set('order', direction)
       }
       if (pageNum !== 1) {
-        params.set("page", String(pageNum));
+        params.set('page', String(pageNum))
       }
-      const queryString = params.toString();
-      return `/player/${player.id}${queryString ? `?${queryString}` : ""}`;
+      const queryString = params.toString()
+      return `/player/${player.id}${queryString ? `?${queryString}` : ''}`
     },
-    [player.id, sort, type, direction]
-  );
+    [
+      player.id,
+      sort,
+      type,
+      direction,
+    ],
+  )
 
   return (
     <ScoresCard>
@@ -190,14 +271,14 @@ export default function AccSaberPlayerScores({ player }: Props) {
                   onClick={() =>
                     handleSortChange(
                       sortOption.value as AccSaberScoreSort,
-                      (sortOption.defaultOrder ?? "desc") as SortDirection
+                      (sortOption.defaultOrder ?? 'desc') as SortDirection,
                     )
                   }
                 >
                   {sortOption.value === sort ? (
                     isLoading || isRefetching ? (
                       <Spinner size="sm" className="size-4" />
-                    ) : direction === "desc" ? (
+                    ) : direction === 'desc' ? (
                       <ArrowDown className="size-4" />
                     ) : (
                       <ArrowUp className="size-4" />
@@ -251,5 +332,5 @@ export default function AccSaberPlayerScores({ player }: Props) {
         )}
       </div>
     </ScoresCard>
-  );
+  )
 }

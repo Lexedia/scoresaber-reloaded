@@ -1,6 +1,6 @@
-"use client";
+'use client'
 
-import { useSyncExternalStore } from "react";
+import { useSyncExternalStore } from 'react'
 
 // Tailwind breakpoints matching the project's theme (used by useIsMobile max-width queries)
 const Breakpoint = {
@@ -10,23 +10,23 @@ const Breakpoint = {
   md: 768,
   lg: 1024,
   xl: 1280,
-  "2xl": 1536,
-} as const;
+  '2xl': 1536,
+} as const
 
-export type BreakpointKey = keyof typeof Breakpoint;
+export type BreakpointKey = keyof typeof Breakpoint
 
 function maxWidthQuery(px: number): string {
-  return `(max-width: ${px}px)`;
+  return `(max-width: ${px}px)`
 }
 
 function subscribeMaxWidth(px: number, onStoreChange: () => void): () => void {
-  const mq = window.matchMedia(maxWidthQuery(px));
-  mq.addEventListener("change", onStoreChange);
-  return () => mq.removeEventListener("change", onStoreChange);
+  const mq = window.matchMedia(maxWidthQuery(px))
+  mq.addEventListener('change', onStoreChange)
+  return () => mq.removeEventListener('change', onStoreChange)
 }
 
 function getMaxWidthMatches(px: number): boolean {
-  return window.matchMedia(maxWidthQuery(px)).matches;
+  return window.matchMedia(maxWidthQuery(px)).matches
 }
 
 /**
@@ -38,13 +38,13 @@ function getMaxWidthMatches(px: number): boolean {
  * @param breakpoint the breakpoint to check
  * @returns true if the viewport width is at or below the given breakpoint
  */
-export function useIsMobile(breakpoint: BreakpointKey = "md"): boolean {
-  const maxPx = Breakpoint[breakpoint];
+export function useIsMobile(breakpoint: BreakpointKey = 'md'): boolean {
+  const maxPx = Breakpoint[breakpoint]
 
   return useSyncExternalStore(
     onStoreChange => subscribeMaxWidth(maxPx, onStoreChange),
     () => getMaxWidthMatches(maxPx),
     // SSR: previous ViewportProvider used width 0 → isMobile was always true for any positive breakpoint
-    () => true
-  );
+    () => true,
+  )
 }

@@ -1,18 +1,18 @@
-"use client";
+'use client'
 
-import Leaderboards from "@/components/maps/category/leaderboards";
-import RankingQueue from "@/components/maps/category/ranking-queue";
-import MapFilters from "@/components/maps/map-filters";
-import Playlists from "@/components/maps/playlist/playlists";
-import { MapFilterProvider } from "@/components/providers/maps/map-filter-provider";
-import SimpleLink from "@/components/simple-link";
-import SimpleTooltip from "@/components/simple-tooltip";
-import { Button } from "@/components/ui/button";
-import { TrophyIcon } from "@heroicons/react/24/solid";
-import { ExternalLinkIcon, TrendingUpIcon } from "lucide-react";
-import { ElementType, ReactNode } from "react";
-import Card from "../card";
-import { env } from "@ssr/common/env";
+import Leaderboards from '@/components/maps/category/leaderboards'
+import RankingQueue from '@/components/maps/category/ranking-queue'
+import MapFilters from '@/components/maps/map-filters'
+import Playlists from '@/components/maps/playlist/playlists'
+import { MapFilterProvider } from '@/components/providers/maps/map-filter-provider'
+import SimpleLink from '@/components/simple-link'
+import SimpleTooltip from '@/components/simple-tooltip'
+import { Button } from '@/components/ui/button'
+import { TrophyIcon } from '@heroicons/react/24/solid'
+import { env } from '@ssr/common/env'
+import { ExternalLinkIcon, TrendingUpIcon } from 'lucide-react'
+import { ElementType, ReactNode } from 'react'
+import Card from '../card'
 
 type Category = {
   name: string;
@@ -21,35 +21,35 @@ type Category = {
   showFilter: boolean;
   preservePage?: boolean;
   render: () => ReactNode;
-};
+}
 
 const categories: Category[] = [
   {
-    name: "Leaderboards",
+    name: 'Leaderboards',
     icon: TrophyIcon,
-    id: "leaderboards",
+    id: 'leaderboards',
     showFilter: true,
     preservePage: true,
     render: () => <Leaderboards />,
   },
   {
-    name: "Ranking Queue",
+    name: 'Ranking Queue',
     icon: TrendingUpIcon,
-    id: "ranking-queue",
+    id: 'ranking-queue',
     showFilter: false,
     render: () => <RankingQueue />,
   },
-];
+]
 
 type MapsDataProps = {
   /**
    * The selected category.
    */
   type?: string;
-};
+}
 
 export function MapsData({ type }: MapsDataProps) {
-  const selectedCategory = categories.find(c => c.id === type) || categories[0];
+  const selectedCategory = categories.find(c => c.id === type) || categories[0]
 
   return (
     <MapFilterProvider>
@@ -60,7 +60,7 @@ export function MapsData({ type }: MapsDataProps) {
               <SimpleLink href={`/maps/${category.id}`} key={category.name} className="w-full">
                 <Button
                   className="w-full"
-                  variant={category.name == selectedCategory.name ? "default" : "secondary"}
+                  variant={category.name == selectedCategory.name ? 'default' : 'secondary'}
                 >
                   <span className="flex items-center gap-2">
                     <span className="text-2xl">
@@ -81,7 +81,7 @@ export function MapsData({ type }: MapsDataProps) {
           {selectedCategory.showFilter && <MapFilters />}
 
           {/* External Links */}
-          {selectedCategory.id === "ranking-queue" && (
+          {selectedCategory.id === 'ranking-queue' && (
             <Card>
               <SimpleTooltip display={<p>Click to open the Ranking Queue on ScoreSaber</p>} side="bottom">
                 <SimpleLink href={`${env.NEXT_PUBLIC_SCORESABER_URL}/ranking/requests`} target="_blank" className="w-full">
@@ -99,5 +99,5 @@ export function MapsData({ type }: MapsDataProps) {
         </div>
       </div>
     </MapFilterProvider>
-  );
+  )
 }

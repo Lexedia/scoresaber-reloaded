@@ -1,30 +1,30 @@
-import NotFound from "@/components/not-found";
-import PlayerData from "@/components/player/player-data";
-import { env } from "@ssr/common/env";
-import { formatNumberWithCommas, formatPp } from "@ssr/common/utils/number-utils";
-import { ssrApi } from "@ssr/common/utils/ssr-api";
-import { formatDate } from "@ssr/common/utils/time-utils";
-import { Metadata } from "next";
-import { cache } from "react";
+import NotFound from '@/components/not-found'
+import PlayerData from '@/components/player/player-data'
+import { env } from '@ssr/common/env'
+import { formatNumberWithCommas, formatPp } from '@ssr/common/utils/number-utils'
+import { ssrApi } from '@ssr/common/utils/ssr-api'
+import { formatDate } from '@ssr/common/utils/time-utils'
+import { Metadata } from 'next'
+import { cache } from 'react'
 
 const UNKNOWN_PLAYER = {
-  title: "Unknown Player",
-  description: "The player you were looking for could not be found",
-};
+  title: 'Unknown Player',
+  description: 'The player you were looking for could not be found',
+}
 
 type Props = {
   params: Promise<{
     id: string;
   }>;
-};
+}
 
 const getPlayer = cache(async (id: string) => {
-  return await ssrApi.getScoreSaberPlayer(id, "full");
-});
+  return await ssrApi.getScoreSaberPlayer(id, 'full')
+})
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
-  const { id } = await props.params;
-  const player = await getPlayer(id);
+  const { id } = await props.params
+  const player = await getPlayer(id)
 
   if (player === undefined) {
     return {
@@ -35,7 +35,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
         title: UNKNOWN_PLAYER.title,
         description: UNKNOWN_PLAYER.description,
       },
-    };
+    }
   }
 
   return {
@@ -46,8 +46,8 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
       description: `Rank: #${formatNumberWithCommas(player.rank)}
 Country Rank: #${formatNumberWithCommas(player.countryRank)} (${player.country})
 PP: ${formatPp(player.pp)}pp
-HMD: ${player.hmd ?? "Unknown"}
-Joined: ${formatDate(player.joinedDate, "Do MMMM, YYYY")}`,
+HMD: ${player.hmd ?? 'Unknown'}
+Joined: ${formatDate(player.joinedDate, 'Do MMMM, YYYY')}`,
       images: [
         {
           url: player.avatar,
@@ -55,23 +55,23 @@ Joined: ${formatDate(player.joinedDate, "Do MMMM, YYYY")}`,
       ],
     },
     twitter: {
-      card: "summary",
+      card: 'summary',
     },
-  };
+  }
 }
 
 export default async function PlayerPage(props: Props) {
-  const { id } = await props.params;
-  const player = await getPlayer(id);
+  const { id } = await props.params
+  const player = await getPlayer(id)
   if (player == undefined) {
     return (
       <NotFound title="Player Not Found" description="The player you were looking for could not be found" />
-    );
+    )
   }
 
   return (
     <main className="flex w-full justify-center">
       <PlayerData player={player} />
     </main>
-  );
+  )
 }

@@ -1,5 +1,5 @@
-import { cn } from "@/common/utils";
-import SimpleLink from "@/components/simple-link";
+import { cn } from '@/common/utils'
+import SimpleLink from '@/components/simple-link'
 
 export default function LeaderboardSongName({
   leaderboardName,
@@ -19,14 +19,14 @@ export default function LeaderboardSongName({
     >
       <p
         className={cn(
-          "text-song-name group-hover:text-song-name/80 line-clamp-2 w-fit font-semibold transition-all",
-          className
+          'text-song-name group-hover:text-song-name/80 line-clamp-2 w-fit font-semibold transition-all',
+          className,
         )}
       >
         {leaderboardName}
       </p>
     </SimpleLink>
   ) : (
-    <p className={cn("text-song-name line-clamp-2 w-fit font-semibold", className)}>{leaderboardName}</p>
-  );
+    <p className={cn('text-song-name line-clamp-2 w-fit font-semibold', className)}>{leaderboardName}</p>
+  )
 }

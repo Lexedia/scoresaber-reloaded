@@ -1,6 +1,6 @@
-import { ScoreBadgeProps } from "@/components/platform/scoresaber/score/badges/badge-props";
-import { ScoreMissesTooltip } from "@/components/score/score-misses-tooltip";
-import { formatNumberWithCommas } from "@ssr/common/utils/number-utils";
+import { ScoreBadgeProps } from '@/components/platform/scoresaber/score/badges/badge-props'
+import { ScoreMissesTooltip } from '@/components/score/score-misses-tooltip'
+import { formatNumberWithCommas } from '@ssr/common/utils/number-utils'
 
 type ScoreMissesBadgeProps = ScoreBadgeProps & {
   /**
@@ -17,7 +17,7 @@ type ScoreMissesBadgeProps = ScoreBadgeProps & {
    * Whether to show the difference between the score and the previous score.
    */
   showDifference?: boolean;
-};
+}
 
 export default function ScoreMissesAndPausesBadge({
   score,
@@ -25,15 +25,15 @@ export default function ScoreMissesAndPausesBadge({
   hidePreviousScore,
   showDifference = true,
 }: ScoreMissesBadgeProps) {
-  const previousScore = score.previousScore;
-  const beatLeaderScore = score.beatLeaderScore;
-  const previousMisses = beatLeaderScore?.misses;
+  const previousScore = score.previousScore
+  const beatLeaderScore = score.beatLeaderScore
+  const previousMisses = beatLeaderScore?.misses
 
-  const misses = score.misses + (previousMisses?.bombCuts ?? 0) + (previousMisses?.wallsHit ?? 0);
+  const misses = score.misses + (previousMisses?.bombCuts ?? 0) + (previousMisses?.wallsHit ?? 0)
   const previousMissCount =
     (previousScore?.misses ?? 0) +
     (beatLeaderScore?.misses?.bombCuts ?? 0) +
-    (beatLeaderScore?.misses?.wallsHit ?? 0);
+    (beatLeaderScore?.misses?.wallsHit ?? 0)
 
   return (
     <div className="flex w-full flex-row items-center justify-center gap-1">
@@ -64,7 +64,7 @@ export default function ScoreMissesAndPausesBadge({
           fullCombo={previousScore.fullCombo}
         >
           <span className="text-xs">
-            (vs{" "}
+            (vs{' '}
             {previousScore.fullCombo ? (
               <span className="text-green-400">FC</span>
             ) : (
@@ -75,5 +75,5 @@ export default function ScoreMissesAndPausesBadge({
         </ScoreMissesTooltip>
       )}
     </div>
-  );
+  )
 }

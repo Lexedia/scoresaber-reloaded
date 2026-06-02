@@ -1,7 +1,7 @@
-"use client";
+'use client'
 
-import dynamic from "next/dynamic";
+import dynamic from 'next/dynamic'
 
-const GenericChart = dynamic(() => import("./generic-chart"), { ssr: false });
+const GenericChart = dynamic(() => import('./generic-chart'), { ssr: false })
 
-export default GenericChart;
+export default GenericChart

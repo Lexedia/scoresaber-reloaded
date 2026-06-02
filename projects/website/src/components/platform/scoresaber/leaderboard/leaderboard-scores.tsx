@@ -1,76 +1,82 @@
-"use client";
+'use client'
 
-import CountrySelector from "@/components/country-selector";
-import { useLeaderboardFilter } from "@/components/providers/leaderboard/leaderboard-filter-provider";
-import ScoreModeSwitcher, { ScoreModeEnum } from "@/components/score/score-mode-switcher";
-import { Spinner } from "@/components/spinner";
-import { EmptyState } from "@/components/ui/empty-state";
-import { useLeaderboardScores } from "@/hooks/score/use-leaderboard-scores";
-import useDatabase from "@/hooks/use-database";
-import { useStableLiveQuery } from "@/hooks/use-stable-live-query";
-import { MapCharacteristic } from "@ssr/common/schemas/map/map-characteristic";
-import { ScoreSaberLeaderboard } from "@ssr/common/schemas/scoresaber/leaderboard/leaderboard";
-import { ScoreSaberScore } from "@ssr/common/schemas/scoresaber/score/score";
-import { getDifficulty } from "@ssr/common/utils/song-utils";
-import { parseAsInteger, parseAsStringLiteral, useQueryState } from "nuqs";
-import Card from "../../../card";
-import { CharacteristicButton } from "../../../leaderboard/button/characteristic-button";
-import { DifficultyButton } from "../../../leaderboard/button/difficulty-button";
-import SimplePagination from "../../../simple-pagination";
-import ScoreSaberLeaderboardScore from "../score/leaderboard-score";
+import CountrySelector from '@/components/country-selector'
+import { useLeaderboardFilter } from '@/components/providers/leaderboard/leaderboard-filter-provider'
+import ScoreModeSwitcher, { ScoreModeEnum } from '@/components/score/score-mode-switcher'
+import { Spinner } from '@/components/spinner'
+import { EmptyState } from '@/components/ui/empty-state'
+import { useLeaderboardScores } from '@/hooks/score/use-leaderboard-scores'
+import useDatabase from '@/hooks/use-database'
+import { useStableLiveQuery } from '@/hooks/use-stable-live-query'
+import { MapCharacteristic } from '@ssr/common/schemas/map/map-characteristic'
+import { ScoreSaberLeaderboard } from '@ssr/common/schemas/scoresaber/leaderboard/leaderboard'
+import { ScoreSaberScore } from '@ssr/common/schemas/scoresaber/score/score'
+import { getDifficulty } from '@ssr/common/utils/song-utils'
+import { parseAsInteger, parseAsStringLiteral, useQueryState } from 'nuqs'
+import Card from '../../../card'
+import { CharacteristicButton } from '../../../leaderboard/button/characteristic-button'
+import { DifficultyButton } from '../../../leaderboard/button/difficulty-button'
+import SimplePagination from '../../../simple-pagination'
+import ScoreSaberLeaderboardScore from '../score/leaderboard-score'
 
 function getScoreId(score: ScoreSaberScore) {
-  return score.scoreId + "-" + score.timestamp;
+  return score.scoreId + '-' + score.timestamp
 }
 
 const SHOWN_CHARACTERISTICS: MapCharacteristic[] = [
-  "Standard",
-  "OneSaber",
-  "NoArrows",
-  "Lawless",
-  "90Degree",
-  "360Degree",
-  "Lightshow",
-];
+  'Standard',
+  'OneSaber',
+  'NoArrows',
+  'Lawless',
+  '90Degree',
+  '360Degree',
+  'Lightshow',
+]
 
 export default function LeaderboardScores({ leaderboard }: { leaderboard: ScoreSaberLeaderboard }) {
-  const database = useDatabase();
-  const mainPlayer = useStableLiveQuery(() => database.getMainPlayer());
-  const filter = useLeaderboardFilter();
+  const database = useDatabase()
+  const mainPlayer = useStableLiveQuery(() => database.getMainPlayer())
+  const filter = useLeaderboardFilter()
 
-  const [mode, setMode] = useQueryState(
-    "mode",
-    parseAsStringLiteral<ScoreModeEnum>(Object.values(ScoreModeEnum)).withDefault(ScoreModeEnum.Global)
-  );
-  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
+  const [
+    mode,
+    setMode,
+  ] = useQueryState(
+    'mode',
+    parseAsStringLiteral<ScoreModeEnum>(Object.values(ScoreModeEnum)).withDefault(ScoreModeEnum.Global),
+  )
+  const [
+    page,
+    setPage,
+  ] = useQueryState('page', parseAsInteger.withDefault(1))
   const {
     data: scores,
     isError,
     isLoading,
     isRefetching,
-  } = useLeaderboardScores(leaderboard.id, mainPlayer?.id ?? "", page, mode, filter.country ?? undefined);
+  } = useLeaderboardScores(leaderboard.id, mainPlayer?.id ?? '', page, mode, filter.country ?? undefined)
 
-  const isFriends = mode === ScoreModeEnum.Friends;
+  const isFriends = mode === ScoreModeEnum.Friends
   const noScores =
-    isError || (!isLoading && !isRefetching && (!scores || (scores && scores.items.length === 0)));
+    isError || (!isLoading && !isRefetching && (!scores || (scores && scores.items.length === 0)))
 
   const currentCharacteristic = leaderboard.difficulties.find(
-    difficulty => difficulty.characteristic === leaderboard.difficulty.characteristic
-  )!.characteristic;
+    difficulty => difficulty.characteristic === leaderboard.difficulty.characteristic,
+  )!.characteristic
 
-  const seenCharacteristics = new Set<MapCharacteristic>();
+  const seenCharacteristics = new Set<MapCharacteristic>()
   const characteristicLeaderboards = leaderboard.difficulties.filter(difficulty => {
     if (
       seenCharacteristics.has(difficulty.characteristic) ||
       !SHOWN_CHARACTERISTICS.includes(difficulty.characteristic)
     ) {
-      return false;
+      return false
     }
-    seenCharacteristics.add(difficulty.characteristic);
-    return true;
-  });
+    seenCharacteristics.add(difficulty.characteristic)
+    return true
+  })
 
-  const difficultyColor = getDifficulty(leaderboard.difficulty.difficulty).color;
+  const difficultyColor = getDifficulty(leaderboard.difficulty.difficulty).color
 
   return (
     <div>
@@ -118,8 +124,8 @@ export default function LeaderboardScores({ leaderboard }: { leaderboard: ScoreS
               prioritizeCountry={mainPlayer?.country}
               value={filter.country}
               onValueChange={newCountry => {
-                filter.setCountry(newCountry);
-                setPage(1);
+                filter.setCountry(newCountry)
+                setPage(1)
               }}
               placeholder="All countries"
             />
@@ -142,7 +148,7 @@ export default function LeaderboardScores({ leaderboard }: { leaderboard: ScoreS
                     <th className="text-foreground/90 px-1 py-3 text-center font-semibold">Accuracy</th>
                     <th className="text-foreground/90 px-1 py-3 text-center font-semibold">Misses</th>
                     <th className="text-foreground/90 px-1 py-3 text-center font-semibold">
-                      {leaderboard.stars > 0 ? "PP" : "Score"}
+                      {leaderboard.stars > 0 ? 'PP' : 'Score'}
                     </th>
                     <th className="text-foreground/90 px-3 py-3 text-center font-semibold">Mods</th>
                     <th></th>
@@ -158,8 +164,8 @@ export default function LeaderboardScores({ leaderboard }: { leaderboard: ScoreS
                           title="No Scores Found"
                           description={
                             isFriends
-                              ? "You or your friends haven't played this map yet"
-                              : "No scores were found on this leaderboard or page"
+                              ? 'You or your friends haven\'t played this map yet'
+                              : 'No scores were found on this leaderboard or page'
                           }
                         />
                       </td>
@@ -193,5 +199,5 @@ export default function LeaderboardScores({ leaderboard }: { leaderboard: ScoreS
         )}
       </Card>
     </div>
-  );
+  )
 }

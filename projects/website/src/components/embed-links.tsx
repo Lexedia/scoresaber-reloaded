@@ -1,19 +1,19 @@
-import SimpleLink from "@/components/simple-link";
+import SimpleLink from '@/components/simple-link'
 
 type EmbedLinksProps = {
   text: string;
-};
+}
 
 export default function EmbedLinks({ text }: EmbedLinksProps) {
   // Regular expression to match URLs (simple version)
-  const urlRegex = /(https?:\/\/\S+)/g;
+  const urlRegex = /(https?:\/\/\S+)/g
 
   // Split the text by URLs and insert <a> tags for matching URLs
-  const parts = text.split(urlRegex);
+  const parts = text.split(urlRegex)
 
-  const isUrl = (s: string) => s.startsWith("http://") || s.startsWith("https://");
+  const isUrl = (s: string) => s.startsWith('http://') || s.startsWith('https://')
   return parts.map((part, index) => {
-    const key = `embed-${index}-${part.slice(0, 50)}`;
+    const key = `embed-${index}-${part.slice(0, 50)}`
     if (isUrl(part)) {
       return (
         <SimpleLink
@@ -24,8 +24,8 @@ export default function EmbedLinks({ text }: EmbedLinksProps) {
         >
           {part}
         </SimpleLink>
-      );
+      )
     }
-    return <span key={key}>{part}</span>;
-  });
+    return <span key={key}>{part}</span>
+  })
 }

@@ -1,16 +1,20 @@
-"use client";
+'use client'
 
-import { cn } from "@/common/utils";
-import ScoreSettings from "@/components/settings/category/score-settings";
-import WebsiteSettings from "@/components/settings/category/website-settings";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Box, Globe, type LucideIcon, User } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ReactNode, useCallback, useMemo } from "react";
-import ResetSettings from "./buttons/reset-settings";
-import PlayerSettings from "./category/player-settings";
+import { cn } from '@/common/utils'
+import ScoreSettings from '@/components/settings/category/score-settings'
+import WebsiteSettings from '@/components/settings/category/website-settings'
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select'
+import {
+  Box, Globe, type LucideIcon, User,
+} from 'lucide-react'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { ReactNode, useCallback, useMemo } from 'react'
+import ResetSettings from './buttons/reset-settings'
+import PlayerSettings from './category/player-settings'
 
-type SettingsCategorySlug = "website" | "scores" | "player";
+type SettingsCategorySlug = 'website' | 'scores' | 'player'
 
 type Category = {
   slug: SettingsCategorySlug;
@@ -18,55 +22,59 @@ type Category = {
   description: string;
   icon: LucideIcon;
   component: ReactNode;
-};
+}
 
 const categories: Category[] = [
   {
-    slug: "website",
-    name: "Website",
-    description: "Customize your experience",
+    slug: 'website',
+    name: 'Website',
+    description: 'Customize your experience',
     icon: Globe,
     component: <WebsiteSettings />,
   },
   {
-    slug: "scores",
-    name: "Scores",
-    description: "Manage your scores",
+    slug: 'scores',
+    name: 'Scores',
+    description: 'Manage your scores',
     icon: Box,
     component: <ScoreSettings />,
   },
   {
-    slug: "player",
-    name: "Player",
-    description: "Manage your player",
+    slug: 'player',
+    name: 'Player',
+    description: 'Manage your player',
     icon: User,
     component: <PlayerSettings />,
   },
-];
+]
 
 function categoryFromParam(param: string | null): Category {
-  if (param === "website" || param === "scores" || param === "player") {
-    return categories.find(c => c.slug === param) ?? categories[0];
+  if (param === 'website' || param === 'scores' || param === 'player') {
+    return categories.find(c => c.slug === param) ?? categories[0]
   }
-  return categories[0];
+  return categories[0]
 }
 
 export default function Settings() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
 
-  const categoryParam = searchParams.get("category");
-  const selectedCategory = useMemo(() => categoryFromParam(categoryParam), [categoryParam]);
+  const categoryParam = searchParams.get('category')
+  const selectedCategory = useMemo(() => categoryFromParam(categoryParam), [ categoryParam ])
 
   const setCategory = useCallback(
     (category: Category) => {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("category", category.slug);
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+      const params = new URLSearchParams(searchParams.toString())
+      params.set('category', category.slug)
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false })
     },
-    [pathname, router, searchParams]
-  );
+    [
+      pathname,
+      router,
+      searchParams,
+    ],
+  )
 
   return (
     <div className="bg-card/80 border-border flex w-full flex-col overflow-hidden rounded-xl border shadow-sm">
@@ -74,9 +82,9 @@ export default function Settings() {
         <Select
           value={selectedCategory.slug}
           onValueChange={value => {
-            const category = categories.find(c => c.slug === value);
+            const category = categories.find(c => c.slug === value)
             if (category) {
-              setCategory(category);
+              setCategory(category)
             }
           }}
         >
@@ -116,17 +124,24 @@ export default function Settings() {
           </div>
           <div className="flex flex-col gap-0.5 p-2">
             {categories.map(category => {
-              const isActive = selectedCategory.slug === category.slug;
+              const isActive = selectedCategory.slug === category.slug
               return (
                 <button
                   key={category.slug}
                   type="button"
-                  aria-current={isActive ? "page" : undefined}
+                  aria-current={isActive ? 'page' : undefined}
                   className={cn(
-                    "relative flex w-full cursor-pointer items-start gap-2.5 rounded-md py-2 pr-2 pl-3 text-left text-sm transition-colors",
+                    'relative flex w-full cursor-pointer items-start gap-2.5 rounded-md py-2 pr-2 pl-3 text-left text-sm transition-colors',
                     isActive
-                      ? "bg-muted/90 text-foreground before:bg-primary before:absolute before:top-1 before:bottom-1 before:left-0 before:w-[3px] before:rounded-full"
-                      : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                      ? `bg-muted/90 text-foreground
+                        before:bg-primary
+                        before:absolute
+                        before:top-1
+                        before:bottom-1
+                        before:left-0
+                        before:w-[3px]
+                        before:rounded-full`
+                      : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
                   )}
                   onClick={() => setCategory(category)}
                 >
@@ -135,15 +150,15 @@ export default function Settings() {
                     <span className="leading-snug font-medium">{category.name}</span>
                     <span
                       className={cn(
-                        "text-[11px] leading-snug wrap-break-word opacity-90",
-                        isActive ? "text-muted-foreground" : "text-muted-foreground/80"
+                        'text-[11px] leading-snug wrap-break-word opacity-90',
+                        isActive ? 'text-muted-foreground' : 'text-muted-foreground/80',
                       )}
                     >
                       {category.description}
                     </span>
                   </span>
                 </button>
-              );
+              )
             })}
           </div>
         </nav>
@@ -167,9 +182,12 @@ export default function Settings() {
         </div>
       </div>
 
-      <div className="border-border bg-muted/10 flex flex-wrap items-center gap-(--spacing-sm) border-t px-(--spacing-lg) py-(--spacing-md) md:px-8 md:py-(--spacing-lg)">
+      <div className="border-border bg-muted/10 flex flex-wrap items-center
+                      gap-(--spacing-sm)
+                      border-t px-(--spacing-lg) py-(--spacing-md)
+                      md:px-8 md:py-(--spacing-lg)">
         <ResetSettings />
       </div>
     </div>
-  );
+  )
 }

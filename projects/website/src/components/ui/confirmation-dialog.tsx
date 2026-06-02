@@ -1,8 +1,12 @@
-"use client";
+'use client'
 
-import { cloneElement, isValidElement, ReactElement, ReactNode, useState } from "react";
-import { Button } from "./button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "./dialog";
+import {
+  cloneElement, isValidElement, ReactElement, ReactNode, useState,
+} from 'react'
+import { Button } from './button'
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from './dialog'
 
 interface ConfirmationDialogProps {
   trigger: ReactNode;
@@ -10,7 +14,7 @@ interface ConfirmationDialogProps {
   description: string;
   confirmText?: string;
   cancelText?: string;
-  variant?: "default" | "destructive";
+  variant?: 'default' | 'destructive';
   onConfirm: () => void | Promise<void>;
   onCancel?: () => void;
 }
@@ -19,48 +23,54 @@ export function ConfirmationDialog({
   trigger,
   title,
   description,
-  confirmText = "Confirm",
-  cancelText = "Cancel",
-  variant = "default",
+  confirmText = 'Confirm',
+  cancelText = 'Cancel',
+  variant = 'default',
   onConfirm,
   onCancel,
 }: ConfirmationDialogProps) {
-  const [open, setOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [
+    open,
+    setOpen,
+  ] = useState(false)
+  const [
+    isLoading,
+    setIsLoading,
+  ] = useState(false)
 
   const handleConfirm = async () => {
     try {
-      setIsLoading(true);
-      await onConfirm();
-      setOpen(false);
+      setIsLoading(true)
+      await onConfirm()
+      setOpen(false)
     } catch (error) {
-      console.error("Confirmation action failed:", error);
+      console.error('Confirmation action failed:', error)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleCancel = () => {
-    onCancel?.();
-    setOpen(false);
-  };
+    onCancel?.()
+    setOpen(false)
+  }
 
   const handleOpenChange = (newOpen: boolean) => {
     // Only allow closing the dialog, not opening it from external sources
     if (!newOpen) {
-      setOpen(false);
+      setOpen(false)
     }
-  };
+  }
 
   const handleTriggerClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-    setOpen(true);
-  };
+    e.stopPropagation()
+    e.preventDefault()
+    setOpen(true)
+  }
 
   const handleTriggerMouseDown = (e: React.MouseEvent) => {
-    e.stopPropagation();
-  };
+    e.stopPropagation()
+  }
 
   const triggerElement = isValidElement(trigger) ? (
     cloneElement(
@@ -71,13 +81,13 @@ export function ConfirmationDialog({
       {
         onClick: handleTriggerClick,
         onMouseDown: handleTriggerMouseDown,
-      }
+      },
     )
   ) : (
     <div onClick={handleTriggerClick} onMouseDown={handleTriggerMouseDown} className="inline-block">
       {trigger}
     </div>
-  );
+  )
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -96,14 +106,14 @@ export function ConfirmationDialog({
             {cancelText}
           </Button>
           <Button
-            variant={variant === "destructive" ? "destructive" : "default"}
+            variant={variant === 'destructive' ? 'destructive' : 'default'}
             onClick={handleConfirm}
             disabled={isLoading}
           >
-            {isLoading ? "Loading..." : confirmText}
+            {isLoading ? 'Loading...' : confirmText}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

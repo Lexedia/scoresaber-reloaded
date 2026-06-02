@@ -1,6 +1,6 @@
-import { cn } from "@/common/utils";
-import SimpleLink from "@/components/simple-link";
-import SimpleTooltip from "@/components/simple-tooltip";
+import { cn } from '@/common/utils'
+import SimpleLink from '@/components/simple-link'
+import SimpleTooltip from '@/components/simple-tooltip'
 
 export default function ScoreButton({
   children,
@@ -21,16 +21,21 @@ export default function ScoreButton({
   const button = (
     <button
       className={cn(
-        "border-border bg-background hover:bg-accent hover:text-accent-foreground hover:border-primary/50 focus-visible:ring-primary/50 flex cursor-pointer items-center justify-center rounded-md border p-(--spacing-xs) text-sm font-medium transition-colors duration-200 focus-visible:ring-2 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50",
-        className
+        'border-border bg-background hover:bg-accent hover:text-accent-foreground hover:border-primary/50',
+        'focus-visible:ring-primary/50 flex cursor-pointer items-center justify-center rounded-md border p-(--spacing-xs)',
+        'text-sm font-medium transition-colors duration-200 focus-visible:ring-2 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50',
+        className,
       )}
-      style={{ width: size, height: size }}
+      style={{
+        width: size,
+        height: size,
+      }}
       onClick={onClick}
       {...props}
     >
       {children}
     </button>
-  );
+  )
 
   if (tooltip) {
     return (
@@ -43,8 +48,8 @@ export default function ScoreButton({
           button
         )}
       </SimpleTooltip>
-    );
+    )
   }
 
-  return button;
+  return button
 }

@@ -22,6 +22,7 @@ COPY projects/backend/package.json ./projects/backend/
 RUN bun install --frozen-lockfile
 
 # Copy source code after dependencies are installed
+COPY eslint.config.mjs ./
 COPY projects/common ./projects/common
 COPY projects/website ./projects/website
 

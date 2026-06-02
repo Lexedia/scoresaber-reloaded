@@ -1,17 +1,17 @@
-import SimpleTooltip from "@/components/simple-tooltip";
-import ScoreSaberPlayer from "@ssr/common/player/impl/scoresaber-player";
-import { formatNumberWithCommas } from "@ssr/common/utils/number-utils";
-import { pluralize } from "@ssr/common/utils/string.util";
-import { Flame } from "lucide-react";
+import SimpleTooltip from '@/components/simple-tooltip'
+import ScoreSaberPlayer from '@ssr/common/player/impl/scoresaber-player'
+import { formatNumberWithCommas } from '@ssr/common/utils/number-utils'
+import { pluralize } from '@ssr/common/utils/string.util'
+import { Flame } from 'lucide-react'
 
 type PlayerStreakProps = {
   player: ScoreSaberPlayer;
-};
+}
 
 export default function PlayerStreak({ player }: PlayerStreakProps) {
-  const currentStreak = Math.max(player.currentStreak, 0);
-  const longestStreak = Math.max(player.longestStreak, 0);
-  const progress = longestStreak > 0 ? Math.min((currentStreak / longestStreak) * 100, 100) : 0;
+  const currentStreak = Math.max(player.currentStreak, 0)
+  const longestStreak = Math.max(player.longestStreak, 0)
+  const progress = longestStreak > 0 ? Math.min((currentStreak / longestStreak) * 100, 100) : 0
 
   return (
     <SimpleTooltip
@@ -19,15 +19,15 @@ export default function PlayerStreak({ player }: PlayerStreakProps) {
         <div className="space-y-1">
           <p>Consecutive days with at least one tracked play.</p>
           <p>
-            Current:{" "}
+            Current:{' '}
             <b>
-              {formatNumberWithCommas(currentStreak)} {pluralize(currentStreak, "day")}
+              {formatNumberWithCommas(currentStreak)} {pluralize(currentStreak, 'day')}
             </b>
           </p>
           <p>
-            Best:{" "}
+            Best:{' '}
             <b>
-              {formatNumberWithCommas(longestStreak)} {pluralize(longestStreak, "day")}
+              {formatNumberWithCommas(longestStreak)} {pluralize(longestStreak, 'day')}
             </b>
           </p>
         </div>
@@ -52,7 +52,7 @@ export default function PlayerStreak({ player }: PlayerStreakProps) {
             {formatNumberWithCommas(currentStreak)}
           </span>
           <span className="text-muted-foreground text-[11px] leading-none">
-            {pluralize(currentStreak, "day")}
+            {pluralize(currentStreak, 'day')}
           </span>
         </div>
 
@@ -64,9 +64,9 @@ export default function PlayerStreak({ player }: PlayerStreakProps) {
         </div>
 
         <div className="text-muted-foreground relative mt-1 text-[10px]">
-          Best {formatNumberWithCommas(longestStreak)} {pluralize(longestStreak, "day")}
+          Best {formatNumberWithCommas(longestStreak)} {pluralize(longestStreak, 'day')}
         </div>
       </div>
     </SimpleTooltip>
-  );
+  )
 }

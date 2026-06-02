@@ -7,13 +7,13 @@
 export function getRankColor(rank: number) {
   switch (rank) {
     case 1:
-      return "text-[#B8860B]"; // Gold
+      return 'text-[#B8860B]' // Gold
     case 2:
-      return "text-[#888888]"; // Silver
+      return 'text-[#888888]' // Silver
     case 3:
-      return "text-[#8B4513]"; // Lighter bronze
+      return 'text-[#8B4513]' // Lighter bronze
     default:
-      return "text-white"; // Default
+      return 'text-white' // Default
   }
 }
 
@@ -26,12 +26,12 @@ export function getRankColor(rank: number) {
 export function getRankBgColor(rank: number) {
   switch (rank) {
     case 1:
-      return "bg-[#B8860B]"; // Gold
+      return 'bg-[#B8860B]' // Gold
     case 2:
-      return "bg-[#888888]"; // Silver
+      return 'bg-[#888888]' // Silver
     case 3:
-      return "bg-[#8B4513]"; // Lighter bronze
+      return 'bg-[#8B4513]' // Lighter bronze
     default:
-      return "bg-[#313131]"; // Default
+      return 'bg-[#313131]' // Default
   }
 }

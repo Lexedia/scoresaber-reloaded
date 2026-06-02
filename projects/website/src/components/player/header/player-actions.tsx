@@ -1,21 +1,21 @@
-"use client";
+'use client'
 
-import { TwitchIcon } from "@/components/icons/twitch-icon";
-import AccSaberLogo from "@/components/logos/logos/accsaber-logo";
-import BeatLeaderLogo from "@/components/logos/logos/beatleader-logo";
-import ScoresaberLogo from "@/components/logos/logos/scoresaber-logo";
-import SimpleLink from "@/components/simple-link";
-import SimpleTooltip from "@/components/simple-tooltip";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import useDatabase from "@/hooks/use-database";
-import { useStableLiveQuery } from "@/hooks/use-stable-live-query";
-import { env } from "@ssr/common/env";
-import ScoreSaberPlayer from "@ssr/common/player/impl/scoresaber-player";
-import { ssrConfig } from "config";
-import { ReactNode } from "react";
-import PlayerActionButtonWrapper from "../buttons/player-action-button-wrapper";
-import SelfPlaylistCreator from "../self/player-self-playlist-creator";
-import SnipePlaylistCreator from "../snipe/player-snipe-playlist-creator";
+import { TwitchIcon } from '@/components/icons/twitch-icon'
+import AccSaberLogo from '@/components/logos/logos/accsaber-logo'
+import BeatLeaderLogo from '@/components/logos/logos/beatleader-logo'
+import ScoresaberLogo from '@/components/logos/logos/scoresaber-logo'
+import SimpleLink from '@/components/simple-link'
+import SimpleTooltip from '@/components/simple-tooltip'
+import { Dialog, DialogTrigger } from '@/components/ui/dialog'
+import useDatabase from '@/hooks/use-database'
+import { useStableLiveQuery } from '@/hooks/use-stable-live-query'
+import { env } from '@ssr/common/env'
+import ScoreSaberPlayer from '@ssr/common/player/impl/scoresaber-player'
+import { ssrConfig } from 'config'
+import { ReactNode } from 'react'
+import PlayerActionButtonWrapper from '../buttons/player-action-button-wrapper'
+import SelfPlaylistCreator from '../self/player-self-playlist-creator'
+import SnipePlaylistCreator from '../snipe/player-snipe-playlist-creator'
 
 type PlayerLinkProps = {
   url?: string;
@@ -23,9 +23,11 @@ type PlayerLinkProps = {
   playerName: string;
   icon: ReactNode;
   children?: ReactNode;
-};
+}
 
-export function PlayerLink({ url, name, playerName, icon, children }: PlayerLinkProps) {
+export function PlayerLink({
+  url, name, playerName, icon, children,
+}: PlayerLinkProps) {
   const tooltipContent = (
     <SimpleTooltip
       display={
@@ -36,14 +38,14 @@ export function PlayerLink({ url, name, playerName, icon, children }: PlayerLink
     >
       <PlayerActionButtonWrapper>{icon}</PlayerActionButtonWrapper>
     </SimpleTooltip>
-  );
+  )
 
   if (url) {
     return (
       <SimpleLink href={url} target="_blank" rel="noreferrer">
         {tooltipContent}
       </SimpleLink>
-    );
+    )
   }
 
   if (children) {
@@ -52,17 +54,17 @@ export function PlayerLink({ url, name, playerName, icon, children }: PlayerLink
         <DialogTrigger asChild>{tooltipContent}</DialogTrigger>
         {children}
       </Dialog>
-    );
+    )
   }
 
-  return tooltipContent;
+  return tooltipContent
 }
 
 export default function PlayerActions({ player }: { player: ScoreSaberPlayer }) {
-  const database = useDatabase();
-  const mainPlayerId = useStableLiveQuery(() => database.getMainPlayerId());
+  const database = useDatabase()
+  const mainPlayerId = useStableLiveQuery(() => database.getMainPlayerId())
 
-  const twitchName = ssrConfig.playerTwitchAccounts[player.id];
+  const twitchName = ssrConfig.playerTwitchAccounts[player.id]
 
   return (
     <div className="flex gap-2">
@@ -117,5 +119,5 @@ export default function PlayerActions({ player }: { player: ScoreSaberPlayer }) 
         </>
       )}
     </div>
-  );
+  )
 }

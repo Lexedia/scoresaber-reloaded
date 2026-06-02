@@ -1,6 +1,6 @@
-import SimpleLink from "@/components/simple-link";
-import { ScoreSaberLeaderboardPlayerInfo } from "@ssr/common/schemas/scoresaber/leaderboard/player-info";
-import Avatar from "../avatar";
+import SimpleLink from '@/components/simple-link'
+import { ScoreSaberLeaderboardPlayerInfo } from '@ssr/common/schemas/scoresaber/leaderboard/player-info'
+import Avatar from '../avatar'
 
 export default function PlayerScoreHeader({ player }: { player: ScoreSaberLeaderboardPlayerInfo }) {
   return (
@@ -10,5 +10,5 @@ export default function PlayerScoreHeader({ player }: { player: ScoreSaberLeader
         <p className="hover:text-primary text-sm transition-all">{player.name}</p>
       </SimpleLink>
     </div>
-  );
+  )
 }

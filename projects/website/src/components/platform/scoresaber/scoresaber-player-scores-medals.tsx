@@ -1,22 +1,22 @@
-"use client";
+'use client'
 
-import { cn } from "@/common/utils";
-import HMDIcon from "@/components/hmd-icon";
-import { Spinner } from "@/components/spinner";
-import { Input } from "@/components/ui/input";
-import PageTransition from "@/components/ui/page-transition";
-import { usePageTransition } from "@/contexts/page-transition-context";
-import { getHMDInfo, HMD } from "@ssr/common/hmds";
-import { Pagination } from "@ssr/common/pagination";
-import ScoreSaberPlayer from "@ssr/common/player/impl/scoresaber-player";
-import { PlayerScoresPageResponse } from "@ssr/common/schemas/response/score/player-scores";
-import { ScoreSaberMedalScoreSortField } from "@ssr/common/schemas/score/query/sort/scoresaber-medal-scores-sort";
-import { SortDirection } from "@ssr/common/schemas/score/query/sort/sort-direction";
-import { capitalizeFirstLetter } from "@ssr/common/string-utils";
-import { ssrApi } from "@ssr/common/utils/ssr-api";
-import { useQuery } from "@tanstack/react-query";
-import { useDebounce, useDocumentTitle } from "@uidotdev/usehooks";
-import { ssrConfig } from "config";
+import { cn } from '@/common/utils'
+import HMDIcon from '@/components/hmd-icon'
+import { Spinner } from '@/components/spinner'
+import { Input } from '@/components/ui/input'
+import PageTransition from '@/components/ui/page-transition'
+import { usePageTransition } from '@/contexts/page-transition-context'
+import { getHMDInfo, HMD } from '@ssr/common/hmds'
+import { Pagination } from '@ssr/common/pagination'
+import ScoreSaberPlayer from '@ssr/common/player/impl/scoresaber-player'
+import { PlayerScoresPageResponse } from '@ssr/common/schemas/response/score/player-scores'
+import { ScoreSaberMedalScoreSortField } from '@ssr/common/schemas/score/query/sort/scoresaber-medal-scores-sort'
+import { SortDirection } from '@ssr/common/schemas/score/query/sort/sort-direction'
+import { capitalizeFirstLetter } from '@ssr/common/string-utils'
+import { ssrApi } from '@ssr/common/utils/ssr-api'
+import { useQuery } from '@tanstack/react-query'
+import { useDebounce, useDocumentTitle } from '@uidotdev/usehooks'
+import { ssrConfig } from 'config'
 import {
   ArrowDown,
   ArrowUp,
@@ -27,105 +27,127 @@ import {
   SearchIcon,
   Target,
   XIcon,
-} from "lucide-react";
-import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
-import { useCallback, useEffect } from "react";
-import ScoresCard from "../../score/scores-card";
-import SimplePagination from "../../simple-pagination";
-import { ButtonGroup, ControlButton, ControlPanel, ControlRow } from "../../ui/control-panel";
-import { EmptyState } from "../../ui/empty-state";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
-import ScoreSaberScoreDisplay from "./score/scoresaber-score";
+} from 'lucide-react'
+import { parseAsInteger, parseAsString, useQueryState } from 'nuqs'
+import { useCallback, useEffect } from 'react'
+import ScoresCard from '../../score/scores-card'
+import SimplePagination from '../../simple-pagination'
+import {
+  ButtonGroup, ControlButton, ControlPanel, ControlRow,
+} from '../../ui/control-panel'
+import { EmptyState } from '../../ui/empty-state'
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '../../ui/select'
+import ScoreSaberScoreDisplay from './score/scoresaber-score'
 
 type SortOption = {
   name: string;
   value: ScoreSaberMedalScoreSortField;
   icon: React.ReactNode;
   defaultOrder: SortDirection;
-};
+}
 
-const DEFAULT_SORT: ScoreSaberMedalScoreSortField = "date";
-const DEFAULT_SORT_DIRECTION: SortDirection = "desc";
-const DEFAULT_PAGE = 1;
+const DEFAULT_SORT: ScoreSaberMedalScoreSortField = 'date'
+const DEFAULT_SORT_DIRECTION: SortDirection = 'desc'
+const DEFAULT_PAGE = 1
 
 const SORT_OPTIONS: SortOption[] = [
   {
-    name: "Medals",
-    value: "medals",
+    name: 'Medals',
+    value: 'medals',
     icon: <Medal className="h-4 w-4" />,
-    defaultOrder: "desc" as const,
+    defaultOrder: 'desc' as const,
   },
   {
-    name: "Date",
-    value: "date",
+    name: 'Date',
+    value: 'date',
     icon: <ClockIcon className="h-4 w-4" />,
-    defaultOrder: "desc" as const,
+    defaultOrder: 'desc' as const,
   },
   {
-    name: "Misses",
-    value: "misses",
+    name: 'Misses',
+    value: 'misses',
     icon: <XIcon className="h-4 w-4" />,
-    defaultOrder: "desc" as const,
+    defaultOrder: 'desc' as const,
   },
   {
-    name: "Accuracy",
-    value: "acc",
+    name: 'Accuracy',
+    value: 'acc',
     icon: <Target className="h-4 w-4" />,
-    defaultOrder: "desc" as const,
+    defaultOrder: 'desc' as const,
   },
   {
-    name: "Score",
-    value: "score",
+    name: 'Score',
+    value: 'score',
     icon: <BarChart3 className="h-4 w-4" />,
-    defaultOrder: "desc" as const,
+    defaultOrder: 'desc' as const,
   },
   {
-    name: "Max Combo",
-    value: "maxcombo",
+    name: 'Max Combo',
+    value: 'maxcombo',
     icon: <Hash className="h-4 w-4" />,
-    defaultOrder: "desc" as const,
+    defaultOrder: 'desc' as const,
   },
-];
+]
 
 export default function ScoreSaberPlayerMedalScores({ player }: { player: ScoreSaberPlayer }) {
-  const { animateLeft, animateRight, setIsLoading } = usePageTransition();
+  const { animateLeft, animateRight, setIsLoading } = usePageTransition()
 
   // Sorting
-  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(DEFAULT_PAGE));
-  const [sort, setSort] = useQueryState("sort", parseAsString.withDefault(DEFAULT_SORT)) as [
+  const [
+    page,
+    setPage,
+  ] = useQueryState('page', parseAsInteger.withDefault(DEFAULT_PAGE))
+  const [
+    sort,
+    setSort,
+  ] = useQueryState('sort', parseAsString.withDefault(DEFAULT_SORT)) as [
     ScoreSaberMedalScoreSortField,
     (value: ScoreSaberMedalScoreSortField | null) => void,
-  ];
-  const [direction, setDirection] = useQueryState(
-    "direction",
-    parseAsString.withDefault(DEFAULT_SORT_DIRECTION)
-  ) as [SortDirection, (value: SortDirection | null) => void];
+  ]
+  const [
+    direction,
+    setDirection,
+  ] = useQueryState(
+    'direction',
+    parseAsString.withDefault(DEFAULT_SORT_DIRECTION),
+  ) as [SortDirection, (value: SortDirection | null) => void]
 
   // Filters
-  const [hmdFilter, setHmdFilter] = useQueryState("hmd", parseAsString) as [
+  const [
+    hmdFilter,
+    setHmdFilter,
+  ] = useQueryState('hmd', parseAsString) as [
     HMD | null,
     (value: HMD | null) => void,
-  ];
+  ]
 
   // Search
-  const [search, setSearch] = useQueryState("search", parseAsString);
-  const debouncedSearchTerm = useDebounce(search || "", 250);
-  const invalidSearch = search && search.length >= 1 && search.length < 3;
+  const [
+    search,
+    setSearch,
+  ] = useQueryState('search', parseAsString)
+  const debouncedSearchTerm = useDebounce(search || '', 250)
+  const invalidSearch = search && search.length >= 1 && search.length < 3
 
   useDocumentTitle(
     ssrConfig.siteTitleTemplate.replace(
-      "%s",
-      `${player.name} / SSR / ${page} / ${SORT_OPTIONS.find(s => s.value === sort)?.name} / ${capitalizeFirstLetter(direction)}`
-    )
-  );
+      '%s',
+      `${player.name} / SSR / ${page} / ${SORT_OPTIONS.find(s => s.value === sort)?.name} / ${capitalizeFirstLetter(direction)}`,
+    ),
+  )
 
   useEffect(() => {
     if (debouncedSearchTerm && debouncedSearchTerm.length >= 3) {
-      setSearch(debouncedSearchTerm);
-    } else if (debouncedSearchTerm === "") {
-      setSearch(null);
+      setSearch(debouncedSearchTerm)
+    } else if (debouncedSearchTerm === '') {
+      setSearch(null)
     }
-  }, [debouncedSearchTerm, setSearch]);
+  }, [
+    debouncedSearchTerm,
+    setSearch,
+  ])
 
   const {
     data: scores,
@@ -133,83 +155,120 @@ export default function ScoreSaberPlayerMedalScores({ player }: { player: ScoreS
     isLoading,
     isRefetching,
   } = useQuery<PlayerScoresPageResponse>({
-    queryKey: ["playerScores:medals", player.id, page, sort, debouncedSearchTerm, direction, hmdFilter],
+    queryKey: [
+      'playerScores:medals',
+      player.id,
+      page,
+      sort,
+      debouncedSearchTerm,
+      direction,
+      hmdFilter,
+    ],
     queryFn: async () => {
       const response = await ssrApi.fetchPlayerScoreSaberMedalScores(player.id, page, sort, direction, {
         ...(!invalidSearch ? { search: debouncedSearchTerm } : {}),
         ...(hmdFilter ? { hmd: hmdFilter } : {}),
-      });
-      return response || Pagination.empty();
+      })
+      return response || Pagination.empty()
     },
     placeholderData: prev => prev,
-  });
+  })
 
   useEffect(() => {
-    setIsLoading(isLoading || isRefetching);
-  }, [isLoading, isRefetching, scores, setIsLoading]);
+    setIsLoading(isLoading || isRefetching)
+  }, [
+    isLoading,
+    isRefetching,
+    scores,
+    setIsLoading,
+  ])
 
   const handleSortChange = useCallback(
-    (newSort: ScoreSaberMedalScoreSortField, defaultOrder: SortDirection = "desc") => {
-      setIsLoading(true);
+    (newSort: ScoreSaberMedalScoreSortField, defaultOrder: SortDirection = 'desc') => {
+      setIsLoading(true)
       if (newSort !== sort) {
-        setSort(newSort);
-        setDirection(defaultOrder);
-        setPage(1);
-        animateLeft();
+        setSort(newSort)
+        setDirection(defaultOrder)
+        setPage(1)
+        animateLeft()
       } else {
-        setDirection(direction === "desc" ? "asc" : "desc");
-        animateLeft();
+        setDirection(direction === 'desc' ? 'asc' : 'desc')
+        animateLeft()
       }
     },
-    [sort, direction, setSort, setDirection, setPage, animateLeft, setIsLoading]
-  );
+    [
+      sort,
+      direction,
+      setSort,
+      setDirection,
+      setPage,
+      animateLeft,
+      setIsLoading,
+    ],
+  )
 
   const handlePageChange = useCallback(
     (newPage: number) => {
-      setIsLoading(true);
+      setIsLoading(true)
       if (newPage > page) {
-        animateLeft();
+        animateLeft()
       } else {
-        animateRight();
+        animateRight()
       }
-      setPage(newPage);
+      setPage(newPage)
     },
-    [page, animateLeft, animateRight, setIsLoading, setPage]
-  );
+    [
+      page,
+      animateLeft,
+      animateRight,
+      setIsLoading,
+      setPage,
+    ],
+  )
 
   const handleSearchChange = useCallback(
     (newSearch: string) => {
-      setSearch(newSearch);
-      if (newSearch.length >= 3 || newSearch === "") {
-        setIsLoading(true);
-        setPage(1);
-        animateLeft();
+      setSearch(newSearch)
+      if (newSearch.length >= 3 || newSearch === '') {
+        setIsLoading(true)
+        setPage(1)
+        animateLeft()
       }
     },
-    [animateLeft, setIsLoading, setPage, setSearch]
-  );
+    [
+      animateLeft,
+      setIsLoading,
+      setPage,
+      setSearch,
+    ],
+  )
 
   const buildUrl = useCallback(
     (pageNum: number) => {
-      const params = new URLSearchParams();
+      const params = new URLSearchParams()
       if (sort !== DEFAULT_SORT) {
-        params.set("sort", sort);
+        params.set('sort', sort)
       }
       if (direction !== DEFAULT_SORT_DIRECTION) {
-        params.set("direction", direction);
+        params.set('direction', direction)
       }
       if (pageNum !== 1) {
-        params.set("page", String(pageNum));
+        params.set('page', String(pageNum))
       }
       if (debouncedSearchTerm && debouncedSearchTerm.length >= 3) {
-        params.set("search", debouncedSearchTerm);
+        params.set('search', debouncedSearchTerm)
       }
 
-      const queryString = params.toString();
-      return `/player/${player.id}/scoresaber?${queryString}`;
+      const queryString = params.toString()
+      return `/player/${player.id}/scoresaber?${queryString}`
     },
-    [player.id, sort, direction, debouncedSearchTerm]
-  );
+    [
+      player.id,
+      sort,
+      direction,
+      debouncedSearchTerm,
+    ],
+  )
 
   const renderScoresList = () => {
     if (isLoading && scores === undefined) {
@@ -217,11 +276,11 @@ export default function ScoreSaberPlayerMedalScores({ player }: { player: ScoreS
         <div className="flex w-full justify-center py-8">
           <Spinner size="md" className="text-primary" />
         </div>
-      );
+      )
     }
 
     if (!scores) {
-      return null;
+      return null
     }
 
     return (
@@ -240,8 +299,8 @@ export default function ScoreSaberPlayerMedalScores({ player }: { player: ScoreS
 
         <PageTransition
           className={cn(
-            "divide-border grid min-w-full grid-cols-1 divide-y",
-            "[&>div:first-child_[data-ss-score-row]]:pt-0 [&>div:last-child_[data-ss-score-row]]:pb-0"
+            'divide-border grid min-w-full grid-cols-1 divide-y',
+            '[&>div:first-child_[data-ss-score-row]]:pt-0 [&>div:last-child_[data-ss-score-row]]:pb-0',
           )}
         >
           {scores.items.map(score => (
@@ -267,8 +326,8 @@ export default function ScoreSaberPlayerMedalScores({ player }: { player: ScoreS
           onPageChange={handlePageChange}
         />
       </>
-    );
-  };
+    )
+  }
 
   return (
     <ScoresCard>
@@ -285,7 +344,7 @@ export default function ScoreSaberPlayerMedalScores({ player }: { player: ScoreS
                   {sortOption.value === sort ? (
                     isLoading || isRefetching ? (
                       <Spinner size="sm" className="size-4" />
-                    ) : direction === "desc" ? (
+                    ) : direction === 'desc' ? (
                       <ArrowDown className="size-4" />
                     ) : (
                       <ArrowUp className="size-4" />
@@ -306,41 +365,41 @@ export default function ScoreSaberPlayerMedalScores({ player }: { player: ScoreS
                 <Input
                   type="search"
                   placeholder="Query..."
-                  className={cn("h-8 w-full pr-3 pl-8 text-xs sm:w-64", invalidSearch && "border-red-500")}
-                  value={search || ""}
+                  className={cn('h-8 w-full pr-3 pl-8 text-xs sm:w-64', invalidSearch && 'border-red-500')}
+                  value={search || ''}
                   onChange={e => handleSearchChange(e.target.value)}
                 />
                 {search && search.length > 0 && (
                   <XIcon
                     className="text-muted-foreground absolute top-1/2 right-2 h-3.5 w-3.5 -translate-y-1/2 cursor-pointer"
-                    onClick={() => handleSearchChange("")}
+                    onClick={() => handleSearchChange('')}
                   />
                 )}
               </div>
 
               <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
                 <Select
-                  value={hmdFilter || "All Hmds"}
+                  value={hmdFilter || 'All Hmds'}
                   onValueChange={value => {
-                    setIsLoading(true);
-                    setHmdFilter(value === "All Hmds" ? null : (value as HMD));
-                    setPage(1);
-                    animateLeft();
+                    setIsLoading(true)
+                    setHmdFilter(value === 'All Hmds' ? null : (value as HMD))
+                    setPage(1)
+                    animateLeft()
                   }}
                 >
                   <SelectTrigger className="h-8 w-full text-xs sm:w-42">
                     <SelectValue placeholder="HMD Filter" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={"All Hmds"}>
+                    <SelectItem value={'All Hmds'}>
                       <div className="flex items-center gap-2">
-                        <HMDIcon hmd={getHMDInfo("Unknown")} />
+                        <HMDIcon hmd={getHMDInfo('Unknown')} />
                         <span>All HMDs</span>
                       </div>
                     </SelectItem>
                     {player.hmdBreakdown &&
                       Object.keys(player.hmdBreakdown)
-                        .filter(filter => filter !== "Unknown")
+                        .filter(filter => filter !== 'Unknown')
                         .map(filter => (
                           <SelectItem key={filter} value={filter}>
                             <div className="flex items-center gap-2">
@@ -359,5 +418,5 @@ export default function ScoreSaberPlayerMedalScores({ player }: { player: ScoreS
         {renderScoresList()}
       </div>
     </ScoresCard>
-  );
+  )
 }

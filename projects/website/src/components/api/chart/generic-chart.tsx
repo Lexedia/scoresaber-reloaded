@@ -1,8 +1,9 @@
-"use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+'use client'
 
-import { ChartConfig } from "@/common/chart/types";
-import { useIsMobile } from "@/contexts/viewport-context";
-import useDatabase from "@/hooks/use-database";
+import { ChartConfig } from '@/common/chart/types'
+import { useIsMobile } from '@/contexts/viewport-context'
+import useDatabase from '@/hooks/use-database'
 import {
   formatChartDate,
   formatDate,
@@ -11,7 +12,7 @@ import {
   getDaysAgoDate,
   parseDate,
   timeAgo,
-} from "@ssr/common/utils/time-utils";
+} from '@ssr/common/utils/time-utils'
 import {
   BarController,
   BarElement,
@@ -23,13 +24,13 @@ import {
   PointElement,
   Tooltip,
   type ChartOptions,
-} from "chart.js";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc.js";
-import { useMemo } from "react";
-import { Line } from "react-chartjs-2";
+} from 'chart.js'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc.js'
+import { useMemo } from 'react'
+import { Line } from 'react-chartjs-2'
 
-dayjs.extend(utc);
+dayjs.extend(utc)
 
 Chart.register(
   LineElement,
@@ -39,37 +40,48 @@ Chart.register(
   CategoryScale,
   Legend,
   Tooltip,
-  BarController
-);
+  BarController,
+)
 
 type Props = {
   config: ChartConfig;
   labels: Date[] | string[] | number[];
-};
+}
 
 const GenericChart = ({ config, labels }: Props) => {
-  const { id, datasets, axes, options: customOptions } = config;
-  const isMobile = useIsMobile();
-  const database = useDatabase();
+  const {
+    id, datasets, axes, options: customOptions,
+  } = config
+  const isMobile = useIsMobile()
+  const database = useDatabase()
 
-  const isXAxisLinear = customOptions?.scales?.x?.type === "linear";
-  const isNumericLabels = labels.length > 0 && typeof labels[0] === "number";
+  const isXAxisLinear = customOptions?.scales?.x?.type === 'linear'
+  const isNumericLabels = labels.length > 0 && typeof labels[0] === 'number'
 
   const chartDatasets = useMemo(() => {
     return datasets.map(dataset => {
-      let transformedData: (number | null)[] | ({ x: number; y: number } | null)[] = dataset.data;
+      let transformedData: (number | null)[] | ({
+        x: number;
+        y: number
+      } | null)[] = dataset.data
 
       if (isXAxisLinear && isNumericLabels && Array.isArray(dataset.data) && dataset.data.length > 0) {
-        const firstItem = dataset.data[0];
-        if (firstItem !== null && typeof firstItem === "object" && "x" in firstItem && "y" in firstItem) {
-          transformedData = dataset.data as ({ x: number; y: number } | null)[];
+        const firstItem = dataset.data[0]
+        if (firstItem !== null && typeof firstItem === 'object' && 'x' in firstItem && 'y' in firstItem) {
+          transformedData = dataset.data as ({
+            x: number;
+            y: number
+          } | null)[]
         } else {
           transformedData = (dataset.data as (number | null)[]).map((y, index) => {
             if (y === null) {
-              return null;
+              return null
             }
-            return { x: labels[index] as number, y };
-          });
+            return {
+              x: labels[index] as number,
+              y,
+            }
+          })
         }
       }
 
@@ -77,7 +89,7 @@ const GenericChart = ({ config, labels }: Props) => {
         label: dataset.label,
         data: transformedData,
         borderColor: dataset.color,
-        backgroundColor: dataset.type === "bar" || dataset.type === "point" ? dataset.color : undefined,
+        backgroundColor: dataset.type === 'bar' || dataset.type === 'point' ? dataset.color : undefined,
         fill: false,
         lineTension: 0.4,
         spanGaps: true,
@@ -89,155 +101,201 @@ const GenericChart = ({ config, labels }: Props) => {
         stack: dataset.stack,
         order: dataset.stackOrder,
         maxBarThickness: 12,
-        pointRadius: dataset.pointRadius ?? (dataset.type === "point" ? 3 : 0),
-        showLine: dataset.type !== "point",
+        pointRadius: dataset.pointRadius ?? (dataset.type === 'point' ? 3 : 0),
+        showLine: dataset.type !== 'point',
         segment: {
           borderDash: (ctx: any) => {
-            return ctx.p0.skip || ctx.p1.skip ? [5, 5] : [];
+            return ctx.p0.skip || ctx.p1.skip ? [
+              5,
+              5,
+            ] : []
           },
         },
-      };
-
-      if (dataset.type === "bar") {
-        return { ...baseConfig, type: "bar" as const };
       }
 
-      return { ...baseConfig, type: "line" as const };
-    });
-  }, [datasets, database, id, labels, isXAxisLinear, isNumericLabels]);
+      if (dataset.type === 'bar') {
+        return {
+          ...baseConfig,
+          type: 'bar' as const,
+        }
+      }
+
+      return {
+        ...baseConfig,
+        type: 'line' as const,
+      }
+    })
+  }, [
+    datasets,
+    database,
+    id,
+    labels,
+    isXAxisLinear,
+    isNumericLabels,
+  ])
 
   const chartAxes = useMemo(() => {
     const generatedAxes: Record<string, any> = {
       x: isXAxisLinear
         ? {
-            type: "linear",
-            grid: { color: "#252525" },
-            ticks: axes.x?.valueFormatter
-              ? { callback: (value: number) => axes.x!.valueFormatter!(value) }
-              : undefined,
-          }
+          type: 'linear',
+          grid: { color: '#252525' },
+          ticks: axes.x?.valueFormatter
+            ? { callback: (value: number) => axes.x!.valueFormatter!(value) }
+            : undefined,
+        }
         : {
-            grid: { color: "#252525" },
-            ticks: {
-              maxRotation: 45,
-              minRotation: 45,
-              // First arg is tick.value (category index); second is position in ticks array — use value for labels[].
-              callback: (labelIndex: number) => {
-                if (typeof labels[labelIndex] === "string") {
-                  return labels[labelIndex];
-                }
-                if (typeof labels[labelIndex] === "number") {
-                  return labels[labelIndex].toString();
-                }
+          grid: { color: '#252525' },
+          ticks: {
+            maxRotation: 45,
+            minRotation: 45,
+            // First arg is tick.value (category index); second is position in ticks array — use value for labels[].
+            callback: (labelIndex: number) => {
+              if (typeof labels[labelIndex] === 'string') {
+                return labels[labelIndex]
+              }
+              if (typeof labels[labelIndex] === 'number') {
+                return labels[labelIndex].toString()
+              }
 
-                const date =
-                  labels[labelIndex] instanceof Date ? labels[labelIndex] : parseDate(labels[labelIndex]);
-                if (!date) {
-                  return "";
-                }
-                const daysAgo = getDaysAgo(date);
-                const currentYear = new Date().getUTCFullYear();
-                const dateYear = date.getUTCFullYear();
+              const date =
+                labels[labelIndex] instanceof Date ? labels[labelIndex] : parseDate(labels[labelIndex])
+              if (!date) {
+                return ''
+              }
+              const daysAgo = getDaysAgo(date)
+              const currentYear = new Date().getUTCFullYear()
+              const dateYear = date.getUTCFullYear()
 
-                if (labels.length > 30) {
-                  return dateYear === currentYear
-                    ? dayjs(date).utc().format("D MMM")
-                    : formatDate(date, "DD MMMM YYYY");
-                }
+              if (labels.length > 30) {
+                return dateYear === currentYear
+                  ? dayjs(date).utc().format('D MMM')
+                  : formatDate(date, 'DD MMMM YYYY')
+              }
 
-                if (daysAgo === 0) {
-                  return "Now";
-                }
-                if (daysAgo === 1) {
-                  return "Yesterday";
-                }
-                return `${daysAgo}d ago`;
-              },
+              if (daysAgo === 0) {
+                return 'Now'
+              }
+              if (daysAgo === 1) {
+                return 'Yesterday'
+              }
+              return `${daysAgo}d ago`
             },
           },
-    };
+        },
+    }
 
-    Object.entries(axes).forEach(([axisId, axis]) => {
-      const previousAxis = generatedAxes[axisId];
-      // Do not replace x-axis tick formatting from the block above: category labels (and linear x
-      // with valueFormatter) must keep their callbacks; otherwise ticks show raw indices / numbers.
-      const preserveXTicks = axisId === "x" && previousAxis?.ticks !== undefined;
+    Object.entries(axes).forEach(([
+      axisId,
+      axis,
+    ]) => {
+      const previousAxis = generatedAxes[axisId]
+      /*
+       * Do not replace x-axis tick formatting from the block above: category labels (and linear x
+       * with valueFormatter) must keep their callbacks; otherwise ticks show raw indices / numbers.
+       */
+      const preserveXTicks = axisId === 'x' && previousAxis?.ticks !== undefined
 
       generatedAxes[axisId] = {
         position: axis.position,
         reverse: axis.reverse,
         display: axis.hideOnMobile && isMobile ? false : axis.display,
-        grid: { drawOnChartArea: axisId === "y", color: axisId === "y" ? "#252525" : "" },
-        title: { display: true, text: axis.displayName, color: "#ffffff" },
+        grid: {
+          drawOnChartArea: axisId === 'y',
+          color: axisId === 'y' ? '#252525' : '',
+        },
+        title: {
+          display: true,
+          text: axis.displayName,
+          color: '#ffffff',
+        },
         ticks: preserveXTicks
           ? previousAxis.ticks
           : {
-              callback: (value: number) => {
-                // Format the value to avoid excessive decimal places
-                const formattedValue = Number(Number(value).toFixed(4));
-                return axis.valueFormatter?.(formattedValue) ?? formattedValue.toString();
-              },
+            callback: (value: number) => {
+              // Format the value to avoid excessive decimal places
+              const formattedValue = Number(Number(value).toFixed(4))
+              return axis.valueFormatter?.(formattedValue) ?? formattedValue.toString()
             },
+          },
         min: axis.min,
         max: axis.max,
-      };
-    });
+      }
+    })
 
-    return generatedAxes;
-  }, [axes, isMobile, labels, isXAxisLinear]);
+    return generatedAxes
+  }, [
+    axes,
+    isMobile,
+    labels,
+    isXAxisLinear,
+  ])
 
   const formattedLabels = useMemo(() => {
     if (isXAxisLinear && isNumericLabels) {
-      return labels.map(value => (typeof value === "number" ? value.toString() : value));
+      return labels.map(value => (typeof value === 'number' ? value.toString() : value))
     }
 
     return labels.map(value => {
-      if (typeof value === "string") {
-        return value;
+      if (typeof value === 'string') {
+        return value
       }
-      if (typeof value === "number") {
-        return value.toString();
+      if (typeof value === 'number') {
+        return value.toString()
       }
-      const formattedDate = formatChartDate(value);
+      const formattedDate = formatChartDate(value)
       if (formattedDate === formatDateMinimal(getDaysAgoDate(0))) {
-        return "Now";
+        return 'Now'
       }
       if (formattedDate === formatDateMinimal(getDaysAgoDate(1))) {
-        return "Yesterday";
+        return 'Yesterday'
       }
-      return formattedDate;
-    });
-  }, [labels, isXAxisLinear, isNumericLabels]);
+      return formattedDate
+    })
+  }, [
+    labels,
+    isXAxisLinear,
+    isNumericLabels,
+  ])
 
   const chartOptions = useMemo(() => {
-    type LineChartOptions = ChartOptions<"line">;
-    type LineScales = NonNullable<LineChartOptions["scales"]>;
+    type LineChartOptions = ChartOptions<'line'>
+    type LineScales = NonNullable<LineChartOptions['scales']>
 
-    const mergedScales: LineScales = { ...chartAxes };
-    const customScales = (customOptions as LineChartOptions | undefined)?.scales;
+    const mergedScales: LineScales = { ...chartAxes }
+    const customScales = (customOptions as LineChartOptions | undefined)?.scales
     if (customScales) {
       Object.keys(customScales).forEach(axisId => {
-        const existingAxis = mergedScales[axisId];
-        const customAxis = customScales[axisId];
+        const existingAxis = mergedScales[axisId]
+        const customAxis = customScales[axisId]
         mergedScales[axisId] = {
           ...existingAxis,
           ...customAxis,
           ticks:
             existingAxis?.ticks && customAxis?.ticks
-              ? { ...existingAxis.ticks, ...customAxis.ticks }
+              ? {
+                ...existingAxis.ticks,
+                ...customAxis.ticks,
+              }
               : customAxis?.ticks || existingAxis?.ticks,
           title:
             existingAxis?.title && customAxis?.title
-              ? { ...existingAxis.title, ...customAxis.title }
+              ? {
+                ...existingAxis.title,
+                ...customAxis.title,
+              }
               : customAxis?.title || existingAxis?.title,
-        } as LineScales[string];
-      });
+        } as LineScales[string]
+      })
     }
 
     return {
       maintainAspectRatio: false,
       responsive: true,
-      interaction: { mode: "index" as const, intersect: false },
+      interaction: {
+        mode: 'index' as const,
+        intersect: false,
+      },
       scales: mergedScales,
       elements: {
         line: {
@@ -246,46 +304,46 @@ const GenericChart = ({ config, labels }: Props) => {
         point: {
           radius: (ctx: any) => {
             if (labels.length > 90) {
-              return 0;
+              return 0
             }
-            const dataset = ctx.chart?.data?.datasets?.[ctx.datasetIndex];
+            const dataset = ctx.chart?.data?.datasets?.[ctx.datasetIndex]
             if (!dataset) {
-              return 3;
+              return 3
             }
-            return dataset.type === "point" ? dataset.pointRadius || 3 : 3;
+            return dataset.type === 'point' ? dataset.pointRadius || 3 : 3
           },
           hoverRadius: (ctx: any) => {
             if (labels.length > 365) {
-              return 0;
+              return 0
             }
             if (labels.length > 90) {
-              return 2;
+              return 2
             }
-            const dataset = ctx.chart?.data?.datasets?.[ctx.datasetIndex];
+            const dataset = ctx.chart?.data?.datasets?.[ctx.datasetIndex]
             if (!dataset) {
-              return 4;
+              return 4
             }
-            return dataset.type === "point" ? (dataset.pointRadius || 3) + 2 : 4;
+            return dataset.type === 'point' ? (dataset.pointRadius || 3) + 2 : 4
           },
         },
       },
       plugins: {
         legend: {
-          position: "top" as const,
+          position: 'top' as const,
           labels: {
-            color: "white",
+            color: 'white',
             filter: (legendItem: any, chartData: any) => {
-              const dataset = chartData.datasets[legendItem.datasetIndex];
-              return dataset.showLegend !== false;
+              const dataset = chartData.datasets[legendItem.datasetIndex]
+              return dataset.showLegend !== false
             },
           },
           onClick: (_: any, legendItem: any, legend: any) => {
-            const index = legendItem.datasetIndex;
-            const chart = legend.chart;
-            const willBeVisible = !chart.isDatasetVisible(index);
-            chart[willBeVisible ? "show" : "hide"](index);
+            const index = legendItem.datasetIndex
+            const chart = legend.chart
+            const willBeVisible = !chart.isDatasetVisible(index)
+            chart[willBeVisible ? 'show' : 'hide'](index)
             if (id) {
-              database.setChartLegend(id, legendItem.text, willBeVisible);
+              database.setChartLegend(id, legendItem.text, willBeVisible)
             }
           },
         },
@@ -293,52 +351,62 @@ const GenericChart = ({ config, labels }: Props) => {
           callbacks: {
             title: (context: any) => {
               if (isXAxisLinear && isNumericLabels) {
-                const xValue = context[0].parsed.x;
-                return axes.x?.valueFormatter?.(xValue) ?? `${xValue.toFixed(1)}%`;
+                const xValue = context[0].parsed.x
+                return axes.x?.valueFormatter?.(xValue) ?? `${xValue.toFixed(1)}%`
               }
 
-              const value = labels[context[0].dataIndex];
-              if (typeof value === "string") {
-                return value;
+              const value = labels[context[0].dataIndex]
+              if (typeof value === 'string') {
+                return value
               }
-              if (typeof value === "number") {
-                return axes.x?.valueFormatter?.(value) ?? value.toString();
+              if (typeof value === 'number') {
+                return axes.x?.valueFormatter?.(value) ?? value.toString()
               }
 
-              const date = value instanceof Date ? value : parseDate(value);
+              const date = value instanceof Date ? value : parseDate(value)
               if (!date) {
-                return "";
+                return ''
               }
-              const differenceInDays = getDaysAgo(date);
-              const formattedDate = formatDate(date, "dddd, DD MMM, YYYY");
+              const differenceInDays = getDaysAgo(date)
+              const formattedDate = formatDate(date, 'dddd, DD MMM, YYYY')
 
               if (differenceInDays === 0) {
-                return `${formattedDate} (Now)`;
+                return `${formattedDate} (Now)`
               }
               if (differenceInDays === 1) {
-                return `${formattedDate} (Yesterday)`;
+                return `${formattedDate} (Yesterday)`
               }
 
-              const maxUnits = differenceInDays <= 30 ? 1 : differenceInDays < 395 ? 2 : 3;
-              return `${formattedDate} (${timeAgo(date, maxUnits)})`;
+              const maxUnits = differenceInDays <= 30 ? 1 : differenceInDays < 395 ? 2 : 3
+              return `${formattedDate} (${timeAgo(date, maxUnits)})`
             },
             label: (context: any) => {
-              const value = Number(context.parsed.y);
-              const datasetConfig = datasets[context.datasetIndex];
+              const value = Number(context.parsed.y)
+              const datasetConfig = datasets[context.datasetIndex]
               if (datasetConfig.labelFormatter) {
-                return datasetConfig.labelFormatter(value);
+                return datasetConfig.labelFormatter(value)
               }
-              const chartDataset = context.chart.data.datasets[context.datasetIndex];
-              return `${chartDataset.label || datasetConfig.label}: ${value.toFixed(2)}`;
+              const chartDataset = context.chart.data.datasets[context.datasetIndex]
+              return `${chartDataset.label || datasetConfig.label}: ${value.toFixed(2)}`
             },
           },
         },
       },
-      ...Object.fromEntries(Object.entries(customOptions || {}).filter(([key]) => key !== "scales")),
-    };
-  }, [chartAxes, labels, datasets, database, id, customOptions, isXAxisLinear, isNumericLabels, axes]);
+      ...Object.fromEntries(Object.entries(customOptions || {}).filter(([ key ]) => key !== 'scales')),
+    }
+  }, [
+    chartAxes,
+    labels,
+    datasets,
+    database,
+    id,
+    customOptions,
+    isXAxisLinear,
+    isNumericLabels,
+    axes,
+  ])
 
-  const showNoData = !datasets.some(dataset => dataset.data.some(value => value !== null));
+  const showNoData = !datasets.some(dataset => dataset.data.some(value => value !== null))
 
   return (
     <div className="relative flex h-full w-full">
@@ -351,24 +419,27 @@ const GenericChart = ({ config, labels }: Props) => {
         <Line
           className="h-full max-w-full"
           options={chartOptions}
-          data={{ labels: formattedLabels, datasets: chartDatasets as any }}
+          data={{
+            labels: formattedLabels,
+            datasets: chartDatasets as any,
+          }}
           plugins={[
             {
-              id: "paddingBelowLegends",
+              id: 'paddingBelowLegends',
               beforeInit(chart: any) {
-                const legend = chart.legend;
-                const originalFit = legend.fit;
+                const legend = chart.legend
+                const originalFit = legend.fit
                 legend.fit = function fit() {
-                  originalFit.bind(legend)();
-                  legend.height = legend.height + 8;
-                };
+                  originalFit.bind(legend)()
+                  legend.height = legend.height + 8
+                }
               },
             },
           ]}
         />
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default GenericChart;
+export default GenericChart

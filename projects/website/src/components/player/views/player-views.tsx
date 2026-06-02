@@ -1,76 +1,95 @@
-"use client";
+'use client'
 
-import { HistoryMode } from "@/common/player/history-mode";
-import Card from "@/components/card";
-import { Spinner } from "@/components/spinner";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useIsMobile } from "@/contexts/viewport-context";
-import useDatabase from "@/hooks/use-database";
-import { useStableLiveQuery } from "@/hooks/use-stable-live-query";
-import { GlobeAmericasIcon } from "@heroicons/react/24/solid";
-import ScoreSaberPlayer from "@ssr/common/player/impl/scoresaber-player";
-import { ScoreSaberPlayerHistoryEntries } from "@ssr/common/schemas/scoresaber/player/history";
-import { ssrApi } from "@ssr/common/utils/ssr-api";
-import { useQuery } from "@tanstack/react-query";
-import { Award, CalculatorIcon, ChartBarIcon, SwordIcon, TrendingUpIcon, TriangleIcon } from "lucide-react";
-import dynamic from "next/dynamic";
-import { ReactElement, useState } from "react";
-import { cn } from "../../../common/utils";
-import PlayerRankingsButton from "../buttons/player-rankings-button";
+import { HistoryMode } from '@/common/player/history-mode'
+import Card from '@/components/card'
+import { Spinner } from '@/components/spinner'
+import { Button } from '@/components/ui/button'
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select'
+import { useIsMobile } from '@/contexts/viewport-context'
+import useDatabase from '@/hooks/use-database'
+import { useStableLiveQuery } from '@/hooks/use-stable-live-query'
+import { GlobeAmericasIcon } from '@heroicons/react/24/solid'
+import ScoreSaberPlayer from '@ssr/common/player/impl/scoresaber-player'
+import { ScoreSaberPlayerHistoryEntries } from '@ssr/common/schemas/scoresaber/player/history'
+import { ssrApi } from '@ssr/common/utils/ssr-api'
+import { useQuery } from '@tanstack/react-query'
+import {
+  Award, CalculatorIcon, ChartBarIcon, SwordIcon, TrendingUpIcon, TriangleIcon,
+} from 'lucide-react'
+import dynamic from 'next/dynamic'
+import { ReactElement, useState } from 'react'
+import { cn } from '../../../common/utils'
+import PlayerRankingsButton from '../buttons/player-rankings-button'
 
 function ChartPanelSkeleton() {
   return (
     <div className="flex h-[400px] items-center justify-center">
       <Spinner />
     </div>
-  );
+  )
 }
 
-const PlayerSimpleRankingChart = dynamic(() => import("./impl/player-simple-ranking-chart"), {
+const PlayerSimpleRankingChart = dynamic(() => import('./impl/player-simple-ranking-chart'), {
   ssr: false,
   loading: ChartPanelSkeleton,
-});
-const PlayerAdvancedRankingChart = dynamic(() => import("./impl/player-advanced-ranking-chart"), {
+})
+const PlayerAdvancedRankingChart = dynamic(() => import('./impl/player-advanced-ranking-chart'), {
   ssr: false,
   loading: ChartPanelSkeleton,
-});
-const PlayerAccuracyChart = dynamic(() => import("./impl/player-accuracy-chart"), {
+})
+const PlayerAccuracyChart = dynamic(() => import('./impl/player-accuracy-chart'), {
   ssr: false,
   loading: ChartPanelSkeleton,
-});
-const PlayerScoresChart = dynamic(() => import("./impl/player-scores-chart"), {
+})
+const PlayerScoresChart = dynamic(() => import('./impl/player-scores-chart'), {
   ssr: false,
   loading: ChartPanelSkeleton,
-});
-const ScoresGraphChart = dynamic(() => import("./impl/scores-graph-chart"), {
+})
+const ScoresGraphChart = dynamic(() => import('./impl/scores-graph-chart'), {
   ssr: false,
   loading: ChartPanelSkeleton,
-});
-const SkillTriangleChart = dynamic(() => import("./impl/skill-triangle-chart"), {
+})
+const SkillTriangleChart = dynamic(() => import('./impl/skill-triangle-chart'), {
   ssr: false,
   loading: ChartPanelSkeleton,
-});
-const PlusPpCalculator = dynamic(() => import("./impl/plus-pp-calculator"), {
+})
+const PlusPpCalculator = dynamic(() => import('./impl/plus-pp-calculator'), {
   ssr: false,
   loading: ChartPanelSkeleton,
-});
-const PlayerAccuracyBadgesChart = dynamic(() => import("./impl/player-accuracy-badges-chart"), {
+})
+const PlayerAccuracyBadgesChart = dynamic(() => import('./impl/player-accuracy-badges-chart'), {
   ssr: false,
   loading: ChartPanelSkeleton,
-});
+})
 
-const SINCE_TRACKED_DAYS = -1;
+const SINCE_TRACKED_DAYS = -1
 
 const DATE_PRESETS = [
-  { label: "Last 50 Days", value: 50 },
-  { label: "Last 90 Days", value: 90 },
-  { label: "Last 180 Days", value: 180 },
-  { label: "Last 365 Days", value: 365 },
-  { label: "Since Tracked", value: SINCE_TRACKED_DAYS },
-] as const;
+  {
+    label: 'Last 50 Days',
+    value: 50,
+  },
+  {
+    label: 'Last 90 Days',
+    value: 90,
+  },
+  {
+    label: 'Last 180 Days',
+    value: 180,
+  },
+  {
+    label: 'Last 365 Days',
+    value: 365,
+  },
+  {
+    label: 'Since Tracked',
+    value: SINCE_TRACKED_DAYS,
+  },
+] as const
 
-const DEFAULT_DAYS_AGO = 50;
+const DEFAULT_DAYS_AGO = 50
 
 type ViewMeta = {
   index: number;
@@ -78,59 +97,59 @@ type ViewMeta = {
   showDateRangeSelector: boolean;
   isChart: boolean;
   icon: React.ElementType;
-};
+}
 
 const VIEW_METAS: ViewMeta[] = [
   {
     index: 0,
-    label: "Ranking",
+    label: 'Ranking',
     icon: GlobeAmericasIcon,
     showDateRangeSelector: true,
     isChart: true,
   },
   {
     index: 1,
-    label: "Accuracy",
+    label: 'Accuracy',
     icon: TrendingUpIcon,
     showDateRangeSelector: true,
     isChart: true,
   },
   {
     index: 2,
-    label: "Scores",
+    label: 'Scores',
     icon: SwordIcon,
     showDateRangeSelector: true,
     isChart: true,
   },
   {
     index: 3,
-    label: "Scores Graph",
+    label: 'Scores Graph',
     icon: ChartBarIcon,
     showDateRangeSelector: false,
     isChart: true,
   },
   {
     index: 4,
-    label: "Skill Triangle",
+    label: 'Skill Triangle',
     icon: TriangleIcon,
     showDateRangeSelector: false,
     isChart: false,
   },
   {
     index: 5,
-    label: "PP Calculator",
+    label: 'PP Calculator',
     icon: CalculatorIcon,
     showDateRangeSelector: false,
     isChart: false,
   },
   {
     index: 6,
-    label: "Acc Badges",
+    label: 'Acc Badges',
     icon: Award,
     showDateRangeSelector: true,
     isChart: true,
   },
-];
+]
 
 function PlayerViewPanel({
   viewIndex,
@@ -148,23 +167,23 @@ function PlayerViewPanel({
   switch (viewIndex) {
     case 0:
       if (historyMode === HistoryMode.ADVANCED) {
-        return <PlayerAdvancedRankingChart statisticHistory={statisticHistory} daysAmount={actualDaysAgo} />;
+        return <PlayerAdvancedRankingChart statisticHistory={statisticHistory} daysAmount={actualDaysAgo} />
       }
-      return <PlayerSimpleRankingChart statisticHistory={statisticHistory} daysAmount={actualDaysAgo} />;
+      return <PlayerSimpleRankingChart statisticHistory={statisticHistory} daysAmount={actualDaysAgo} />
     case 1:
-      return <PlayerAccuracyChart statisticHistory={statisticHistory} daysAmount={actualDaysAgo} />;
+      return <PlayerAccuracyChart statisticHistory={statisticHistory} daysAmount={actualDaysAgo} />
     case 2:
-      return <PlayerScoresChart statisticHistory={statisticHistory} daysAmount={actualDaysAgo} />;
+      return <PlayerScoresChart statisticHistory={statisticHistory} daysAmount={actualDaysAgo} />
     case 3:
-      return <ScoresGraphChart player={player} />;
+      return <ScoresGraphChart player={player} />
     case 4:
-      return <SkillTriangleChart player={player} />;
+      return <SkillTriangleChart player={player} />
     case 5:
-      return <PlusPpCalculator player={player} />;
+      return <PlusPpCalculator player={player} />
     case 6:
-      return <PlayerAccuracyBadgesChart statisticHistory={statisticHistory} daysAmount={actualDaysAgo} />;
+      return <PlayerAccuracyBadgesChart statisticHistory={statisticHistory} daysAmount={actualDaysAgo} />
     default:
-      return <PlayerSimpleRankingChart statisticHistory={statisticHistory} daysAmount={actualDaysAgo} />;
+      return <PlayerSimpleRankingChart statisticHistory={statisticHistory} daysAmount={actualDaysAgo} />
   }
 }
 
@@ -183,7 +202,7 @@ function ViewSelector({
         <Button
           key={view.index}
           onClick={() => onViewSelect(view)}
-          variant={view.index === selectedView.index ? "default" : "outline"}
+          variant={view.index === selectedView.index ? 'default' : 'outline'}
           size="sm"
           className="flex items-center gap-2"
         >
@@ -192,7 +211,7 @@ function ViewSelector({
         </Button>
       ))}
     </div>
-  );
+  )
 }
 
 function DateRangeSelector({
@@ -215,24 +234,34 @@ function DateRangeSelector({
         ))}
       </SelectContent>
     </Select>
-  );
+  )
 }
 
 export default function PlayerViews({ player }: { player: ScoreSaberPlayer }) {
-  const isMobile = useIsMobile("2xl");
-  const database = useDatabase();
-  const historyMode = useStableLiveQuery(() => database.getHistoryMode());
+  const isMobile = useIsMobile('2xl')
+  const database = useDatabase()
+  const historyMode = useStableLiveQuery(() => database.getHistoryMode())
 
-  const [selectedViewIndex, setSelectedViewIndex] = useState(0);
-  const [daysAgo, setDaysAgo] = useState(DEFAULT_DAYS_AGO);
+  const [
+    selectedViewIndex,
+    setSelectedViewIndex,
+  ] = useState(0)
+  const [
+    daysAgo,
+    setDaysAgo,
+  ] = useState(DEFAULT_DAYS_AGO)
 
   const { data: statisticHistory } = useQuery({
-    queryKey: ["player-statistic-history", player.id, daysAgo],
+    queryKey: [
+      'player-statistic-history',
+      player.id,
+      daysAgo,
+    ],
     queryFn: () => ssrApi.getPlayerStatisticHistory(player.id, daysAgo),
     placeholderData: data => data,
-  });
+  })
 
-  const selectedView = VIEW_METAS[selectedViewIndex] ?? VIEW_METAS[0];
+  const selectedView = VIEW_METAS[selectedViewIndex] ?? VIEW_METAS[0]
   return (
     <div className="flex flex-col gap-(--spacing-md)">
       <ViewSelector
@@ -242,7 +271,7 @@ export default function PlayerViews({ player }: { player: ScoreSaberPlayer }) {
       />
 
       {statisticHistory && historyMode !== undefined ? (
-        <Card className={cn("bg-chart-card", selectedView.isChart ? "p-2.5" : "")}>
+        <Card className={cn('bg-chart-card', selectedView.isChart ? 'p-2.5' : '')}>
           <PlayerViewPanel
             viewIndex={selectedView.index}
             player={player}
@@ -266,5 +295,5 @@ export default function PlayerViews({ player }: { player: ScoreSaberPlayer }) {
         </div>
       )}
     </div>
-  );
+  )
 }

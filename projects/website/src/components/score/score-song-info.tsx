@@ -1,11 +1,11 @@
-import { cn } from "@/common/utils";
-import FallbackLink from "@/components/fallback-link";
-import { env } from "@ssr/common/env";
-import { BeatSaverMap } from "@ssr/common/schemas/beatsaver/map/map";
-import { MapDifficulty } from "@ssr/common/schemas/map/map-difficulty";
-import { getDifficulty } from "@ssr/common/utils/song-utils";
-import Image from "next/image";
-import LeaderboardSongName from "./leaderboard-song-name";
+import { cn } from '@/common/utils'
+import FallbackLink from '@/components/fallback-link'
+import { env } from '@ssr/common/env'
+import { BeatSaverMap } from '@ssr/common/schemas/beatsaver/map/map'
+import { MapDifficulty } from '@ssr/common/schemas/map/map-difficulty'
+import { getDifficulty } from '@ssr/common/utils/song-utils'
+import Image from 'next/image'
+import LeaderboardSongName from './leaderboard-song-name'
 
 interface ScoreSongInfoProps {
   song: {
@@ -41,10 +41,10 @@ export default function ScoreSongInfo({
   className,
 }: ScoreSongInfoProps) {
   const mappersProfile =
-    beatSaverMap != undefined ? `${env.NEXT_PUBLIC_BEATSAVER_URL}/profile/${beatSaverMap.author.id}` : undefined;
+    beatSaverMap != undefined ? `${env.NEXT_PUBLIC_BEATSAVER_URL}/profile/${beatSaverMap.author.id}` : undefined
 
-  const diff = getDifficulty(level.difficulty);
-  const MetricIcon = metric?.icon;
+  const diff = getDifficulty(level.difficulty)
+  const MetricIcon = metric?.icon
 
   return (
     <div className="flex w-full items-center gap-4">
@@ -65,7 +65,8 @@ export default function ScoreSongInfo({
           />
         </div>
         <div
-          className="absolute -right-2 bottom-1 inline-flex h-4.5 w-fit cursor-default items-center justify-end rounded-sm px-1 text-right text-[0.65rem] font-semibold shadow-sm"
+          className="absolute -right-2 bottom-1 inline-flex h-4.5 w-fit cursor-default items-center justify-end
+          rounded-sm px-1 text-right text-[0.65rem] font-semibold shadow-sm"
           style={{
             backgroundColor: `color-mix(in srgb, ${diff.color} 95%, transparent)`,
           }}
@@ -91,14 +92,14 @@ export default function ScoreSongInfo({
 
           {/* Author Info */}
           <div className="flex flex-row items-end gap-1.5 text-[12.5px] leading-none">
-            <p className={cn("line-clamp-2 text-gray-400", className)}>
+            <p className={cn('line-clamp-2 text-gray-400', className)}>
               {song.authorName}
               <span className="px-1 text-gray-500">|</span>
               <span className="text-song-mapper">
                 <FallbackLink
                   href={mappersProfile}
                   className={cn(
-                    mappersProfile && "hover:text-primary/80 text-xs leading-none transition-colors"
+                    mappersProfile && 'hover:text-primary/80 text-xs leading-none transition-colors',
                   )}
                 >
                   {level.authorName}
@@ -109,5 +110,5 @@ export default function ScoreSongInfo({
         </div>
       </div>
     </div>
-  );
+  )
 }

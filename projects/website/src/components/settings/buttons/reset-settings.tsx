@@ -1,16 +1,16 @@
-"use client";
+'use client'
 
-import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
-import useDatabase from "@/hooks/use-database";
-import { Button } from "../../ui/button";
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog'
+import useDatabase from '@/hooks/use-database'
+import { Button } from '../../ui/button'
 
 export default function ResetSettings() {
-  const database = useDatabase();
+  const database = useDatabase()
 
   async function reset() {
-    await database.reset();
+    await database.reset()
     // Refresh the page
-    window.location.reload();
+    window.location.reload()
   }
 
   return (
@@ -22,5 +22,5 @@ export default function ResetSettings() {
       variant="destructive"
       onConfirm={async () => await reset()}
     />
-  );
+  )
 }

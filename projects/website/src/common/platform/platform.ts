@@ -1,5 +1,5 @@
-import { ReactNode } from "react";
-import { PlatformType } from "./platform-repository";
+import { ReactNode } from 'react'
+import { PlatformType } from './platform-repository'
 
 export type PlatformOptions = {
   logo?: ReactNode;
@@ -11,27 +11,27 @@ export type PlatformOptions = {
    * @returns true if the platform is available for the player, false otherwise
    */
   displayPredicate: (playerId: string) => Promise<boolean>;
-};
+}
 
 export abstract class Platform {
   /**
    * The id of this platform
    */
-  private readonly type: PlatformType;
+  private readonly type: PlatformType
 
   /**
    * The display name of this platform
    */
-  private readonly displayName: string;
+  private readonly displayName: string
   /**
    * The options for this platform
    */
-  private readonly options: PlatformOptions;
+  private readonly options: PlatformOptions
 
   constructor(type: PlatformType, displayName: string, options: PlatformOptions) {
-    this.type = type;
-    this.displayName = displayName;
-    this.options = options;
+    this.type = type
+    this.displayName = displayName
+    this.options = options
   }
 
   /**
@@ -40,16 +40,17 @@ export abstract class Platform {
    * @returns the type of this platform
    */
   public getType(): PlatformType {
-    return this.type;
+    return this.type
   }
 
-  /**n
+  /**
+   *n
    * Get the display name of this platform
    *
    * @returns the display name of this platform
    */
   public getDisplayName(): string {
-    return this.displayName;
+    return this.displayName
   }
 
   /**
@@ -58,7 +59,7 @@ export abstract class Platform {
    * @returns the options for this platform
    */
   public getOptions(): PlatformOptions {
-    return this.options;
+    return this.options
   }
 
   /**
@@ -67,6 +68,6 @@ export abstract class Platform {
    * @returns the logo for this platform
    */
   public getLogo(): ReactNode | undefined {
-    return this.options.logo;
+    return this.options.logo
   }
 }

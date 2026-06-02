@@ -1,119 +1,134 @@
-import SimpleTooltip from "@/components/simple-tooltip";
-import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Slider } from "@/components/ui/slider";
-import { useIsMobile } from "@/contexts/viewport-context";
-import { ScoreSaberCurve } from "@ssr/common/leaderboard-curve/scoresaber-curve";
-import type { PlayerPpsResponse } from "@ssr/common/schemas/response/player/player-pps";
-import { ScoreSaberLeaderboard } from "@ssr/common/schemas/scoresaber/leaderboard/leaderboard";
-import { ScoreSaberScore } from "@ssr/common/schemas/scoresaber/score/score";
-import { hasModifier, Modifier } from "@ssr/common/score/modifier";
-import { formatScoreAccuracy } from "@ssr/common/utils/score.util";
-import { updateScoreWeights } from "@ssr/common/utils/scoresaber.util";
-import { ssrApi } from "@ssr/common/utils/ssr-api";
-import { useQuery } from "@tanstack/react-query";
-import { Cog, Flag, Undo2 } from "lucide-react";
-import { useState } from "react";
+import SimpleTooltip from '@/components/simple-tooltip'
+import { Button } from '@/components/ui/button'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Slider } from '@/components/ui/slider'
+import { useIsMobile } from '@/contexts/viewport-context'
+import { ScoreSaberCurve } from '@ssr/common/leaderboard-curve/scoresaber-curve'
+import type { PlayerPpsResponse } from '@ssr/common/schemas/response/player/player-pps'
+import { ScoreSaberLeaderboard } from '@ssr/common/schemas/scoresaber/leaderboard/leaderboard'
+import { ScoreSaberScore } from '@ssr/common/schemas/scoresaber/score/score'
+import { hasModifier, Modifier } from '@ssr/common/score/modifier'
+import { formatScoreAccuracy } from '@ssr/common/utils/score.util'
+import { updateScoreWeights } from '@ssr/common/utils/scoresaber.util'
+import { ssrApi } from '@ssr/common/utils/ssr-api'
+import { useQuery } from '@tanstack/react-query'
+import { Cog, Flag, Undo2 } from 'lucide-react'
+import { useState } from 'react'
 
 type ScoreEditorButtonProps = {
   score: ScoreSaberScore;
   leaderboard: ScoreSaberLeaderboard;
   updateScore: (score: ScoreSaberScore) => void;
-};
+}
 
-type ModifiedScore = PlayerPpsResponse["scores"];
+type ModifiedScore = PlayerPpsResponse['scores']
 
-const MIN_ACCURACY = 70;
+const MIN_ACCURACY = 70
 
 export default function ScoreSaberScoreEditorButton({
   score,
   leaderboard,
   updateScore,
 }: ScoreEditorButtonProps) {
-  const isMobile = useIsMobile();
-  const [open, setOpen] = useState(false);
+  const isMobile = useIsMobile()
+  const [
+    open,
+    setOpen,
+  ] = useState(false)
 
-  const maxScore = leaderboard.maxScore || 1; // Use 1 to prevent division by zero
-  const accuracy = (score.score / maxScore) * 100 * (hasModifier(score.modifiers, Modifier.NF) ? 0.5 : 1);
+  const maxScore = leaderboard.maxScore || 1 // Use 1 to prevent division by zero
+  const accuracy = (score.score / maxScore) * 100 * (hasModifier(score.modifiers, Modifier.NF) ? 0.5 : 1)
 
-  const [baseValue, setBaseValue] = useState(Math.max(MIN_ACCURACY, Math.floor(accuracy))); // 1, 2, 3, etc.
-  const [decimalValue, setDecimalValue] = useState(accuracy - Math.floor(accuracy)); // 0.0, 0.1, 0.2, etc.
+  const [
+    baseValue,
+    setBaseValue,
+  ] = useState(Math.max(MIN_ACCURACY, Math.floor(accuracy))) // 1, 2, 3, etc.
+  const [
+    decimalValue,
+    setDecimalValue,
+  ] = useState(accuracy - Math.floor(accuracy)) // 0.0, 0.1, 0.2, etc.
 
   const { data: rankedPps } = useQuery({
-    queryKey: ["ranked-pps", score.playerId],
+    queryKey: [
+      'ranked-pps',
+      score.playerId,
+    ],
     queryFn: () => ssrApi.getPlayerPps(score.playerId),
     enabled: open,
-  });
+  })
 
-  const [modifiedScores, setModifiedScores] = useState<ModifiedScore>();
+  const [
+    modifiedScores,
+    setModifiedScores,
+  ] = useState<ModifiedScore>()
 
   const updateScoreAndPP = (accuracy: number) => {
-    const newBaseScore = (accuracy / 100) * maxScore;
+    const newBaseScore = (accuracy / 100) * maxScore
     updateScore({
       ...score,
       score: newBaseScore,
-    });
+    })
 
     if (rankedPps) {
-      let newModifiedScores = [...rankedPps.scores];
+      let newModifiedScores = [ ...rankedPps.scores ]
       for (let i = 0; i < newModifiedScores.length; i++) {
-        const modifiedScore = newModifiedScores[i];
+        const modifiedScore = newModifiedScores[i]
         if (score.scoreId == modifiedScore.scoreId) {
           newModifiedScores[i] = {
             ...modifiedScore,
             pp: ScoreSaberCurve.getPp(leaderboard.stars, accuracy),
-          };
+          }
         }
       }
-      newModifiedScores = newModifiedScores.sort((a, b) => b.pp - a.pp);
+      newModifiedScores = newModifiedScores.sort((a, b) => b.pp - a.pp)
       updateScoreWeights(
         newModifiedScores.map(score => ({
           pp: score.pp,
           weight: score.weight,
           scoreId: score.scoreId,
-        }))
-      );
-      setModifiedScores(newModifiedScores);
+        })),
+      )
+      setModifiedScores(newModifiedScores)
     }
-  };
+  }
 
   const handleBaseSliderChange = (value: number[]) => {
-    const baseVal = Math.max(1, Math.min(value[0], 100));
-    setBaseValue(baseVal);
-    const accuracy = baseVal + decimalValue;
-    updateScoreAndPP(accuracy);
-  };
+    const baseVal = Math.max(1, Math.min(value[0], 100))
+    setBaseValue(baseVal)
+    const accuracy = baseVal + decimalValue
+    updateScoreAndPP(accuracy)
+  }
 
   const handleDecimalSliderChange = (value: number[]) => {
-    const decimalVal = Math.max(0, Math.min(value[0], 0.99));
-    setDecimalValue(decimalVal);
-    const accuracy = baseValue + decimalVal;
-    updateScoreAndPP(accuracy);
-  };
+    const decimalVal = Math.max(0, Math.min(value[0], 0.99))
+    setDecimalValue(decimalVal)
+    const accuracy = baseValue + decimalVal
+    updateScoreAndPP(accuracy)
+  }
 
   const handleSliderReset = () => {
     const currentAccuracy =
-      (score.score / maxScore) * 100 * (hasModifier(score.modifiers, Modifier.NF) ? 0.5 : 1);
+      (score.score / maxScore) * 100 * (hasModifier(score.modifiers, Modifier.NF) ? 0.5 : 1)
     updateScore({
       ...score,
       score: (currentAccuracy / 100) * maxScore,
-    });
-    setBaseValue(() => Math.max(1, Math.floor(currentAccuracy)));
-    setDecimalValue(() => currentAccuracy - Math.floor(currentAccuracy));
-  };
+    })
+    setBaseValue(() => Math.max(1, Math.floor(currentAccuracy)))
+    setDecimalValue(() => currentAccuracy - Math.floor(currentAccuracy))
+  }
 
   const setAccuracyToFC = () => {
-    const fcAccuracy = score.beatLeaderScore!.fcAccuracy!;
-    setBaseValue(() => Math.max(1, Math.floor(fcAccuracy)));
-    setDecimalValue(() => fcAccuracy - Math.floor(fcAccuracy));
-    updateScoreAndPP(fcAccuracy);
-  };
+    const fcAccuracy = score.beatLeaderScore!.fcAccuracy!
+    setBaseValue(() => Math.max(1, Math.floor(fcAccuracy)))
+    setDecimalValue(() => fcAccuracy - Math.floor(fcAccuracy))
+    updateScoreAndPP(fcAccuracy)
+  }
 
   const ppGain =
     !rankedPps || !modifiedScores
       ? 0
       : ScoreSaberCurve.getTotalWeightedPp(modifiedScores.map(score => score.pp)) -
-        ScoreSaberCurve.getTotalWeightedPp(rankedPps.scores.map(score => score.pp));
+        ScoreSaberCurve.getTotalWeightedPp(rankedPps.scores.map(score => score.pp))
 
   return (
     <div className="relative flex cursor-default items-center justify-center">
@@ -122,11 +137,11 @@ export default function ScoreSaberScoreEditorButton({
         onOpenChange={open => {
           if (!open) {
             // Reset when closing
-            handleSliderReset();
-            setModifiedScores(undefined);
+            handleSliderReset()
+            setModifiedScores(undefined)
           }
 
-          setOpen(open);
+          setOpen(open)
         }}
       >
         <PopoverTrigger asChild>
@@ -135,7 +150,7 @@ export default function ScoreSaberScoreEditorButton({
           </Button>
         </PopoverTrigger>
 
-        <PopoverContent className="p-0" side={isMobile ? "top" : "left"}>
+        <PopoverContent className="p-0" side={isMobile ? 'top' : 'left'}>
           <div className="flex flex-col gap-4 p-3">
             {/* Accuracy Changer */}
             <div className="flex w-full flex-col gap-(--spacing-lg)">
@@ -180,7 +195,7 @@ export default function ScoreSaberScoreEditorButton({
                     min={MIN_ACCURACY}
                     max={99}
                     step={1}
-                    value={[baseValue]}
+                    value={[ baseValue ]}
                     onValueChange={handleBaseSliderChange}
                   />
                 </div>
@@ -196,7 +211,7 @@ export default function ScoreSaberScoreEditorButton({
                     min={0}
                     max={0.99}
                     step={0.01}
-                    value={[decimalValue]}
+                    value={[ decimalValue ]}
                     onValueChange={handleDecimalSliderChange}
                   />
                 </div>
@@ -213,5 +228,5 @@ export default function ScoreSaberScoreEditorButton({
         </PopoverContent>
       </Popover>
     </div>
-  );
+  )
 }

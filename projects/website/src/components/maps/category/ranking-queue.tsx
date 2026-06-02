@@ -1,24 +1,27 @@
-import { cn } from "@/common/utils";
-import Card from "@/components/card";
-import ScoreSongInfo from "@/components/score/score-song-info";
-import SimpleLink from "@/components/simple-link";
-import { Spinner } from "@/components/spinner";
-import { Button } from "@/components/ui/button";
-import { RankingQueueLeaderboard } from "@ssr/common/schemas/response/leaderboard/ranking-queue-leaderboards";
-import { formatNumberWithCommas } from "@ssr/common/utils/number-utils";
-import { ssrApi } from "@ssr/common/utils/ssr-api";
-import { formatDate, timeAgo } from "@ssr/common/utils/time-utils";
-import { useQuery } from "@tanstack/react-query";
-import { ChevronDownIcon, PlayIcon } from "lucide-react";
-import { useState } from "react";
-import SimpleTooltip from "../../simple-tooltip";
+import { cn } from '@/common/utils'
+import Card from '@/components/card'
+import ScoreSongInfo from '@/components/score/score-song-info'
+import SimpleLink from '@/components/simple-link'
+import { Spinner } from '@/components/spinner'
+import { Button } from '@/components/ui/button'
+import { RankingQueueLeaderboard } from '@ssr/common/schemas/response/leaderboard/ranking-queue-leaderboards'
+import { formatNumberWithCommas } from '@ssr/common/utils/number-utils'
+import { ssrApi } from '@ssr/common/utils/ssr-api'
+import { formatDate, timeAgo } from '@ssr/common/utils/time-utils'
+import { useQuery } from '@tanstack/react-query'
+import { ChevronDownIcon, PlayIcon } from 'lucide-react'
+import { useState } from 'react'
+import SimpleTooltip from '../../simple-tooltip'
 
 export default function RankingQueue() {
   const { data: rankingRequests, isLoading } = useQuery({
-    queryKey: ["ranking-queue"],
+    queryKey: [ 'ranking-queue' ],
     queryFn: async () => ssrApi.fetchRankingQueue(),
-  });
-  const [showOpenRankUnrank, setShowOpenRankUnrank] = useState(false);
+  })
+  const [
+    showOpenRankUnrank,
+    setShowOpenRankUnrank,
+  ] = useState(false)
 
   const renderRequests = (name: string, requests: RankingQueueLeaderboard[]) => {
     return (
@@ -92,20 +95,20 @@ export default function RankingQueue() {
                     {/* Created */}
                     <td className="px-3 py-1.5 text-center text-xs">
                       <SimpleTooltip
-                        display={<p>{formatDate(leaderboard.timestamp, "Do MMMM, YYYY HH:mm a")}</p>}
+                        display={<p>{formatDate(leaderboard.timestamp, 'Do MMMM, YYYY HH:mm a')}</p>}
                       >
                         <p className="text-gray-400">{timeAgo(leaderboard.timestamp)}</p>
                       </SimpleTooltip>
                     </td>
                   </tr>
-                );
+                )
               })}
             </tbody>
           </table>
         </div>
       </Card>
-    );
-  };
+    )
+  }
 
   if (isLoading) {
     return (
@@ -114,12 +117,12 @@ export default function RankingQueue() {
           <Spinner />
         </div>
       </Card>
-    );
+    )
   }
 
   return (
     <div className="flex flex-col gap-(--spacing-lg)">
-      {renderRequests("Next in Queue", rankingRequests?.nextInQueue ?? [])}
+      {renderRequests('Next in Queue', rankingRequests?.nextInQueue ?? [])}
 
       <Button
         variant="secondary"
@@ -127,13 +130,13 @@ export default function RankingQueue() {
         onClick={() => setShowOpenRankUnrank(!showOpenRankUnrank)}
       >
         <ChevronDownIcon
-          className={cn("h-4 w-4 transition-transform duration-200", showOpenRankUnrank ? "rotate-180" : "")}
+          className={cn('h-4 w-4 transition-transform duration-200', showOpenRankUnrank ? 'rotate-180' : '')}
         />
-        {(showOpenRankUnrank ? "Show" : "Hide") + " All Requests"}
+        {(showOpenRankUnrank ? 'Show' : 'Hide') + ' All Requests'}
       </Button>
 
       {showOpenRankUnrank &&
-        renderRequests("Open rank/unrank requests", rankingRequests?.openRankUnrank ?? [])}
+        renderRequests('Open rank/unrank requests', rankingRequests?.openRankUnrank ?? [])}
     </div>
-  );
+  )
 }

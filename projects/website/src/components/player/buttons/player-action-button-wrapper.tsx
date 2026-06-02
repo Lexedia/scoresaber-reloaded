@@ -3,5 +3,5 @@ export default function PlayerActionButtonWrapper({ children }: { children: Reac
     <div className="bg-accent hover:bg-accent-deep/50 cursor-pointer rounded-md p-2 transition-all">
       {children}
     </div>
-  );
+  )
 }

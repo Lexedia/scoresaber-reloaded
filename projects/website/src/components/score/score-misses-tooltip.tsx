@@ -1,6 +1,6 @@
-import SimpleTooltip from "@/components/simple-tooltip";
-import { ensurePositiveNumber, formatNumberWithCommas } from "@ssr/common/utils/number-utils";
-import { ReactNode } from "react";
+import SimpleTooltip from '@/components/simple-tooltip'
+import { ensurePositiveNumber, formatNumberWithCommas } from '@ssr/common/utils/number-utils'
+import { ReactNode } from 'react'
 
 type ScoreMissesTooltipProps = {
   /**
@@ -37,7 +37,7 @@ type ScoreMissesTooltipProps = {
    * The tooltip children
    */
   children: ReactNode;
-};
+}
 
 export function ScoreMissesTooltip({
   missedNotes,
@@ -76,5 +76,5 @@ export function ScoreMissesTooltip({
     >
       {children}
     </SimpleTooltip>
-  );
+  )
 }

@@ -1,18 +1,18 @@
-import OverlayPlayerCountryRank from "@/components/overlay/components/player-country-rank";
-import { DailyChange } from "@/components/statistic/daily-change";
-import ScoreSaberPlayer from "@ssr/common/player/impl/scoresaber-player";
-import { PlayerStatChange } from "@ssr/common/player/player-stat-change";
-import { formatPp } from "@ssr/common/utils/number-utils";
-import Image from "next/image";
-import OverlayPlayerMedals from "../components/player-medals";
-import OverlayPlayerRank from "../components/player-rank";
+import OverlayPlayerCountryRank from '@/components/overlay/components/player-country-rank'
+import { DailyChange } from '@/components/statistic/daily-change'
+import ScoreSaberPlayer from '@ssr/common/player/impl/scoresaber-player'
+import { PlayerStatChange } from '@ssr/common/player/player-stat-change'
+import { formatPp } from '@ssr/common/utils/number-utils'
+import Image from 'next/image'
+import OverlayPlayerMedals from '../components/player-medals'
+import OverlayPlayerRank from '../components/player-rank'
 
 type OverlayPlayerInfoProps = {
   /**
    * The player to display information for.
    */
   player: ScoreSaberPlayer;
-};
+}
 
 export default function OverlayPlayerInfoView({ player }: OverlayPlayerInfoProps) {
   return (
@@ -50,5 +50,5 @@ export default function OverlayPlayerInfoView({ player }: OverlayPlayerInfoProps
         </div>
       </div>
     </div>
-  );
+  )
 }

@@ -1,10 +1,10 @@
-import Card from "@/components/card";
-import PlayerScoreAccuracyChart from "@/components/platform/scoresaber/score/chart/player-score-accuracy-chart";
-import ScoreAccuracyStats from "@/components/score/score-accuracy-stats";
-import StatValue from "@/components/statistic/stat-value";
-import { ScoreStatsResponse } from "@ssr/common/schemas/response/beatleader/score-stats";
-import { ScoreSaberLeaderboard } from "@ssr/common/schemas/scoresaber/leaderboard/leaderboard";
-import { ScoreSaberScore } from "@ssr/common/schemas/scoresaber/score/score";
+import Card from '@/components/card'
+import PlayerScoreAccuracyChart from '@/components/platform/scoresaber/score/chart/player-score-accuracy-chart'
+import ScoreAccuracyStats from '@/components/score/score-accuracy-stats'
+import StatValue from '@/components/statistic/stat-value'
+import { ScoreStatsResponse } from '@ssr/common/schemas/response/beatleader/score-stats'
+import { ScoreSaberLeaderboard } from '@ssr/common/schemas/scoresaber/leaderboard/leaderboard'
+import { ScoreSaberScore } from '@ssr/common/schemas/scoresaber/score/score'
 
 type ScoreOverviewProps = {
   /**
@@ -21,11 +21,11 @@ type ScoreOverviewProps = {
    * The leaderboard the score was set on.
    */
   leaderboard: ScoreSaberLeaderboard;
-};
+}
 
 export function ScoreOverview({ score, scoreStats, leaderboard }: ScoreOverviewProps) {
   if (!scoreStats) {
-    return null;
+    return null
   }
 
   return (
@@ -60,5 +60,5 @@ export function ScoreOverview({ score, scoreStats, leaderboard }: ScoreOverviewP
         <PlayerScoreAccuracyChart scoreStats={scoreStats} leaderboard={leaderboard} />
       </div>
     </div>
-  );
+  )
 }

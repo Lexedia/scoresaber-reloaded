@@ -1,3 +1,3 @@
 export type BeatSaberPlus_GameStateEvent = {
-  gameStateChanged: "Playing" | "Menu";
-};
+  gameStateChanged: 'Playing' | 'Menu';
+}

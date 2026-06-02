@@ -41,8 +41,8 @@
  * :
  * 1737943721153
  */
-import { MapCharacteristic } from "@ssr/common/schemas/map/map-characteristic";
-import { MapDifficulty } from "@ssr/common/schemas/map/map-difficulty";
+import { MapCharacteristic } from '@ssr/common/schemas/map/map-characteristic'
+import { MapDifficulty } from '@ssr/common/schemas/map/map-difficulty'
 
 export type HttpSiraStatus_BeatMapData = {
   /**
@@ -139,4 +139,4 @@ export type HttpSiraStatus_BeatMapData = {
    * The UNIX timestamp for when the song started.
    */
   start: number;
-};
+}

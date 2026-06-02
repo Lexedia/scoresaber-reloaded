@@ -1,12 +1,15 @@
-import { cn } from "@/common/utils";
-import { Spinner } from "./spinner";
+import { cn } from '@/common/utils'
+import { Spinner } from './spinner'
 
-export function FancyLoader({ title, description }: { title: string; description: string }) {
+export function FancyLoader({ title, description }: {
+  title: string;
+  description: string
+}) {
   return (
     <div
       className={cn(
-        "flex min-h-[200px] flex-col items-center justify-center rounded-xl p-8",
-        "bg-accent-deep/50 border-border gap-4 border backdrop-blur-xs"
+        'flex min-h-[200px] flex-col items-center justify-center rounded-xl p-8',
+        'bg-accent-deep/50 border-border gap-4 border backdrop-blur-xs',
       )}
     >
       <Spinner size="lg" />
@@ -15,5 +18,5 @@ export function FancyLoader({ title, description }: { title: string; description
         <p className="text-muted-foreground text-sm">{description}</p>
       </div>
     </div>
-  );
+  )
 }

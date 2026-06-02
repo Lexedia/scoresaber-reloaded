@@ -1,10 +1,10 @@
-import { Change } from "@/components/change";
-import { ScoreBadgeProps } from "@/components/platform/scoresaber/score/badges/badge-props";
-import SimpleTooltip from "@/components/simple-tooltip";
-import { formatNumberWithCommas } from "@ssr/common/utils/number-utils";
+import { Change } from '@/components/change'
+import { ScoreBadgeProps } from '@/components/platform/scoresaber/score/badges/badge-props'
+import SimpleTooltip from '@/components/simple-tooltip'
+import { formatNumberWithCommas } from '@ssr/common/utils/number-utils'
 
 export function ScoreScoreBadge({ score }: ScoreBadgeProps) {
-  const previousScore = score.previousScore;
+  const previousScore = score.previousScore
 
   return (
     <div className="flex flex-col items-center justify-center">
@@ -20,5 +20,5 @@ export function ScoreScoreBadge({ score }: ScoreBadgeProps) {
         </SimpleTooltip>
       )}
     </div>
-  );
+  )
 }

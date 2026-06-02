@@ -1,26 +1,26 @@
-import { getRankColor } from "@/common/rank-color-utils";
-import { cn } from "@/common/utils";
-import HMDIcon from "@/components/hmd-icon";
-import ScoreMissesAndPausesBadge from "@/components/platform/scoresaber/score/badges/score-misses-and-pauses";
-import { ScorePpBadge } from "@/components/platform/scoresaber/score/badges/score-pp";
-import { ScoreSaberScoreModifiers } from "@/components/platform/scoresaber/score/score-modifiers";
-import { PlayerInfo } from "@/components/player/player-info";
-import { ScoreReplayButton } from "@/components/score/button/score-replay-button";
-import { ScoreTimeSet } from "@/components/score/score-time-set";
-import SimpleTooltip from "@/components/simple-tooltip";
-import { Spinner } from "@/components/spinner";
-import { getHMDInfo, HMD } from "@ssr/common/hmds";
-import { ScoreSaberLeaderboard } from "@ssr/common/schemas/scoresaber/leaderboard/leaderboard";
-import { ScoreSaberScore } from "@ssr/common/schemas/scoresaber/score/score";
-import { formatNumberWithCommas } from "@ssr/common/utils/number-utils";
-import { formatScoreAccuracy } from "@ssr/common/utils/score.util";
-import { ChevronDown } from "lucide-react";
-import { useState } from "react";
-import ScoreDetailsDropdown from "./score-details-dropdown";
-import { ScoreSaberScoreHMD } from "./score-hmd";
+import { getRankColor } from '@/common/rank-color-utils'
+import { cn } from '@/common/utils'
+import HMDIcon from '@/components/hmd-icon'
+import ScoreMissesAndPausesBadge from '@/components/platform/scoresaber/score/badges/score-misses-and-pauses'
+import { ScorePpBadge } from '@/components/platform/scoresaber/score/badges/score-pp'
+import { ScoreSaberScoreModifiers } from '@/components/platform/scoresaber/score/score-modifiers'
+import { PlayerInfo } from '@/components/player/player-info'
+import { ScoreReplayButton } from '@/components/score/button/score-replay-button'
+import { ScoreTimeSet } from '@/components/score/score-time-set'
+import SimpleTooltip from '@/components/simple-tooltip'
+import { Spinner } from '@/components/spinner'
+import { getHMDInfo, HMD } from '@ssr/common/hmds'
+import { ScoreSaberLeaderboard } from '@ssr/common/schemas/scoresaber/leaderboard/leaderboard'
+import { ScoreSaberScore } from '@ssr/common/schemas/scoresaber/score/score'
+import { formatNumberWithCommas } from '@ssr/common/utils/number-utils'
+import { formatScoreAccuracy } from '@ssr/common/utils/score.util'
+import { ChevronDown } from 'lucide-react'
+import { useState } from 'react'
+import ScoreDetailsDropdown from './score-details-dropdown'
+import { ScoreSaberScoreHMD } from './score-hmd'
 
-const TABLE_CELL_WIDTH = "px-1 py-2";
-const TABLE_CELL_WIDTH_SMALL = "px-1.5 py-2";
+const TABLE_CELL_WIDTH = 'px-1 py-2'
+const TABLE_CELL_WIDTH_SMALL = 'px-1.5 py-2'
 
 export default function ScoreSaberLeaderboardScore({
   score,
@@ -31,30 +31,36 @@ export default function ScoreSaberLeaderboardScore({
   leaderboard: ScoreSaberLeaderboard;
   highlightedPlayerId?: string;
 }) {
-  const [detailsExpanded, setDetailsExpanded] = useState(false);
-  const [isDetailsLoading, setIsDetailsLoading] = useState(false);
+  const [
+    detailsExpanded,
+    setDetailsExpanded,
+  ] = useState(false)
+  const [
+    isDetailsLoading,
+    setIsDetailsLoading,
+  ] = useState(false)
 
-  const scorePlayer = score.playerInfo;
+  const scorePlayer = score.playerInfo
 
   return (
     <tbody>
       <tr
         className={cn(
-          "cv-list-row",
-          highlightedPlayerId === score.playerId && "bg-primary/10",
-          detailsExpanded ? "border-b border-transparent" : "border-border/50 border-b"
+          'cv-list-row',
+          highlightedPlayerId === score.playerId && 'bg-primary/10',
+          detailsExpanded ? 'border-b border-transparent' : 'border-border/50 border-b',
         )}
       >
         {/* Score Rank */}
-        <td className={cn(TABLE_CELL_WIDTH, "pr-1 pl-3 whitespace-nowrap")}>
+        <td className={cn(TABLE_CELL_WIDTH, 'pr-1 pl-3 whitespace-nowrap')}>
           <p className={getRankColor(score.rank)}>
-            {score.rank !== -1 ? `#${formatNumberWithCommas(score.rank)}` : "-"}
+            {score.rank !== -1 ? `#${formatNumberWithCommas(score.rank)}` : '-'}
           </p>
         </td>
 
         {/* Player */}
         <td
-          className={cn(TABLE_CELL_WIDTH, "flex w-full min-w-[300px] items-center gap-2 whitespace-nowrap")}
+          className={cn(TABLE_CELL_WIDTH, 'flex w-full min-w-[300px] items-center gap-2 whitespace-nowrap')}
         >
           {scorePlayer ? (
             <>
@@ -74,12 +80,12 @@ export default function ScoreSaberLeaderboardScore({
         </td>
 
         {/* Time Set */}
-        <td className={cn(TABLE_CELL_WIDTH, "text-center whitespace-nowrap")}>
+        <td className={cn(TABLE_CELL_WIDTH, 'text-center whitespace-nowrap')}>
           <ScoreTimeSet timestamp={score.timestamp} />
         </td>
 
         {/* Score Accuracy */}
-        <td className={cn(TABLE_CELL_WIDTH, "text-center whitespace-nowrap")}>
+        <td className={cn(TABLE_CELL_WIDTH, 'text-center whitespace-nowrap')}>
           {formatScoreAccuracy(score.accuracy)}
         </td>
 
@@ -87,8 +93,8 @@ export default function ScoreSaberLeaderboardScore({
         <td
           className={cn(
             TABLE_CELL_WIDTH,
-            "cursor-default whitespace-nowrap",
-            score.misses > 0 ? "text-red-500" : "text-green-500"
+            'cursor-default whitespace-nowrap',
+            score.misses > 0 ? 'text-red-500' : 'text-green-500',
           )}
         >
           <ScoreMissesAndPausesBadge score={score} hideXMark hidePreviousScore />
@@ -96,17 +102,17 @@ export default function ScoreSaberLeaderboardScore({
 
         {/* PP / Score */}
         {leaderboard.stars > 0 ? (
-          <td className={cn(TABLE_CELL_WIDTH, "text-pp whitespace-nowrap")}>
+          <td className={cn(TABLE_CELL_WIDTH, 'text-pp whitespace-nowrap')}>
             <ScorePpBadge score={score} leaderboard={leaderboard} />
           </td>
         ) : (
-          <td className={cn(TABLE_CELL_WIDTH, "text-center whitespace-nowrap")}>
+          <td className={cn(TABLE_CELL_WIDTH, 'text-center whitespace-nowrap')}>
             <p>{formatNumberWithCommas(score.score)}</p>
           </td>
         )}
 
         {/* Score Modifiers */}
-        <td className={cn(TABLE_CELL_WIDTH, "text-center whitespace-nowrap")}>
+        <td className={cn(TABLE_CELL_WIDTH, 'text-center whitespace-nowrap')}>
           {score.modifiers.length > 0 ? (
             <SimpleTooltip
               side="bottom"
@@ -122,12 +128,12 @@ export default function ScoreSaberLeaderboardScore({
               </p>
             </SimpleTooltip>
           ) : (
-            "-"
+            '-'
           )}
         </td>
 
         {/* Score Replay */}
-        <td className={cn(TABLE_CELL_WIDTH_SMALL, "w-[37px]")}>
+        <td className={cn(TABLE_CELL_WIDTH_SMALL, 'w-[37px]')}>
           {score.beatLeaderScore && (
             <div className="flex justify-center">
               <ScoreReplayButton score={score.beatLeaderScore} size={26} />
@@ -136,7 +142,7 @@ export default function ScoreSaberLeaderboardScore({
         </td>
 
         {score.beatLeaderScore && (
-          <td className={cn(TABLE_CELL_WIDTH_SMALL, "w-[45px] pr-3")}>
+          <td className={cn(TABLE_CELL_WIDTH_SMALL, 'w-[45px] pr-3')}>
             <SimpleTooltip display="View score details">
               <button className="size-6 cursor-pointer" onClick={() => setDetailsExpanded(!detailsExpanded)}>
                 {isDetailsLoading ? (
@@ -144,8 +150,8 @@ export default function ScoreSaberLeaderboardScore({
                 ) : (
                   <ChevronDown
                     className={cn(
-                      "size-6 transition-transform duration-200",
-                      detailsExpanded ? "" : "rotate-180"
+                      'size-6 transition-transform duration-200',
+                      detailsExpanded ? '' : 'rotate-180',
                     )}
                   />
                 )}
@@ -172,5 +178,5 @@ export default function ScoreSaberLeaderboardScore({
         </tr>
       )}
     </tbody>
-  );
+  )
 }

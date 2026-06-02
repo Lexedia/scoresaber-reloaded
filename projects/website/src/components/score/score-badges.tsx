@@ -1,5 +1,5 @@
-import clsx from "clsx";
-import React from "react";
+import clsx from 'clsx'
+import React from 'react'
 
 /**
  * A badge to display in the score stats.
@@ -8,7 +8,7 @@ export type ScoreBadge<TScore, TLeaderboard> = {
   name: string;
   color?: (score: TScore, leaderboard: TLeaderboard, medalsMode?: boolean) => string | undefined;
   create: (score: TScore, leaderboard: TLeaderboard, medalsMode?: boolean) => React.ReactNode | undefined;
-};
+}
 
 /**
  * The badges to display in the score stats.
@@ -18,7 +18,7 @@ type ScoreBadgeProps<TScore, TLeaderboard> = {
   score: TScore;
   leaderboard: TLeaderboard;
   medalsMode?: boolean;
-};
+}
 
 export function ScoreBadges<TScore, TLeaderboard>({
   badges,
@@ -27,25 +27,25 @@ export function ScoreBadges<TScore, TLeaderboard>({
   medalsMode,
 }: ScoreBadgeProps<TScore, TLeaderboard>) {
   return badges.map((badge, index) => {
-    const toRender = badge.create(score, leaderboard, medalsMode);
-    const color = badge.color?.(score, leaderboard, medalsMode);
-    const key = badge.name + String(index);
+    const toRender = badge.create(score, leaderboard, medalsMode)
+    const color = badge.color?.(score, leaderboard, medalsMode)
+    const key = badge.name + String(index)
     if (toRender === undefined) {
-      return <div key={key} />;
+      return <div key={key} />
     }
     return (
       <div
         key={key}
         className={clsx(
-          "flex h-full cursor-default items-center justify-center rounded-md p-1 text-sm",
-          color ? color : "bg-accent"
+          'flex h-full cursor-default items-center justify-center rounded-md p-1 text-sm',
+          color ? color : 'bg-accent',
         )}
         style={{
-          backgroundColor: (!color?.includes("bg") && color) || undefined,
+          backgroundColor: (!color?.includes('bg') && color) || undefined,
         }}
       >
         {toRender}
       </div>
-    );
-  });
+    )
+  })
 }

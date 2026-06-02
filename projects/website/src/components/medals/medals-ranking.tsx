@@ -1,9 +1,9 @@
-"use client";
+'use client'
 
-import { PlayerRanking } from "@/components/player/player-ranking";
-import type { MedalRankingPlayer } from "@ssr/common/schemas/response/ranking/medal-rankings";
-import { formatNumberWithCommas } from "@ssr/common/utils/number-utils";
-import { Medal } from "lucide-react";
+import { PlayerRanking } from '@/components/player/player-ranking'
+import type { MedalRankingPlayer } from '@ssr/common/schemas/response/ranking/medal-rankings'
+import { formatNumberWithCommas } from '@ssr/common/utils/number-utils'
+import { Medal } from 'lucide-react'
 
 export function MedalsRanking({
   player,
@@ -28,5 +28,5 @@ export function MedalsRanking({
         </div>
       }
     />
-  );
+  )
 }

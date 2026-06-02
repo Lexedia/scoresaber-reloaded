@@ -1,33 +1,39 @@
-"use client";
+'use client'
 
-import { getRankingColumnWidth } from "@/common/player-utils";
-import Card from "@/components/card";
-import CountrySelector from "@/components/country-selector";
-import SimpleLink from "@/components/simple-link";
-import SimplePagination from "@/components/simple-pagination";
-import { usePageNavigation } from "@/hooks/use-page-navigation";
-import { GlobeAmericasIcon } from "@heroicons/react/24/solid";
-import { ssrApi } from "@ssr/common/utils/ssr-api";
-import { useQuery } from "@tanstack/react-query";
-import { LinkIcon } from "lucide-react";
-import { useEffect, useState } from "react";
-import { FancyLoader } from "../fancy-loader";
-import AddFriend from "../friend/add-friend";
-import { Button } from "../ui/button";
-import { FilterField, FilterRow, FilterSection } from "../ui/filter-section";
-import MedalsInfo from "./medals-info";
-import { MedalsRanking } from "./medals-ranking";
+import { getRankingColumnWidth } from '@/common/player-utils'
+import Card from '@/components/card'
+import CountrySelector from '@/components/country-selector'
+import SimpleLink from '@/components/simple-link'
+import SimplePagination from '@/components/simple-pagination'
+import { usePageNavigation } from '@/hooks/use-page-navigation'
+import { GlobeAmericasIcon } from '@heroicons/react/24/solid'
+import { ssrApi } from '@ssr/common/utils/ssr-api'
+import { useQuery } from '@tanstack/react-query'
+import { LinkIcon } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { FancyLoader } from '../fancy-loader'
+import AddFriend from '../friend/add-friend'
+import { Button } from '../ui/button'
+import { FilterField, FilterRow, FilterSection } from '../ui/filter-section'
+import MedalsInfo from './medals-info'
+import { MedalsRanking } from './medals-ranking'
 
 type RankingDataProps = {
   initialPage: number;
   initialCountry?: string;
-};
+}
 
 export default function RankingData({ initialPage, initialCountry }: RankingDataProps) {
-  const navigation = usePageNavigation();
+  const navigation = usePageNavigation()
 
-  const [currentPage, setCurrentPage] = useState(initialPage);
-  const [currentCountry, setCurrentCountry] = useState(initialCountry);
+  const [
+    currentPage,
+    setCurrentPage,
+  ] = useState(initialPage)
+  const [
+    currentCountry,
+    setCurrentCountry,
+  ] = useState(initialCountry)
 
   const {
     data: rankingData,
@@ -35,20 +41,28 @@ export default function RankingData({ initialPage, initialCountry }: RankingData
     isRefetching,
     isError,
   } = useQuery({
-    queryKey: ["medalRankingData", currentPage, currentCountry],
+    queryKey: [
+      'medalRankingData',
+      currentPage,
+      currentCountry,
+    ],
     queryFn: async () => ssrApi.getMedalRankedPlayers(currentPage, currentCountry),
     refetchIntervalInBackground: false,
     placeholderData: prev => prev,
-  });
+  })
   useEffect(() => {
-    navigation.changePageUrl(buildPageUrl(currentCountry, currentPage));
-  }, [currentPage, currentCountry, navigation]);
+    navigation.changePageUrl(buildPageUrl(currentCountry, currentPage))
+  }, [
+    currentPage,
+    currentCountry,
+    navigation,
+  ])
 
   const firstColumnWidth = getRankingColumnWidth(
     rankingData?.items ?? [],
     player => player.medalsRank,
-    player => player.medalsCountryRank
-  );
+    player => player.medalsCountryRank,
+  )
 
   return (
     <div className="flex w-full flex-col justify-center gap-2 xl:flex-row xl:gap-2">
@@ -121,8 +135,8 @@ export default function RankingData({ initialPage, initialCountry }: RankingData
           description="Filter players by country"
           hasActiveFilters={Boolean(currentCountry)}
           onClear={() => {
-            setCurrentCountry(undefined);
-            setCurrentPage(1);
+            setCurrentCountry(undefined)
+            setCurrentPage(1)
           }}
         >
           <FilterField label="Country">
@@ -131,8 +145,8 @@ export default function RankingData({ initialPage, initialCountry }: RankingData
                 className="h-10 w-full"
                 value={currentCountry}
                 onValueChange={(newCountry: string | undefined) => {
-                  setCurrentCountry(newCountry);
-                  setCurrentPage(1);
+                  setCurrentCountry(newCountry)
+                  setCurrentPage(1)
                 }}
                 placeholder="Select country..."
               />
@@ -145,9 +159,9 @@ export default function RankingData({ initialPage, initialCountry }: RankingData
         </Card>
       </div>
     </div>
-  );
+  )
 }
 
 function buildPageUrl(country: string | undefined, page: number): string {
-  return `/medals/${country != undefined ? `${country}/` : ""}${page}`;
+  return `/medals/${country != undefined ? `${country}/` : ''}${page}`
 }

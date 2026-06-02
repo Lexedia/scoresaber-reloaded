@@ -1,15 +1,15 @@
-"use client";
+'use client'
 
-import { getRankColor } from "@/common/rank-color-utils";
-import { cn } from "@/common/utils";
-import { ScoreTimeSet } from "@/components/score/score-time-set";
-import { GlobeAmericasIcon } from "@heroicons/react/24/solid";
-import type { AccSaberScore } from "@ssr/common/schemas/accsaber/tokens/score/score";
-import { formatNumberWithCommas } from "@ssr/common/utils/number-utils";
+import { getRankColor } from '@/common/rank-color-utils'
+import { cn } from '@/common/utils'
+import { ScoreTimeSet } from '@/components/score/score-time-set'
+import { GlobeAmericasIcon } from '@heroicons/react/24/solid'
+import type { AccSaberScore } from '@ssr/common/schemas/accsaber/tokens/score/score'
+import { formatNumberWithCommas } from '@ssr/common/utils/number-utils'
 
 type AccSaberRankTimeProps = {
   score: AccSaberScore;
-};
+}
 
 export function AccSaberRankTime({ score }: AccSaberRankTimeProps) {
   return (
@@ -19,7 +19,7 @@ export function AccSaberRankTime({ score }: AccSaberRankTimeProps) {
         <p
           className={cn(
             getRankColor(score.score.rank),
-            "hover:text-primary/80 cursor-pointer font-semibold transition-all"
+            'hover:text-primary/80 cursor-pointer font-semibold transition-all',
           )}
         >
           #{formatNumberWithCommas(score.score.rank)}
@@ -29,5 +29,5 @@ export function AccSaberRankTime({ score }: AccSaberRankTimeProps) {
         <ScoreTimeSet timestamp={score.timeSet} />
       </div>
     </div>
-  );
+  )
 }

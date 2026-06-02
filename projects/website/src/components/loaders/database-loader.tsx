@@ -1,58 +1,69 @@
-"use client";
+'use client'
 
-import { isServer } from "@ssr/common/utils/utils";
-import { createContext, ReactNode, useEffect, useState } from "react";
-import Database, { getDatabase } from "../../common/database/database";
-import FullscreenLoader from "./fullscreen-loader";
+import { isServer } from '@ssr/common/utils/utils'
+import {
+  createContext, ReactNode, useEffect, useState,
+} from 'react'
+import Database, { getDatabase } from '../../common/database/database'
+import FullscreenLoader from './fullscreen-loader'
 
 /**
  * The context for the database. This is used to access the database from within the app.
  */
-export const DatabaseContext = createContext<Database | undefined>(undefined);
+export const DatabaseContext = createContext<Database | undefined>(undefined)
 
 type DatabaseLoaderProps = {
   /**
    * The children to render.
    */
   children: ReactNode;
-};
+}
 
 // Singleton database instance
-let databaseInstance: Database | undefined;
+let databaseInstance: Database | undefined
 
 export default function DatabaseLoader({ children }: DatabaseLoaderProps) {
-  const [database, setDatabase] = useState<Database | undefined>();
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [
+    database,
+    setDatabase,
+  ] = useState<Database | undefined>()
+  const [
+    isLoading,
+    setIsLoading,
+  ] = useState(true)
+  const [
+    error,
+    setError,
+  ] = useState<string | null>(null)
 
   useEffect(() => {
     if (isServer()) {
-      setIsLoading(false);
-      return;
+      setIsLoading(false)
+      return
     }
 
     const initializeDatabase = async () => {
       try {
         // Use singleton pattern
         if (!databaseInstance) {
-          databaseInstance = getDatabase();
+          databaseInstance = getDatabase()
         }
 
         // Set database immediately for non-blocking access
-        setDatabase(databaseInstance);
+        setDatabase(databaseInstance)
 
         // Initialize chart legends in background
-        await databaseInstance.initializeChartLegends();
+        await databaseInstance.initializeChartLegends()
       } catch (err) {
-        console.error("Failed to initialize database:", err);
-        setError("Failed to load database");
+        console.error('Failed to initialize database:', err)
+        setError('Failed to load database')
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
-    };
+    }
 
-    initializeDatabase();
-  }, []);
+    initializeDatabase()
+  }, [])
 
   // Show error state
   if (error) {
@@ -68,12 +79,12 @@ export default function DatabaseLoader({ children }: DatabaseLoaderProps) {
           </button>
         </div>
       </div>
-    );
+    )
   }
 
   return (
     <DatabaseContext.Provider value={database}>
       {isLoading ? <FullscreenLoader reason="Loading database..." /> : children}
     </DatabaseContext.Provider>
-  );
+  )
 }

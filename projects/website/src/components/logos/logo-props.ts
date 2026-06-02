@@ -8,7 +8,7 @@ export type LogoProps = {
    * The class name of the logo
    */
   className?: string;
-};
+}
 
 export type LogoBaseProps = LogoProps & {
   /**
@@ -20,4 +20,4 @@ export type LogoBaseProps = LogoProps & {
    * The alt text of the logo
    */
   alt?: string;
-};
+}

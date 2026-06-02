@@ -1,6 +1,6 @@
-import { HttpSiraStatus_GameData } from "@/common/overlay/types/httpsirastatus/data/game";
-import { HttpSiraStatus_Performance } from "@/common/overlay/types/httpsirastatus/data/performance";
-import { HttpSiraStatus_BeatMapData } from "./beatmap";
+import { HttpSiraStatus_GameData } from '@/common/overlay/types/httpsirastatus/data/game'
+import { HttpSiraStatus_Performance } from '@/common/overlay/types/httpsirastatus/data/performance'
+import { HttpSiraStatus_BeatMapData } from './beatmap'
 
 export type HttpSiraStatus_Status = {
   /**
@@ -13,14 +13,18 @@ export type HttpSiraStatus_Status = {
    */
   game: HttpSiraStatus_GameData;
 
-  // todo: complete this
-  // mod: string;
+  /*
+   * todo: complete this
+   * mod: string;
+   */
 
   /**
    * The current score data.
    */
   performance: HttpSiraStatus_Performance;
 
-  // todo: complete this
-  // playerSettings: string;
-};
+  /*
+   * todo: complete this
+   * playerSettings: string;
+   */
+}

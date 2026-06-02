@@ -1,5 +1,5 @@
-import { formatChange } from "@ssr/common/utils/utils";
-import clsx from "clsx";
+import { formatChange } from '@ssr/common/utils/utils'
+import clsx from 'clsx'
 
 type ChangeProps = {
   /**
@@ -27,17 +27,19 @@ type ChangeProps = {
    * Should we use colors?
    */
   showColors?: boolean;
-};
+}
 
-export function Change({ change, formatValue, className, isPp, showColors }: ChangeProps) {
-  const formatted = formatChange(change, formatValue, isPp);
+export function Change({
+  change, formatValue, className, isPp, showColors,
+}: ChangeProps) {
+  const formatted = formatChange(change, formatValue, isPp)
   if (formatted === undefined || change === undefined) {
-    return undefined;
+    return undefined
   }
 
   return (
-    <p className={clsx("text-sm", showColors && (change > 0 ? "text-green-400" : "text-red-400"), className)}>
+    <p className={clsx('text-sm', showColors && (change > 0 ? 'text-green-400' : 'text-red-400'), className)}>
       {formatted}
     </p>
-  );
+  )
 }

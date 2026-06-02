@@ -1,5 +1,5 @@
-import { ExclamationTriangleIcon } from "@heroicons/react/24/solid";
-import { ReactNode } from "react";
+import { ExclamationTriangleIcon } from '@heroicons/react/24/solid'
+import { ReactNode } from 'react'
 
 export default function Notice({ children }: { children: ReactNode }) {
   return (
@@ -7,5 +7,5 @@ export default function Notice({ children }: { children: ReactNode }) {
       <ExclamationTriangleIcon className="h-5 w-5" />
       {children}
     </div>
-  );
+  )
 }

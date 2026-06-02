@@ -1,18 +1,18 @@
-import { DailyChange } from "@/components/statistic/daily-change";
-import ScoreSaberPlayer from "@ssr/common/player/impl/scoresaber-player";
-import { PlayerStatChange } from "@ssr/common/player/player-stat-change";
-import { formatNumberWithCommas } from "@ssr/common/utils/number-utils";
-import { Medal } from "lucide-react";
+import { DailyChange } from '@/components/statistic/daily-change'
+import ScoreSaberPlayer from '@ssr/common/player/impl/scoresaber-player'
+import { PlayerStatChange } from '@ssr/common/player/player-stat-change'
+import { formatNumberWithCommas } from '@ssr/common/utils/number-utils'
+import { Medal } from 'lucide-react'
 
 type OverlayPlayerMedalsProps = {
   /**
    * The player to display information for.
    */
   player: ScoreSaberPlayer;
-};
+}
 
 export default function OverlayPlayerMedals({ player }: OverlayPlayerMedalsProps) {
-  const { medals } = player;
+  const { medals } = player
 
   return (
     <div className="flex items-center gap-2">
@@ -29,5 +29,5 @@ export default function OverlayPlayerMedals({ player }: OverlayPlayerMedalsProps
         useTooltip={false}
       />
     </div>
-  );
+  )
 }

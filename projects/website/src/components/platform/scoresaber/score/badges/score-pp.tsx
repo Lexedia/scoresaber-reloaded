@@ -1,9 +1,9 @@
-import { Change } from "@/components/change";
-import SimpleTooltip from "@/components/simple-tooltip";
-import { ScoreSaberCurve } from "@ssr/common/leaderboard-curve/scoresaber-curve";
-import { ScoreSaberLeaderboard } from "@ssr/common/schemas/scoresaber/leaderboard/leaderboard";
-import { ScoreSaberScore } from "@ssr/common/schemas/scoresaber/score/score";
-import { ensurePositiveNumber, formatPp } from "@ssr/common/utils/number-utils";
+import { Change } from '@/components/change'
+import SimpleTooltip from '@/components/simple-tooltip'
+import { ScoreSaberCurve } from '@ssr/common/leaderboard-curve/scoresaber-curve'
+import { ScoreSaberLeaderboard } from '@ssr/common/schemas/scoresaber/leaderboard/leaderboard'
+import { ScoreSaberScore } from '@ssr/common/schemas/scoresaber/score/score'
+import { ensurePositiveNumber, formatPp } from '@ssr/common/utils/number-utils'
 
 type ScorePpProps = {
   /**
@@ -18,20 +18,20 @@ type ScorePpProps = {
    * Whether to show the difference between the score and the previous score.
    */
   showDifference?: boolean;
-};
+}
 
 export function ScorePpBadge({ score, leaderboard, showDifference = true }: ScorePpProps) {
-  const previousScore = score.previousScore;
-  const fcAccuracy = score.beatLeaderScore?.fcAccuracy;
-  const { pp, weight } = score;
+  const previousScore = score.previousScore
+  const fcAccuracy = score.beatLeaderScore?.fcAccuracy
+  const { pp, weight } = score
   if (pp === 0) {
-    return undefined;
+    return undefined
   }
-  const weightedPp = weight ? pp * weight : undefined;
+  const weightedPp = weight ? pp * weight : undefined
   const fcPp =
     !score.fullCombo && fcAccuracy
       ? ScoreSaberCurve.getPp(leaderboard.stars, fcAccuracy).toFixed(0)
-      : undefined;
+      : undefined
 
   return (
     <>
@@ -61,11 +61,11 @@ export function ScorePpBadge({ score, leaderboard, showDifference = true }: Scor
           previousScore.change.pp &&
           previousScore.change.pp !== score.pp &&
           showDifference && (
-            <SimpleTooltip display={<p>Previous PP: {formatPp(previousScore.pp)}pp</p>}>
-              <Change className="text-xs" change={ensurePositiveNumber(previousScore.change.pp)} isPp />
-            </SimpleTooltip>
-          )}
+          <SimpleTooltip display={<p>Previous PP: {formatPp(previousScore.pp)}pp</p>}>
+            <Change className="text-xs" change={ensurePositiveNumber(previousScore.change.pp)} isPp />
+          </SimpleTooltip>
+        )}
       </div>
     </>
-  );
+  )
 }

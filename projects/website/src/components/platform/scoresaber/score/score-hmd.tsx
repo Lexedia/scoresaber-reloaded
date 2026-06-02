@@ -1,7 +1,7 @@
-import HMDIcon from "@/components/hmd-icon";
-import SimpleTooltip from "@/components/simple-tooltip";
-import { getHMDInfo, HMD } from "@ssr/common/hmds";
-import { ScoreSaberScore } from "@ssr/common/schemas/scoresaber/score/score";
+import HMDIcon from '@/components/hmd-icon'
+import SimpleTooltip from '@/components/simple-tooltip'
+import { getHMDInfo, HMD } from '@ssr/common/hmds'
+import { ScoreSaberScore } from '@ssr/common/schemas/scoresaber/score/score'
 
 export function ScoreSaberScoreHMD({
   score,
@@ -14,15 +14,15 @@ export function ScoreSaberScoreHMD({
     <SimpleTooltip
       display={
         <div className="flex flex-col gap-2">
-          {score.hmd !== "Unknown" && score.hmd !== undefined ? (
+          {score.hmd !== 'Unknown' && score.hmd !== undefined ? (
             <div className="flex items-center gap-2">
-              Score was set using a <HMDIcon hmd={getHMDInfo(score.hmd as HMD)} />{" "}
+              Score was set using a <HMDIcon hmd={getHMDInfo(score.hmd as HMD)} />{' '}
               <span className="font-semibold">{score.hmd}</span>
             </div>
           ) : (
             <div>
               <p>An unknown HMD was used (outdated mod?)</p>
-              {score.leftController === "Touch" && <p>Likely a Quest variant was used</p>}
+              {score.leftController === 'Touch' && <p>Likely a Quest variant was used</p>}
             </div>
           )}
 
@@ -41,5 +41,5 @@ export function ScoreSaberScoreHMD({
     >
       {children}
     </SimpleTooltip>
-  );
+  )
 }

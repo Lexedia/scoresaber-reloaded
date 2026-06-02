@@ -1,10 +1,12 @@
-import Card from "@/components/card";
-import PlaylistDownloadButton from "@/components/maps/playlist/playlist-download-button";
-import { env } from "@ssr/common/env";
-import { CheckCircleIcon, ClockIcon, CrownIcon, FlameIcon, Star } from "lucide-react";
-import { ElementType } from "react";
-import { Button } from "../../ui/button";
-import CustomPlaylistCreator from "./custom-playlist-creator";
+import Card from '@/components/card'
+import PlaylistDownloadButton from '@/components/maps/playlist/playlist-download-button'
+import { env } from '@ssr/common/env'
+import {
+  CheckCircleIcon, ClockIcon, CrownIcon, FlameIcon, Star,
+} from 'lucide-react'
+import { ElementType } from 'react'
+import { Button } from '../../ui/button'
+import CustomPlaylistCreator from './custom-playlist-creator'
 
 type Playlist = {
   /**
@@ -21,30 +23,30 @@ type Playlist = {
    * The icon of the playlist
    */
   icon: ElementType;
-};
+}
 
 const playlists: Playlist[] = [
   {
-    name: "Ranked Maps",
-    id: "scoresaber-ranked-maps",
+    name: 'Ranked Maps',
+    id: 'scoresaber-ranked-maps',
     icon: CrownIcon,
   },
   {
-    name: "Qualified Maps",
-    id: "scoresaber-qualified-maps",
+    name: 'Qualified Maps',
+    id: 'scoresaber-qualified-maps',
     icon: CheckCircleIcon,
   },
   {
-    name: "Ranking Queue",
-    id: "scoresaber-ranking-queue-maps",
+    name: 'Ranking Queue',
+    id: 'scoresaber-ranking-queue-maps',
     icon: ClockIcon,
   },
   {
-    name: "Trending",
-    id: "scoresaber-trending",
+    name: 'Trending',
+    id: 'scoresaber-trending',
     icon: FlameIcon,
   },
-];
+]
 
 export default function Playlists() {
   return (
@@ -73,5 +75,5 @@ export default function Playlists() {
         />
       </div>
     </Card>
-  );
+  )
 }

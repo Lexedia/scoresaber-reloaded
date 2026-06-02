@@ -1,20 +1,20 @@
-"use client";
+'use client'
 
-import { useLeaderboardFilter } from "@/components/providers/leaderboard/leaderboard-filter-provider";
-import ScoreModeSwitcher, { ScoreModeEnum } from "@/components/score/score-mode-switcher";
-import { Spinner } from "@/components/spinner";
-import { EmptyState } from "@/components/ui/empty-state";
-import { useLeaderboardScores } from "@/hooks/score/use-leaderboard-scores";
-import useDatabase from "@/hooks/use-database";
-import { useStableLiveQuery } from "@/hooks/use-stable-live-query";
-import { ScoreSaberLeaderboard } from "@ssr/common/schemas/scoresaber/leaderboard/leaderboard";
-import { ScoreSaberScore } from "@ssr/common/schemas/scoresaber/score/score";
-import { useMemo, useState } from "react";
-import SimplePagination from "../../../simple-pagination";
-import ScoreSaberLeaderboardScore from "../score/leaderboard-score";
+import { useLeaderboardFilter } from '@/components/providers/leaderboard/leaderboard-filter-provider'
+import ScoreModeSwitcher, { ScoreModeEnum } from '@/components/score/score-mode-switcher'
+import { Spinner } from '@/components/spinner'
+import { EmptyState } from '@/components/ui/empty-state'
+import { useLeaderboardScores } from '@/hooks/score/use-leaderboard-scores'
+import useDatabase from '@/hooks/use-database'
+import { useStableLiveQuery } from '@/hooks/use-stable-live-query'
+import { ScoreSaberLeaderboard } from '@ssr/common/schemas/scoresaber/leaderboard/leaderboard'
+import { ScoreSaberScore } from '@ssr/common/schemas/scoresaber/score/score'
+import { useMemo, useState } from 'react'
+import SimplePagination from '../../../simple-pagination'
+import ScoreSaberLeaderboardScore from '../score/leaderboard-score'
 
 function getScoreId(score: ScoreSaberScore) {
-  return score.scoreId + "-" + score.timestamp;
+  return score.scoreId + '-' + score.timestamp
 }
 
 export default function LeaderboardScoresDropdown({
@@ -28,24 +28,33 @@ export default function LeaderboardScoresDropdown({
   highlightedPlayerId?: string;
   historyPlayerId?: string;
 }) {
-  const database = useDatabase();
-  const mainPlayerId = useStableLiveQuery(() => database.getMainPlayerId());
-  const filter = useLeaderboardFilter();
+  const database = useDatabase()
+  const mainPlayerId = useStableLiveQuery(() => database.getMainPlayerId())
+  const filter = useLeaderboardFilter()
 
-  const [mode, setMode] = useState<ScoreModeEnum>(ScoreModeEnum.Global);
-  const [pagesByMode, setPagesByMode] = useState<Record<ScoreModeEnum, number>>({
+  const [
+    mode,
+    setMode,
+  ] = useState<ScoreModeEnum>(ScoreModeEnum.Global)
+  const [
+    pagesByMode,
+    setPagesByMode,
+  ] = useState<Record<ScoreModeEnum, number>>({
     [ScoreModeEnum.Global]: initialPage,
     [ScoreModeEnum.Friends]: 1,
     [ScoreModeEnum.History]: 1,
-  });
-  const page = useMemo(() => pagesByMode[mode] ?? 1, [mode, pagesByMode]);
+  })
+  const page = useMemo(() => pagesByMode[mode] ?? 1, [
+    mode,
+    pagesByMode,
+  ])
 
   const setPage = (nextPage: number) => {
     setPagesByMode(previous => ({
       ...previous,
       [mode]: nextPage,
-    }));
-  };
+    }))
+  }
 
   const {
     data: scores,
@@ -54,15 +63,15 @@ export default function LeaderboardScoresDropdown({
     isRefetching,
   } = useLeaderboardScores(
     leaderboard.id,
-    historyPlayerId ?? mainPlayerId ?? "",
+    historyPlayerId ?? mainPlayerId ?? '',
     page,
     mode,
-    filter.country ?? undefined
-  );
+    filter.country ?? undefined,
+  )
 
-  const isFriends = mode === ScoreModeEnum.Friends;
+  const isFriends = mode === ScoreModeEnum.Friends
   const noScores =
-    isError || (!isLoading && !isRefetching && (!scores || (scores && scores.items.length === 0)));
+    isError || (!isLoading && !isRefetching && (!scores || (scores && scores.items.length === 0)))
 
   return (
     <div className="flex flex-col gap-(--spacing-md)">
@@ -86,7 +95,7 @@ export default function LeaderboardScoresDropdown({
                   <th className="text-foreground/90 px-3 py-3 text-center font-semibold">Accuracy</th>
                   <th className="text-foreground/90 px-3 py-3 text-center font-semibold">Misses</th>
                   <th className="text-foreground/90 px-3 py-3 text-center font-semibold">
-                    {leaderboard.stars > 0 ? "PP" : "Score"}
+                    {leaderboard.stars > 0 ? 'PP' : 'Score'}
                   </th>
                   <th className="text-foreground/90 px-3 py-3 text-center font-semibold">Mods</th>
                   <th></th>
@@ -102,8 +111,8 @@ export default function LeaderboardScoresDropdown({
                         title="No Scores Found"
                         description={
                           isFriends
-                            ? "You or your friends haven't played this map yet"
-                            : "No scores were found on this leaderboard or page"
+                            ? 'You or your friends haven\'t played this map yet'
+                            : 'No scores were found on this leaderboard or page'
                         }
                       />
                     </td>
@@ -136,5 +145,5 @@ export default function LeaderboardScoresDropdown({
         </>
       )}
     </div>
-  );
+  )
 }

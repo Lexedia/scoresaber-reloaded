@@ -1,8 +1,8 @@
-"use client";
+'use client'
 
-import { cn } from "@/common/utils";
-import Image from "next/image";
-import { useState } from "react";
+import { cn } from '@/common/utils'
+import Image from 'next/image'
+import { useState } from 'react'
 
 type AvatarProps = {
   src: string;
@@ -11,12 +11,17 @@ type AvatarProps = {
   alt: string;
   /** When true, loads eagerly (use for above-the-fold / LCP images). */
   priority?: boolean;
-};
+}
 
-export default function Avatar({ src, size = 32, className, alt, priority = false }: AvatarProps) {
-  const [failedForSrc, setFailedForSrc] = useState<string | null>(null);
-  const showFallback = !src || failedForSrc === src;
-  const fallbackText = alt?.trim().slice(0, 1).toUpperCase();
+export default function Avatar({
+  src, size = 32, className, alt, priority = false,
+}: AvatarProps) {
+  const [
+    failedForSrc,
+    setFailedForSrc,
+  ] = useState<string | null>(null)
+  const showFallback = !src || failedForSrc === src
+  const fallbackText = alt?.trim().slice(0, 1).toUpperCase()
 
   if (showFallback) {
     return (
@@ -24,8 +29,8 @@ export default function Avatar({ src, size = 32, className, alt, priority = fals
         role="img"
         aria-label={alt}
         className={cn(
-          "bg-muted text-muted-foreground flex items-center justify-center rounded-full",
-          className
+          'bg-muted text-muted-foreground flex items-center justify-center rounded-full',
+          className,
         )}
         style={{
           width: size,
@@ -36,7 +41,7 @@ export default function Avatar({ src, size = 32, className, alt, priority = fals
       >
         {fallbackText}
       </div>
-    );
+    )
   }
 
   return (
@@ -44,7 +49,7 @@ export default function Avatar({ src, size = 32, className, alt, priority = fals
       src={src}
       width={size}
       height={size}
-      className={cn("rounded-full", className)}
+      className={cn('rounded-full', className)}
       alt={alt}
       priority={priority}
       onError={() => setFailedForSrc(src)}
@@ -53,5 +58,5 @@ export default function Avatar({ src, size = 32, className, alt, priority = fals
         minHeight: size,
       }}
     />
-  );
+  )
 }

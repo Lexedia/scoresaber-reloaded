@@ -1,7 +1,7 @@
 type BeatSaverLogoProps = {
   size?: number;
   className?: string;
-};
+}
 
 export default function BeatSaverLogo({ size = 32, className }: BeatSaverLogoProps) {
   return (
@@ -20,5 +20,5 @@ export default function BeatSaverLogo({ size = 32, className }: BeatSaverLogoPro
         <path d="M 26,77 85,106 53,130 Z" strokeLinejoin="round"></path>
       </g>
     </svg>
-  );
+  )
 }

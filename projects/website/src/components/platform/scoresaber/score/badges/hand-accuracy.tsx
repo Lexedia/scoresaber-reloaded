@@ -1,24 +1,24 @@
-import { Change } from "@/components/change";
-import SimpleTooltip from "@/components/simple-tooltip";
-import { BeatLeaderScore } from "@ssr/common/schemas/beatleader/score/score";
-import { capitalizeFirstLetter } from "@ssr/common/string-utils";
+import { Change } from '@/components/change'
+import SimpleTooltip from '@/components/simple-tooltip'
+import { BeatLeaderScore } from '@ssr/common/schemas/beatleader/score/score'
+import { capitalizeFirstLetter } from '@ssr/common/string-utils'
 
 type HandAccuracyProps = {
   beatLeaderScore: BeatLeaderScore;
   /**
    * The hand to get the hand accuracy from
    */
-  hand: "left" | "right";
-};
+  hand: 'left' | 'right';
+}
 
 export function HandAccuracyBadge({ beatLeaderScore, hand }: HandAccuracyProps) {
-  const { handAccuracy } = beatLeaderScore;
-  const scoreImprovement = beatLeaderScore.scoreImprovement;
-  const currentHandAccuracy = handAccuracy[hand];
+  const { handAccuracy } = beatLeaderScore
+  const scoreImprovement = beatLeaderScore.scoreImprovement
+  const currentHandAccuracy = handAccuracy[hand]
   const previousHandAccuracy = scoreImprovement
     ? handAccuracy[hand] - scoreImprovement.handAccuracy[hand]
-    : undefined;
-  const formattedHand = capitalizeFirstLetter(hand);
+    : undefined
+  const formattedHand = capitalizeFirstLetter(hand)
 
   return (
     <div className="flex items-center justify-center gap-1">
@@ -53,5 +53,5 @@ export function HandAccuracyBadge({ beatLeaderScore, hand }: HandAccuracyProps) 
         </SimpleTooltip>
       )}
     </div>
-  );
+  )
 }

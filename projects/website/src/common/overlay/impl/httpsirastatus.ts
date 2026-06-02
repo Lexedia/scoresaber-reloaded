@@ -1,12 +1,12 @@
-import { HttpSiraStatus_Status } from "@/common/overlay/types/httpsirastatus/data/status";
-import { HttpSiraStatusHelloEvent } from "@/common/overlay/types/httpsirastatus/event/hello-event";
-import { HttpSiraStatusScoreChangedEvent } from "@/common/overlay/types/httpsirastatus/event/score-changed-event";
-import { HttpSiraStatusSongStartedEvent } from "@/common/overlay/types/httpsirastatus/event/song-started-event";
-import { ssrApi } from "@ssr/common/utils/ssr-api";
-import OverlayDataClient from "../data-client";
-import { resetOverlayData, useOverlayDataStore } from "../overlay-data-store";
+import { HttpSiraStatus_Status } from '@/common/overlay/types/httpsirastatus/data/status'
+import { HttpSiraStatusHelloEvent } from '@/common/overlay/types/httpsirastatus/event/hello-event'
+import { HttpSiraStatusScoreChangedEvent } from '@/common/overlay/types/httpsirastatus/event/score-changed-event'
+import { HttpSiraStatusSongStartedEvent } from '@/common/overlay/types/httpsirastatus/event/song-started-event'
+import { ssrApi } from '@ssr/common/utils/ssr-api'
+import OverlayDataClient from '../data-client'
+import { resetOverlayData, useOverlayDataStore } from '../overlay-data-store'
 
-type EventName = keyof EventHandlers;
+type EventName = keyof EventHandlers
 type EventHandlers = {
   hello: (data: HttpSiraStatusHelloEvent) => void;
   songStart: (data: HttpSiraStatusSongStartedEvent) => void;
@@ -15,47 +15,47 @@ type EventHandlers = {
   menu: () => void;
   pause: () => void;
   resume: () => void;
-};
+}
 
 const handlers: EventHandlers = {
   hello: (data: HttpSiraStatusHelloEvent) => {
-    loadStatusData(data.status);
+    loadStatusData(data.status)
   },
   songStart: (data: HttpSiraStatusSongStartedEvent) => {
-    loadStatusData(data.status);
+    loadStatusData(data.status)
   },
   scoreChanged: (data: HttpSiraStatusScoreChangedEvent) => {
-    loadStatusData(data.status);
+    loadStatusData(data.status)
   },
   finished: () => {
-    resetOverlayData();
+    resetOverlayData()
   },
   menu: () => {
-    resetOverlayData();
+    resetOverlayData()
   },
   pause: () => {
     useOverlayDataStore.setState({
       paused: true,
-    });
+    })
   },
   resume: () => {
     useOverlayDataStore.setState({
       paused: false,
-    });
+    })
   },
-};
+}
 
 export default class HTTPSiraStatusClient extends OverlayDataClient {
   constructor() {
-    super("HTTPSiraStatus", "ws://localhost:6557/socket");
+    super('HTTPSiraStatus', 'ws://localhost:6557/socket')
   }
 
   onMessage(message: string) {
-    const data = JSON.parse(message);
+    const data = JSON.parse(message)
     if (!isValidEventName(data.event)) {
-      return;
+      return
     }
-    handlers[data.event as EventName](data);
+    handlers[data.event as EventName](data)
   }
 }
 
@@ -66,7 +66,7 @@ export default class HTTPSiraStatusClient extends OverlayDataClient {
  * @returns whether the event is a valid EventName
  */
 function isValidEventName(event: unknown): event is EventName {
-  return typeof event === "string" && event in handlers;
+  return typeof event === 'string' && event in handlers
 }
 
 /**
@@ -75,18 +75,18 @@ function isValidEventName(event: unknown): event is EventName {
  * @param status the status data
  */
 async function loadStatusData(status: HttpSiraStatus_Status) {
-  const performance = status.performance;
+  const performance = status.performance
   if (!performance) {
-    return;
+    return
   }
 
-  const previousState = useOverlayDataStore.getState();
+  const previousState = useOverlayDataStore.getState()
 
   // Initialize the map data if it's not set
   if (previousState && !previousState.map) {
-    const beatmap = status.beatmap;
+    const beatmap = status.beatmap
     if (!beatmap || !beatmap.songHash || !beatmap.difficultyEnum || !beatmap.characteristic) {
-      return;
+      return
     }
 
     useOverlayDataStore.setState({
@@ -94,17 +94,17 @@ async function loadStatusData(status: HttpSiraStatus_Status) {
         beatSaverMap: await ssrApi.getBeatSaverMap(
           beatmap.songHash,
           beatmap.difficultyEnum,
-          beatmap.characteristic
+          beatmap.characteristic,
         ),
         leaderboard: (
           await ssrApi.fetchLeaderboardByHash(
             beatmap.songHash,
             beatmap.difficultyEnum,
-            beatmap.characteristic
+            beatmap.characteristic,
           )
         )?.leaderboard,
       },
-    });
+    })
   }
 
   useOverlayDataStore.setState({
@@ -114,5 +114,5 @@ async function loadStatusData(status: HttpSiraStatus_Status) {
       combo: performance.combo,
       accuracy: performance.relativeScore * 100,
     },
-  });
+  })
 }

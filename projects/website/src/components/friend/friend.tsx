@@ -1,11 +1,11 @@
-import Avatar from "@/components/avatar";
-import SimpleLink from "@/components/simple-link";
-import SimpleTooltip from "@/components/simple-tooltip";
-import useDatabase from "@/hooks/use-database";
-import ScoreSaberPlayer from "@ssr/common/player/impl/scoresaber-player";
-import { formatNumberWithCommas } from "@ssr/common/utils/number-utils";
-import { XIcon } from "lucide-react";
-import { toast } from "sonner";
+import Avatar from '@/components/avatar'
+import SimpleLink from '@/components/simple-link'
+import SimpleTooltip from '@/components/simple-tooltip'
+import useDatabase from '@/hooks/use-database'
+import ScoreSaberPlayer from '@ssr/common/player/impl/scoresaber-player'
+import { formatNumberWithCommas } from '@ssr/common/utils/number-utils'
+import { XIcon } from 'lucide-react'
+import { toast } from 'sonner'
 
 type FriendProps = {
   /**
@@ -17,18 +17,18 @@ type FriendProps = {
    * When the friend is clicked
    */
   onClick?: () => void;
-};
+}
 
 export default function Friend({ player, onClick }: FriendProps) {
-  const { id, name } = player;
-  const database = useDatabase();
+  const { id, name } = player
+  const database = useDatabase()
 
   /**
    * Adds this player as a friend
    */
   async function removeFriend() {
-    await database.removeFriend(id);
-    toast.success(`You have removed ${name} as a friend.`);
+    await database.removeFriend(id)
+    toast.success(`You have removed ${name} as a friend.`)
   }
 
   return (
@@ -56,5 +56,5 @@ export default function Friend({ player, onClick }: FriendProps) {
         </div>
       </SimpleTooltip>
     </div>
-  );
+  )
 }

@@ -1,6 +1,6 @@
-import { ScoreSaberHistoryScore } from "@ssr/common/schemas/scoresaber/score/history-score";
-import { ScoreSaberScore } from "@ssr/common/schemas/scoresaber/score/score";
-import { getModifierLabel, Modifier } from "@ssr/common/score/modifier";
+import { ScoreSaberHistoryScore } from '@ssr/common/schemas/scoresaber/score/history-score'
+import { ScoreSaberScore } from '@ssr/common/schemas/scoresaber/score/score'
+import { getModifierLabel, Modifier } from '@ssr/common/score/modifier'
 
 export function ScoreSaberScoreModifiers({
   score,
@@ -8,26 +8,26 @@ export function ScoreSaberScoreModifiers({
   limit,
 }: {
   score: ScoreSaberScore | ScoreSaberHistoryScore;
-  type: "full" | "simple";
+  type: 'full' | 'simple';
   limit?: number;
 }) {
-  const modifiers = score.modifiers;
+  const modifiers = score.modifiers
   if (modifiers == undefined || modifiers.length === 0) {
-    return <span>-</span>;
+    return <span>-</span>
   }
 
   switch (type) {
-    case "full":
-      return <span>{modifiers.slice(0, limit).map(getModifierLabel).join(", ")}</span>;
-    case "simple":
+    case 'full':
+      return <span>{modifiers.slice(0, limit).map(getModifierLabel).join(', ')}</span>
+    case 'simple':
       return (
         <span>
           {Object.entries(Modifier)
-            .filter(([, mod]) => modifiers.includes(mod))
-            .map(([mod]) => mod)
+            .filter(([ , mod ]) => modifiers.includes(mod))
+            .map(([ mod ]) => mod)
             .slice(0, limit)
-            .join(",")}
+            .join(',')}
         </span>
-      );
+      )
   }
 }

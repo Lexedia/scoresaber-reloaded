@@ -1,33 +1,33 @@
-"use client";
+'use client'
 
-import Card from "@/components/card";
-import FallbackLink from "@/components/fallback-link";
-import LeaderboardButtons from "@/components/platform/scoresaber/leaderboard/leaderboard-buttons";
-import { env } from "@ssr/common/env";
-import { LeaderboardStarChange } from "@ssr/common/schemas/leaderboard/leaderboard-star-change";
-import { LeaderboardResponse } from "@ssr/common/schemas/response/leaderboard/leaderboard";
-import { getBeatSaverMapperProfileUrl } from "@ssr/common/utils/beatsaver.util";
-import { formatNumber, formatNumberWithCommas } from "@ssr/common/utils/number-utils";
-import { getDifficulty, getDifficultyName } from "@ssr/common/utils/song-utils";
-import { formatDate, formatTime } from "@ssr/common/utils/time-utils";
-import NextImage from "next/image";
-import StatValue from "../../../statistic/stat-value";
+import Card from '@/components/card'
+import FallbackLink from '@/components/fallback-link'
+import LeaderboardButtons from '@/components/platform/scoresaber/leaderboard/leaderboard-buttons'
+import { env } from '@ssr/common/env'
+import { LeaderboardStarChange } from '@ssr/common/schemas/leaderboard/leaderboard-star-change'
+import { LeaderboardResponse } from '@ssr/common/schemas/response/leaderboard/leaderboard'
+import { getBeatSaverMapperProfileUrl } from '@ssr/common/utils/beatsaver.util'
+import { formatNumber, formatNumberWithCommas } from '@ssr/common/utils/number-utils'
+import { getDifficulty, getDifficultyName } from '@ssr/common/utils/song-utils'
+import { formatDate, formatTime } from '@ssr/common/utils/time-utils'
+import NextImage from 'next/image'
+import StatValue from '../../../statistic/stat-value'
 
 type LeaderboardInfoProps = {
   leaderboard: LeaderboardResponse;
   starChangeHistory: LeaderboardStarChange[];
-};
+}
 
 export function LeaderboardInfo({ leaderboard, starChangeHistory }: LeaderboardInfoProps) {
-  const { leaderboard: leaderboardData, beatsaver } = leaderboard;
+  const { leaderboard: leaderboardData, beatsaver } = leaderboard
 
-  const accentColor = getDifficulty(leaderboardData.difficulty.difficulty).color;
+  const accentColor = getDifficulty(leaderboardData.difficulty.difficulty).color
 
   return (
     <Card
       className="h-fit w-full flex-col items-center gap-8 overflow-hidden p-0"
       style={{
-        backgroundColor: "var(--card)",
+        backgroundColor: 'var(--card)',
         backgroundImage: `linear-gradient(
         to bottom,
         color-mix(in srgb, ${accentColor} 16%, var(--card)) 0%,
@@ -61,7 +61,7 @@ export function LeaderboardInfo({ leaderboard, starChangeHistory }: LeaderboardI
 
           {/* Mapper */}
           <p className="text-muted-foreground text-sm">
-            Mapped by{" "}
+            Mapped by{' '}
             <FallbackLink
               href={getBeatSaverMapperProfileUrl(beatsaver)}
               className="text-foreground hover:text-primary/80 transition-all"
@@ -72,13 +72,13 @@ export function LeaderboardInfo({ leaderboard, starChangeHistory }: LeaderboardI
 
           {/* Created At */}
           <p className="text-muted-foreground text-sm">
-            Created {formatDate(leaderboardData.timestamp, "Do MMMM, YYYY HH:mm a")}
+            Created {formatDate(leaderboardData.timestamp, 'Do MMMM, YYYY HH:mm a')}
           </p>
         </div>
       </div>
 
       <div className="flex w-full max-w-3xl flex-wrap justify-between gap-x-4 gap-y-6 px-1 sm:gap-x-8">
-        <LeaderboardStatColumn label={leaderboard.leaderboard.ranked ? "Stars" : "Difficulty"}>
+        <LeaderboardStatColumn label={leaderboard.leaderboard.ranked ? 'Stars' : 'Difficulty'}>
           {leaderboard.leaderboard.ranked ? (
             <span className="tabular-nums">{leaderboardData.stars.toFixed(2)}</span>
           ) : (
@@ -102,8 +102,8 @@ export function LeaderboardInfo({ leaderboard, starChangeHistory }: LeaderboardI
         {/* BeatSaver Info */}
         {beatsaver && (
           <div className="flex w-full flex-wrap justify-center gap-2">
-            <StatValue name="NJS" value={formatNumber(beatsaver.difficulty.njs, "number")} />
-            <StatValue name="BPM" value={formatNumber(beatsaver.metadata.bpm, "number")} />
+            <StatValue name="NJS" value={formatNumber(beatsaver.difficulty.njs, 'number')} />
+            <StatValue name="BPM" value={formatNumber(beatsaver.metadata.bpm, 'number')} />
             <StatValue name="NPS" value={beatsaver.difficulty.nps.toFixed(2)} />
             <StatValue name="Notes" value={formatNumberWithCommas(beatsaver.difficulty.notes)} />
             <StatValue name="Bombs" value={formatNumberWithCommas(beatsaver.difficulty.bombs)} />
@@ -121,10 +121,13 @@ export function LeaderboardInfo({ leaderboard, starChangeHistory }: LeaderboardI
         </div>
       </div>
     </Card>
-  );
+  )
 }
 
-function LeaderboardStatColumn({ label, children }: { label: string; children: React.ReactNode }) {
+function LeaderboardStatColumn({ label, children }: {
+  label: string;
+  children: React.ReactNode
+}) {
   return (
     <div className="flex min-w-0 flex-1 basis-[45%] flex-col items-center gap-1 text-center sm:basis-0">
       <p className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">{label}</p>
@@ -132,5 +135,5 @@ function LeaderboardStatColumn({ label, children }: { label: string; children: R
         {children}
       </div>
     </div>
-  );
+  )
 }

@@ -1,6 +1,6 @@
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { LoaderCircle, Search } from "lucide-react";
-import { ReactNode } from "react";
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import { LoaderCircle, Search } from 'lucide-react'
+import { ReactNode } from 'react'
 
 type SearchDialogProps = {
   /**
@@ -35,7 +35,7 @@ type SearchDialogProps = {
    * Maximum length for the search input.
    */
   maxLength?: number;
-};
+}
 
 const SearchDialog = ({
   isOpen,
@@ -44,7 +44,7 @@ const SearchDialog = ({
   onQueryChange,
   isLoading,
   children,
-  placeholder = "Search...",
+  placeholder = 'Search...',
   maxLength = 26,
 }: SearchDialogProps) => {
   return (
@@ -59,7 +59,8 @@ const SearchDialog = ({
               <Search className="text-muted-foreground size-4 shrink-0" />
             )}
             <input
-              className="placeholder:text-muted-foreground focus:text-foreground flex h-full w-full rounded-md bg-transparent py-3 text-sm outline-hidden transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+              className="placeholder:text-muted-foreground focus:text-foreground flex h-full w-full rounded-md bg-transparent py-3 text-sm
+              outline-hidden transition-colors disabled:cursor-not-allowed disabled:opacity-50"
               placeholder={placeholder}
               maxLength={maxLength}
               value={query}
@@ -68,12 +69,13 @@ const SearchDialog = ({
           </div>
         </div>
 
-        <div className="[&::-webkit-scrollbar-thumb]:bg-muted/50 max-h-[500px] overflow-x-hidden overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent">
+        <div className="[&::-webkit-scrollbar-thumb]:bg-muted/50 max-h-[500px] overflow-x-hidden overflow-y-auto
+        [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent">
           {children}
         </div>
       </DialogContent>
     </Dialog>
-  );
-};
+  )
+}
 
-export default SearchDialog;
+export default SearchDialog

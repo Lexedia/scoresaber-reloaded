@@ -1,11 +1,11 @@
-import SimpleTooltip from "@/components/simple-tooltip";
-import { format } from "@formkit/tempo";
-import { ScoreSaberScore } from "@ssr/common/schemas/scoresaber/score/score";
-import { timeAgo } from "@ssr/common/utils/time-utils";
+import SimpleTooltip from '@/components/simple-tooltip'
+import { format } from '@formkit/tempo'
+import { ScoreSaberScore } from '@ssr/common/schemas/scoresaber/score/score'
+import { timeAgo } from '@ssr/common/utils/time-utils'
 
 export function ScoreSaberScoreTimeSetVs({ score }: { score: ScoreSaberScore }) {
   if (!score.previousScore) {
-    return undefined;
+    return undefined
   }
 
   return (
@@ -14,7 +14,7 @@ export function ScoreSaberScoreTimeSetVs({ score }: { score: ScoreSaberScore }) 
         <p>
           {format({
             date: new Date(score.previousScore.timestamp),
-            format: "DD MMMM YYYY HH:mm a",
+            format: 'DD MMMM YYYY HH:mm a',
           })}
         </p>
       }
@@ -27,5 +27,5 @@ export function ScoreSaberScoreTimeSetVs({ score }: { score: ScoreSaberScore }) 
         </div>
       </div>
     </SimpleTooltip>
-  );
+  )
 }

@@ -1,5 +1,5 @@
-import { clsx } from "clsx";
-import SimpleLink from "./simple-link";
+import { clsx } from 'clsx'
+import SimpleLink from './simple-link'
 
 type Props = {
   /**
@@ -16,14 +16,16 @@ type Props = {
    * The children to render.
    */
   children: React.ReactNode;
-};
+}
 
-export default function FallbackLink({ href, children, className, ...props }: Props) {
+export default function FallbackLink({
+  href, children, className, ...props
+}: Props) {
   return href ? (
-    <SimpleLink href={href} target="_blank" className={clsx("w-fit", className)} {...props}>
+    <SimpleLink href={href} target="_blank" className={clsx('w-fit', className)} {...props}>
       {children}
     </SimpleLink>
   ) : (
     <>{children}</>
-  );
+  )
 }

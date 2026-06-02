@@ -1,20 +1,20 @@
-import HMDIcon from "@/components/hmd-icon";
-import { PlayerAvatar } from "@/components/ranking/player-avatar";
-import { getHMDInfo } from "@ssr/common/hmds";
-import { ScoreSaberScore } from "@ssr/common/schemas/scoresaber/score/score";
-import { PlayerScore } from "@ssr/common/score/player-score";
-import { formatDate } from "@ssr/common/utils/time-utils";
-import { CalendarDays } from "lucide-react";
-import Card from "../../../card";
-import ScoreSongInfo from "../../score-song-info";
-import LeaderboardButton from "./buttons/leaderboard-button";
-import PlayerButton from "./buttons/player-button";
-import ReplayButton from "./buttons/replay-button";
+import HMDIcon from '@/components/hmd-icon'
+import { PlayerAvatar } from '@/components/ranking/player-avatar'
+import { getHMDInfo } from '@ssr/common/hmds'
+import { ScoreSaberScore } from '@ssr/common/schemas/scoresaber/score/score'
+import { PlayerScore } from '@ssr/common/score/player-score'
+import { formatDate } from '@ssr/common/utils/time-utils'
+import { CalendarDays } from 'lucide-react'
+import Card from '../../../card'
+import ScoreSongInfo from '../../score-song-info'
+import LeaderboardButton from './buttons/leaderboard-button'
+import PlayerButton from './buttons/player-button'
+import ReplayButton from './buttons/replay-button'
 
 export default function ScoreDetails({ score: playerScore }: { score: PlayerScore<ScoreSaberScore> }) {
-  const { leaderboard } = playerScore;
-  const score = playerScore.score;
-  const playerInfo = score.playerInfo!;
+  const { leaderboard } = playerScore
+  const score = playerScore.score
+  const playerInfo = score.playerInfo!
 
   return (
     <Card className="overflow-hidden rounded-xl p-0">
@@ -44,7 +44,7 @@ export default function ScoreDetails({ score: playerScore }: { score: PlayerScor
         <div className="flex min-w-0 flex-1 items-start gap-3">
           <PlayerAvatar
             profilePicture={playerInfo.avatar}
-            name={playerInfo.name ?? ""}
+            name={playerInfo.name ?? ''}
             className="size-14 shrink-0"
           />
           <div className="min-w-0 flex-1">
@@ -61,10 +61,10 @@ export default function ScoreDetails({ score: playerScore }: { score: PlayerScor
         <div className="text-muted-foreground flex shrink-0 items-center gap-2 sm:justify-end">
           <CalendarDays className="size-4 shrink-0" aria-hidden />
           <span className="text-sm whitespace-nowrap">
-            {formatDate(score.timestamp, "Do MMMM, YYYY HH:mm a")}
+            {formatDate(score.timestamp, 'Do MMMM, YYYY HH:mm a')}
           </span>
         </div>
       </div>
     </Card>
-  );
+  )
 }

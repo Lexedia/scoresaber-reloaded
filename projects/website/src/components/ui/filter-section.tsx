@@ -1,8 +1,8 @@
-import { XIcon } from "lucide-react";
-import { ReactNode } from "react";
-import Card from "../card";
-import SimpleTooltip from "../simple-tooltip";
-import { Button } from "./button";
+import { XIcon } from 'lucide-react'
+import { ReactNode } from 'react'
+import Card from '../card'
+import SimpleTooltip from '../simple-tooltip'
+import { Button } from './button'
 
 interface FilterSectionProps {
   title: string;
@@ -21,10 +21,10 @@ export function FilterSection({
   className,
   onClear,
   hasActiveFilters,
-  clearLabel = "Clear Filters",
+  clearLabel = 'Clear Filters',
 }: FilterSectionProps) {
   return (
-    <Card className={`h-fit w-full gap-4 ${className ?? ""}`}>
+    <Card className={`h-fit w-full gap-4 ${className ?? ''}`}>
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between">
           <h3 className="text-foreground text-lg font-semibold">{title}</h3>
@@ -45,7 +45,7 @@ export function FilterSection({
       </div>
       <div className="flex flex-col gap-4">{children}</div>
     </Card>
-  );
+  )
 }
 
 interface FilterFieldProps {
@@ -56,11 +56,11 @@ interface FilterFieldProps {
 
 export function FilterField({ label, children, className }: FilterFieldProps) {
   return (
-    <div className={`flex flex-col gap-2 ${className ?? ""}`}>
+    <div className={`flex flex-col gap-2 ${className ?? ''}`}>
       {label && <label className="text-foreground text-sm font-medium">{label}</label>}
       {children}
     </div>
-  );
+  )
 }
 
 interface FilterRowProps {
@@ -69,5 +69,5 @@ interface FilterRowProps {
 }
 
 export function FilterRow({ children, className }: FilterRowProps) {
-  return <div className={`flex flex-row items-center gap-2 ${className ?? ""}`}>{children}</div>;
+  return <div className={`flex flex-row items-center gap-2 ${className ?? ''}`}>{children}</div>
 }

@@ -1,7 +1,10 @@
-import { SearchButton } from "@/components/landing/search-button";
-import SimpleLink from "@/components/simple-link";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, BarChart3, Database, Globe, Heart, Monitor, Star, Users } from "lucide-react";
+import { SearchButton } from '@/components/landing/search-button'
+import SimpleLink from '@/components/simple-link'
+import { Button } from '@/components/ui/button'
+import { env } from '@ssr/common/env'
+import {
+  ArrowRight, BarChart3, Database, Globe, Heart, Monitor, Star, Users,
+} from 'lucide-react'
 
 export default async function LandingPage() {
   return (
@@ -11,9 +14,10 @@ export default async function LandingPage() {
         <div className="text-center">
           <div className="mb-(--spacing-2xl)">
             <SimpleLink
-              href="https://github.com/RealFascinated/scoresaber-reloaded"
+              href={env.NEXT_PUBLIC_GITHUB_URL!}
               target="_blank"
-              className="border-primary/20 bg-primary/10 text-primary hover:bg-primary/20 inline-flex items-center gap-(--spacing-sm) rounded-full border px-(--spacing-lg) py-(--spacing-sm) text-sm transition-all"
+              className="border-primary/20 bg-primary/10 text-primary hover:bg-primary/20 inline-flex
+              items-center gap-(--spacing-sm) rounded-full border px-(--spacing-lg) py-(--spacing-sm) text-sm transition-all"
             >
               <Star className="h-4 w-4" />
               <span>Open Source</span>
@@ -21,7 +25,8 @@ export default async function LandingPage() {
             </SimpleLink>
           </div>
 
-          <h1 className="from-primary to-accent-secondary animate-gradient-slow mb-(--spacing-xl) bg-linear-to-r bg-size-[200%_200%] bg-clip-text text-5xl font-bold text-transparent sm:text-6xl lg:text-7xl">
+          <h1 className="from-primary to-accent-secondary animate-gradient-slow mb-(--spacing-xl)
+          bg-linear-to-r bg-size-[200%_200%] bg-clip-text text-5xl font-bold text-transparent sm:text-6xl lg:text-7xl">
             ScoreSaber Reloaded
           </h1>
 
@@ -38,9 +43,11 @@ export default async function LandingPage() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-primary/30 bg-primary/5 text-primary hover:border-primary/50 hover:bg-primary/10 group relative h-12 overflow-hidden rounded-xl border-2 px-(--spacing-2xl) backdrop-blur-xs transition-all duration-300"
+                className="border-primary/30 bg-primary/5 text-primary hover:border-primary/50 hover:bg-primary/10 group relative h-12 overflow-hidden
+                rounded-xl border-2 px-(--spacing-2xl) backdrop-blur-xs transition-all duration-300"
               >
-                <div className="from-primary/10 to-accent-secondary/10 absolute inset-0 bg-linear-to-r opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                <div className="from-primary/10 to-accent-secondary/10 absolute inset-0 bg-linear-to-r opacity-0 transition-opacity duration-300
+                group-hover:opacity-100" />
                 <span className="relative z-10 font-semibold">Join Discord</span>
               </Button>
             </SimpleLink>
@@ -103,7 +110,7 @@ export default async function LandingPage() {
         <div className="h-64" />
       </section>
     </div>
-  );
+  )
 }
 
 function FeatureCard({
@@ -123,5 +130,5 @@ function FeatureCard({
         <p className="text-muted-foreground text-sm leading-relaxed">{description}</p>
       </div>
     </div>
-  );
+  )
 }

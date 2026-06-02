@@ -1,10 +1,10 @@
-import Avatar from "@/components/avatar";
-import SimpleLink from "@/components/simple-link";
-import CountryFlag from "@/components/ui/country-flag";
-import ScoreSaberPlayer from "@ssr/common/player/impl/scoresaber-player";
-import { ScoreSaberLeaderboardPlayerInfo } from "@ssr/common/schemas/scoresaber/leaderboard/player-info";
-import { getScoreSaberRoles } from "@ssr/common/utils/scoresaber.util";
-import { clsx } from "clsx";
+import Avatar from '@/components/avatar'
+import SimpleLink from '@/components/simple-link'
+import CountryFlag from '@/components/ui/country-flag'
+import ScoreSaberPlayer from '@ssr/common/player/impl/scoresaber-player'
+import { ScoreSaberLeaderboardPlayerInfo } from '@ssr/common/schemas/scoresaber/leaderboard/player-info'
+import { getScoreSaberRoles } from '@ssr/common/utils/scoresaber.util'
+import { clsx } from 'clsx'
 
 export function PlayerInfo({
   player,
@@ -22,9 +22,9 @@ export function PlayerInfo({
   const name = (
     <p
       className={clsx(
-        player.id == highlightedPlayerId ? "font-bold" : "",
-        "overflow-hidden text-left break-all text-ellipsis whitespace-nowrap transition-all duration-200",
-        className
+        player.id == highlightedPlayerId ? 'font-bold' : '',
+        'overflow-hidden text-left break-all text-ellipsis whitespace-nowrap transition-all duration-200',
+        className,
       )}
       style={{
         color: getScoreSaberRoles(player)[0]?.color,
@@ -32,7 +32,7 @@ export function PlayerInfo({
     >
       {player.name}
     </p>
-  );
+  )
 
   return (
     <div className="flex items-center gap-2">
@@ -40,5 +40,5 @@ export function PlayerInfo({
       {!hideCountryFlag && <CountryFlag code={player.country!} size={10} />}
       {useLink ? <SimpleLink href={`/player/${player.id}`}>{name}</SimpleLink> : name}
     </div>
-  );
+  )
 }

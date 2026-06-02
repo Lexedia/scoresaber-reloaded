@@ -1,32 +1,34 @@
-"use client";
+'use client'
 
-import { useMapFilter } from "@/components/providers/maps/map-filter-provider";
-import { Checkbox } from "@/components/ui/checkbox";
-import { DualRangeSlider } from "@/components/ui/dual-range-slider";
-import { FilterField, FilterSection } from "@/components/ui/filter-section";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useMapFilter } from '@/components/providers/maps/map-filter-provider'
+import { Checkbox } from '@/components/ui/checkbox'
+import { DualRangeSlider } from '@/components/ui/dual-range-slider'
+import { FilterField, FilterSection } from '@/components/ui/filter-section'
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select'
 import {
   ScoreSaberLeaderboardQueryCategory,
   ScoreSaberLeaderboardQuerySort,
-} from "@ssr/common/schemas/scoresaber/leaderboard/query-filters";
-import { SHARED_CONSTS } from "@ssr/common/shared-consts";
-import { Input } from "../ui/input";
+} from '@ssr/common/schemas/scoresaber/leaderboard/query-filters'
+import { SHARED_CONSTS } from '@ssr/common/shared-consts'
+import { Input } from '../ui/input'
 
 const categoryOptions: Record<ScoreSaberLeaderboardQueryCategory, string> = {
-  trending: "Trending",
-  date_ranked: "Date Ranked",
-  plays: "Plays",
-  daily_plays: "Daily Plays",
-  star_difficulty: "Star Difficulty",
-};
+  trending: 'Trending',
+  date_ranked: 'Date Ranked',
+  plays: 'Plays',
+  daily_plays: 'Daily Plays',
+  star_difficulty: 'Star Difficulty',
+}
 
 const sortOptions: Record<ScoreSaberLeaderboardQuerySort, string> = {
-  desc: "Descending",
-  asc: "Ascending",
-};
+  desc: 'Descending',
+  asc: 'Ascending',
+}
 
 export default function MapFilters() {
-  const filter = useMapFilter();
+  const filter = useMapFilter()
 
   const hasActiveFilters =
     filter.ranked ||
@@ -34,7 +36,7 @@ export default function MapFilters() {
     filter.search.length > 0 ||
     filter.category !== undefined ||
     filter.starMin !== undefined ||
-    filter.starMax !== SHARED_CONSTS.maxStars;
+    filter.starMax !== SHARED_CONSTS.maxStars
 
   return (
     <FilterSection
@@ -51,7 +53,7 @@ export default function MapFilters() {
               id="ranked-maps"
               checked={filter.ranked}
               onCheckedChange={checked => {
-                filter.setRanked(checked as boolean);
+                filter.setRanked(checked as boolean)
               }}
             />
             <label htmlFor="ranked-maps" className="cursor-pointer text-sm font-medium">
@@ -63,7 +65,7 @@ export default function MapFilters() {
               id="qualified-maps"
               checked={filter.qualified}
               onCheckedChange={checked => {
-                filter.setQualified(checked as boolean);
+                filter.setQualified(checked as boolean)
               }}
             />
             <label htmlFor="qualified-maps" className="cursor-pointer text-sm font-medium">
@@ -89,7 +91,7 @@ export default function MapFilters() {
           value={filter.category !== undefined ? String(filter.category) : undefined}
           onValueChange={newCategory => {
             if (newCategory) {
-              filter.setCategory(newCategory as ScoreSaberLeaderboardQueryCategory);
+              filter.setCategory(newCategory as ScoreSaberLeaderboardQueryCategory)
             }
           }}
         >
@@ -97,7 +99,10 @@ export default function MapFilters() {
             <SelectValue placeholder="Select category" />
           </SelectTrigger>
           <SelectContent>
-            {Object.entries(categoryOptions).map(([value, label]) => (
+            {Object.entries(categoryOptions).map(([
+              value,
+              label,
+            ]) => (
               <SelectItem key={value} value={value}>
                 {label}
               </SelectItem>
@@ -112,7 +117,7 @@ export default function MapFilters() {
           value={String(filter.sort)}
           onValueChange={newSort => {
             if (newSort) {
-              filter.setSort(newSort as ScoreSaberLeaderboardQuerySort);
+              filter.setSort(newSort as ScoreSaberLeaderboardQuerySort)
             }
           }}
         >
@@ -120,7 +125,10 @@ export default function MapFilters() {
             <SelectValue placeholder="Select sort" />
           </SelectTrigger>
           <SelectContent>
-            {Object.entries(sortOptions).map(([value, label]) => (
+            {Object.entries(sortOptions).map(([
+              value,
+              label,
+            ]) => (
               <SelectItem key={value} value={value}>
                 {label}
               </SelectItem>
@@ -133,10 +141,13 @@ export default function MapFilters() {
       <FilterField label="Star Range">
         <DualRangeSlider
           label={value => <span className="text-xs">{value}</span>}
-          value={[filter.starMin ?? 0, filter.starMax ?? SHARED_CONSTS.maxStars]}
+          value={[
+            filter.starMin ?? 0,
+            filter.starMax ?? SHARED_CONSTS.maxStars,
+          ]}
           onValueChange={value => {
-            filter.setStarMin(value[0]);
-            filter.setStarMax(value[1]);
+            filter.setStarMin(value[0])
+            filter.setStarMax(value[1])
           }}
           min={0}
           max={SHARED_CONSTS.maxStars}
@@ -146,5 +157,5 @@ export default function MapFilters() {
         />
       </FilterField>
     </FilterSection>
-  );
+  )
 }

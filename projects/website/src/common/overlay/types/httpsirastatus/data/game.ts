@@ -18,4 +18,4 @@ export type HttpSiraStatus_GameData = {
    * The current scene in the game.
    */
   scene: string;
-};
+}

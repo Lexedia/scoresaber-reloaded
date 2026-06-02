@@ -1,37 +1,37 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from 'next/server'
 
 export function proxy(request: NextRequest) {
-  const playerId = request.cookies.get("playerId");
-  const websiteLanding = request.cookies.get("websiteLanding");
+  const playerId = request.cookies.get('playerId')
+  const websiteLanding = request.cookies.get('websiteLanding')
 
   // Handle home redirect if they have claimed a player
-  if (request.nextUrl.pathname === "/" && !!playerId) {
+  if (request.nextUrl.pathname === '/' && !!playerId) {
     // If they have a player and prefer the landing page, stay on landing
-    if (websiteLanding?.value === "landing") {
-      return NextResponse.next();
-    } else if (websiteLanding?.value === "playerHome") {
+    if (websiteLanding?.value === 'landing') {
+      return NextResponse.next()
+    } else if (websiteLanding?.value === 'playerHome') {
       // Otherwise redirect to player home
-      return NextResponse.redirect(new URL("/home", request.url));
-    } else if (websiteLanding?.value === "playerPage") {
+      return NextResponse.redirect(new URL('/home', request.url))
+    } else if (websiteLanding?.value === 'playerPage') {
       // Otherwise redirect to player page
-      return NextResponse.redirect(new URL(`/player/${playerId?.value}`, request.url));
+      return NextResponse.redirect(new URL(`/player/${playerId?.value}`, request.url))
     } else {
       // No preference set (or unknown value): stay on `/` — do not redirect to `/` (that loops)
-      return NextResponse.next();
+      return NextResponse.next()
     }
   }
 
   // Handle player home redirect if they don't have a player claimed
-  if (request.nextUrl.pathname.startsWith("/home") && !playerId) {
-    return NextResponse.redirect(new URL("/", request.url));
+  if (request.nextUrl.pathname.startsWith('/home') && !playerId) {
+    return NextResponse.redirect(new URL('/', request.url))
   }
 
   // Log requests in production
-  if (process.env.NEXT_PUBLIC_APP_ENV === "production") {
-    console.log(`${request.method} ${request.nextUrl.pathname}${request.nextUrl.search}`);
+  if (process.env.NEXT_PUBLIC_APP_ENV === 'production') {
+    console.log(`${request.method} ${request.nextUrl.pathname}${request.nextUrl.search}`)
   }
 
-  return NextResponse.next();
+  return NextResponse.next()
 }
 
 export const config = {
@@ -43,6 +43,6 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
-};
+}

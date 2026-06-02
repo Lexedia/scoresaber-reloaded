@@ -206,11 +206,14 @@ export class ScoreSaberApiService {
   public static async lookupPlayers(
     page: number,
     search?: string,
+    withInactive?: boolean,
   ): Promise<ScoreSaberPlayersPageToken | undefined> {
     const before = performance.now()
     ScoreSaberApiService.log(`Looking up players on page "${page}"...`)
     const response = await ScoreSaberApiService.fetch<ScoreSaberPlayersPageToken>(
-      LOOKUP_PLAYERS_ENDPOINT.replace(':page', page.toString()) + (search ? `&search=${search}` : ''),
+      LOOKUP_PLAYERS_ENDPOINT.replace(':page', page.toString()) + 
+        (search ? `&search=${search}` : '') +
+        (withInactive ? '&withInactive=true' : ''),
     )
     if (response === undefined) {
       return undefined
@@ -232,12 +235,14 @@ export class ScoreSaberApiService {
     page: number,
     country: string,
     search?: string,
+    withInactive?: boolean,
   ): Promise<ScoreSaberPlayersPageToken | undefined> {
     const before = performance.now()
     ScoreSaberApiService.log(`Looking up players on page "${page}" for country "${country}"...`)
     const response = await ScoreSaberApiService.fetch<ScoreSaberPlayersPageToken>(
       LOOKUP_PLAYERS_BY_COUNTRY_ENDPOINT.replace(':page', page.toString()).replace(':country', country) +
-        (search ? `&search=${search}` : ''),
+        (search ? `&search=${search}` : '') +
+        (withInactive ? '&withInactive=true' : ''),
     )
     if (response === undefined) {
       return undefined

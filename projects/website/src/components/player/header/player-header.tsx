@@ -1,25 +1,29 @@
-import AddFriend from "@/components/friend/add-friend";
-import SimpleLink from "@/components/simple-link";
-import { env } from "@ssr/common/env";
-import ScoreSaberPlayer from "@ssr/common/player/impl/scoresaber-player";
-import { getScoreSaberRoles } from "@ssr/common/utils/scoresaber.util";
-import Card from "../../card";
-import PlayerAccBadges from "./acc-badges";
-import ClaimProfile from "./claim-profile";
-import PlayerActions from "./player-actions";
-import PlayerAvatar from "./player-avatar";
-import PlayerOverview from "./player-overview";
-import PlayerStats from "./player-stats";
-import PlayerStreak from "./player-streak";
+import AddFriend from '@/components/friend/add-friend'
+import SimpleLink from '@/components/simple-link'
+import { cn } from '@/common/utils'
+import { getCPConfig } from '@/config/cps'
+import { env } from '@ssr/common/env'
+import ScoreSaberPlayer from '@ssr/common/player/impl/scoresaber-player'
+import { getScoreSaberRoles } from '@ssr/common/utils/scoresaber.util'
+import Card from '../../card'
+import PlayerAccBadges from './acc-badges'
+import ClaimProfile from './claim-profile'
+import PlayerActions from './player-actions'
+import PlayerAvatar from './player-avatar'
+import PlayerOverview from './player-overview'
+import PlayerStats from './player-stats'
+import PlayerStreak from './player-streak'
 
 type PlayerHeaderProps = {
   /**
    * The player to display.
    */
   player: ScoreSaberPlayer;
-};
+}
 
 export default function PlayerHeader({ player }: PlayerHeaderProps) {
+  const cpcConfig = getCPConfig(player.id)
+
   return (
     <Card className="flex flex-col gap-6">
       <div className="relative flex flex-col items-center gap-6 text-center select-none lg:flex-row lg:items-start lg:text-start">
@@ -35,7 +39,7 @@ export default function PlayerHeader({ player }: PlayerHeaderProps) {
               <SimpleLink
                 href={`${env.NEXT_PUBLIC_STEAM_URL}/profiles/${player.id}`}
                 target="_blank"
-                className="hover:text-primary/80 max-w-[300px] truncate text-2xl font-semibold transition-colors duration-200"
+                className={cn('hover:text-primary/80 max-w-[300px] truncate text-2xl font-semibold transition-colors duration-200', cpcConfig?.nameClass)}
                 style={{
                   color: getScoreSaberRoles(player)[0]?.color,
                 }}
@@ -46,7 +50,8 @@ export default function PlayerHeader({ player }: PlayerHeaderProps) {
             <div className="flex flex-col gap-2">
               <div className="flex flex-wrap items-center justify-center gap-2 lg:justify-start">
                 {player.inactive && (
-                  <span className="text-inactive-account rounded-md border border-(--inactive-account)/30 bg-(--inactive-account)/20 px-2.5 py-1 text-xs font-medium">
+                  <span className="text-inactive-account rounded-md border border-(--inactive-account)/30
+                  bg-(--inactive-account)/20 px-2.5 py-1 text-xs font-medium">
                     Inactive Account
                   </span>
                 )}
@@ -78,5 +83,5 @@ export default function PlayerHeader({ player }: PlayerHeaderProps) {
         <PlayerAccBadges statistics={player.statistics} />
       </div>
     </Card>
-  );
+  )
 }

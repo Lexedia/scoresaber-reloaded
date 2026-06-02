@@ -1,30 +1,30 @@
-import { Change } from "@/components/change";
-import { ScoreBadgeProps } from "@/components/platform/scoresaber/score/badges/badge-props";
-import { ScoreSaberScoreModifiers } from "@/components/platform/scoresaber/score/score-modifiers";
-import SimpleTooltip from "@/components/simple-tooltip";
-import { hasModifier, Modifier } from "@ssr/common/score/modifier";
-import { formatNumberWithCommas } from "@ssr/common/utils/number-utils";
-import { formatScoreAccuracy } from "@ssr/common/utils/score.util";
-import { getAccDetails, getScoreBadgeFromAccuracy } from "@ssr/common/utils/song-utils";
+import { Change } from '@/components/change'
+import { ScoreBadgeProps } from '@/components/platform/scoresaber/score/badges/badge-props'
+import { ScoreSaberScoreModifiers } from '@/components/platform/scoresaber/score/score-modifiers'
+import SimpleTooltip from '@/components/simple-tooltip'
+import { hasModifier, Modifier } from '@ssr/common/score/modifier'
+import { formatNumberWithCommas } from '@ssr/common/utils/number-utils'
+import { formatScoreAccuracy } from '@ssr/common/utils/score.util'
+import { getAccDetails, getScoreBadgeFromAccuracy } from '@ssr/common/utils/song-utils'
 
 type ScoreAccuracyBadgeProps = ScoreBadgeProps & {
   /**
    * Whether to show the difference between the score and the previous score.
    */
   showDifference?: boolean;
-};
+}
 
 export function ScoreAccuracyBadge({ score, showDifference = true }: ScoreAccuracyBadgeProps) {
-  const previousScore = score.previousScore;
+  const previousScore = score.previousScore
 
-  const fcAccuracy = score.beatLeaderScore?.fcAccuracy;
-  const scoreBadge = getScoreBadgeFromAccuracy(score.accuracy);
+  const fcAccuracy = score.beatLeaderScore?.fcAccuracy
+  const scoreBadge = getScoreBadgeFromAccuracy(score.accuracy)
 
-  const failed = hasModifier(score.modifiers, Modifier.NF);
-  const modCount = score.modifiers.length;
+  const failed = hasModifier(score.modifiers, Modifier.NF)
+  const modCount = score.modifiers.length
 
-  const previousScoreFailed = hasModifier(previousScore?.modifiers, Modifier.NF);
-  const previousModCount = previousScore?.modifiers?.length ?? 0;
+  const previousScoreFailed = hasModifier(previousScore?.modifiers, Modifier.NF)
+  const previousModCount = previousScore?.modifiers?.length ?? 0
 
   return (
     <>
@@ -56,7 +56,7 @@ export function ScoreAccuracyBadge({ score, showDifference = true }: ScoreAccura
           showOnMobile
         >
           <p>
-            {formatScoreAccuracy(score.accuracy)}{" "}
+            {formatScoreAccuracy(score.accuracy)}{' '}
             {modCount > 0 && <ScoreSaberScoreModifiers type="simple" limit={1} score={score} />}
           </p>
         </SimpleTooltip>
@@ -96,5 +96,5 @@ export function ScoreAccuracyBadge({ score, showDifference = true }: ScoreAccura
         )}
       </div>
     </>
-  );
+  )
 }

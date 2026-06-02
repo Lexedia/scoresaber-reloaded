@@ -1,29 +1,29 @@
-import { OverlayData } from "@/common/overlay/overlay-data";
-import { cn } from "@/common/utils";
-import OverlayView, { OverlayViewPosition } from "@/components/overlay/views/view";
-import { truncateText } from "@ssr/common/string-utils";
-import { formatNumberWithCommas } from "@ssr/common/utils/number-utils";
-import { getDifficulty, getDifficultyName } from "@ssr/common/utils/song-utils";
-import Image from "next/image";
+import { OverlayData } from '@/common/overlay/overlay-data'
+import { cn } from '@/common/utils'
+import OverlayView, { OverlayViewPosition } from '@/components/overlay/views/view'
+import { truncateText } from '@ssr/common/string-utils'
+import { formatNumberWithCommas } from '@ssr/common/utils/number-utils'
+import { getDifficulty, getDifficultyName } from '@ssr/common/utils/song-utils'
+import Image from 'next/image'
 
 type OverlaySongInfoProps = {
   overlayData: OverlayData;
-};
+}
 
 export default function OverlaySongInfoView({ overlayData }: OverlaySongInfoProps) {
-  const { map, paused } = overlayData;
-  const { beatSaverMap } = map || {};
+  const { map, paused } = overlayData
+  const { beatSaverMap } = map || {}
   if (!beatSaverMap) {
-    return null;
+    return null
   }
 
-  const difficulty = getDifficulty(beatSaverMap.difficulty.difficulty);
-  const leaderboard = map?.leaderboard;
+  const difficulty = getDifficulty(beatSaverMap.difficulty.difficulty)
+  const leaderboard = map?.leaderboard
 
   return (
     <OverlayView
       position={OverlayViewPosition.BOTTOM_LEFT}
-      className={cn(paused ? "grayscale filter" : "", "flex gap-2 transition-all")}
+      className={cn(paused ? 'grayscale filter' : '', 'flex gap-2 transition-all')}
     >
       <Image
         className="rounded-md"
@@ -47,12 +47,13 @@ export default function OverlaySongInfoView({ overlayData }: OverlaySongInfoProp
             className="w-fit rounded-md px-2 py-1 text-sm font-medium"
             style={{
               backgroundColor: difficulty.color,
-              color: difficulty.color === "#FFFFFF" ? "#000000" : "#FFFFFF",
+              color: difficulty.color === '#FFFFFF' ? '#000000' : '#FFFFFF',
             }}
           >
             {getDifficultyName(difficulty)}
           </div>
-          <div className="[&>*:not(:last-child)]:after:text-muted-foreground flex items-center [&>*:not(:last-child)]:after:mx-2 [&>*:not(:last-child)]:after:content-['|']">
+          <div className="[&>*:not(:last-child)]:after:text-muted-foreground flex items-center
+          [&>*:not(:last-child)]:after:mx-2 [&>*:not(:last-child)]:after:content-['|']">
             <span>!bsr {beatSaverMap.bsr}</span>
             <span>{formatNumberWithCommas(beatSaverMap.metadata.bpm)} BPM</span>
             {leaderboard && leaderboard.stars > 0 && (
@@ -62,5 +63,5 @@ export default function OverlaySongInfoView({ overlayData }: OverlaySongInfoProp
         </div>
       </div>
     </OverlayView>
-  );
+  )
 }

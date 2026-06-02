@@ -1,20 +1,20 @@
-import { getBuildInformation } from "@/common/website-utils";
-import { ApiHealth } from "@/components/api/api-health";
-import BackgroundCover from "@/components/background-cover";
-import { SnowBackground } from "@/components/effects/snow-background";
-import Footer from "@/components/footer";
-import DatabaseLoader from "@/components/loaders/database-loader";
-import MeowMeow from "@/components/meow-meow";
-import Navbar from "@/components/navbar/navbar";
-import { SearchProvider } from "@/components/providers/search-provider";
-import ThemeProvider from "@/components/providers/theme-provider";
-import SSRLayout from "@/components/ssr-layout";
-import { SiteTheme, ssrConfig } from "config";
-import { NuqsAdapter } from "nuqs/adapters/next/app";
-import { ReactNode } from "react";
+import { getBuildInformation } from '@/common/website-utils'
+import { ApiHealth } from '@/components/api/api-health'
+import BackgroundCover from '@/components/background-cover'
+import { SnowBackground } from '@/components/effects/snow-background'
+import Footer from '@/components/footer'
+import DatabaseLoader from '@/components/loaders/database-loader'
+import MeowMeow from '@/components/meow-meow'
+import Navbar from '@/components/navbar/navbar'
+import { SearchProvider } from '@/components/providers/search-provider'
+import ThemeProvider from '@/components/providers/theme-provider'
+import SSRLayout from '@/components/ssr-layout'
+import { SiteTheme, ssrConfig } from 'config'
+import { NuqsAdapter } from 'nuqs/adapters/next/app'
+import { ReactNode } from 'react'
 
 export default function Layout({ children }: { children: ReactNode }) {
-  const { buildId, buildTimeShort } = getBuildInformation();
+  const { buildId, buildTimeShort } = getBuildInformation()
 
   return (
     <ThemeProvider
@@ -39,5 +39,5 @@ export default function Layout({ children }: { children: ReactNode }) {
         </NuqsAdapter>
       </DatabaseLoader>
     </ThemeProvider>
-  );
+  )
 }

@@ -1,16 +1,16 @@
-import Cookies from "js-cookie";
+import Cookies from 'js-cookie'
 
 export type CookieName =
-  | "playerId"
-  | "websiteLanding"
+  | 'playerId'
+  | 'websiteLanding'
 
   // ScoreSaber
-  | "scoreaber-scoreSort"
+  | 'scoreaber-scoreSort'
 
   // AccSaber
-  | "accsaber-scoreSort"
-  | "accsaber-scoreType"
-  | "accsaber-scoreOrder";
+  | 'accsaber-scoreSort'
+  | 'accsaber-scoreType'
+  | 'accsaber-scoreOrder'
 
 /**
  * Gets the value of a cookie
@@ -20,7 +20,7 @@ export type CookieName =
  * @returns the value of the cookie, or the fallback value (undefined if no fallback value is provided)
  */
 export function getCookieValue(name: CookieName, defaultValue?: string): string | undefined {
-  return Cookies.get(name) || defaultValue ? defaultValue : undefined;
+  return Cookies.get(name) || defaultValue ? defaultValue : undefined
 }
 
 /**
@@ -31,8 +31,8 @@ export function getCookieValue(name: CookieName, defaultValue?: string): string 
  */
 export function setCookieValue(name: CookieName, value: string) {
   Cookies.set(name, value, {
-    path: "/",
-  });
+    path: '/',
+  })
 }
 
 /**
@@ -41,5 +41,5 @@ export function setCookieValue(name: CookieName, value: string) {
  * @param name the name of the cookie
  */
 export function deleteCookieValue(name: CookieName) {
-  Cookies.remove(name);
+  Cookies.remove(name)
 }

@@ -9,15 +9,15 @@
 export function getRankingColumnWidth<T>(
   players: T[],
   rank: (player: T) => number,
-  countryRank: (player: T) => number
+  countryRank: (player: T) => number,
 ) {
-  const maxRank = players?.reduce((max, p) => Math.max(max, rank(p) ?? 0), 0) ?? 0;
-  const maxCountryRank = players?.reduce((max, p) => Math.max(max, countryRank(p) ?? 0), 0) ?? 0;
-  const rankDigits = maxRank > 0 ? Math.floor(Math.log10(maxRank)) + 1 : 0;
-  const countryRankDigits = maxCountryRank > 0 ? Math.floor(Math.log10(maxCountryRank)) + 1 : 0;
-  const rankCommas = Math.floor((rankDigits - 1) / 3);
-  const countryRankCommas = Math.floor((countryRankDigits - 1) / 3);
-  const rankWidth = 35 + (rankDigits + rankCommas + 1) * 7;
-  const countryRankWidth = 35 + (countryRankDigits + countryRankCommas + 1) * 7;
-  return Math.max(rankWidth, 40) + Math.max(countryRankWidth, 40);
+  const maxRank = players?.reduce((max, p) => Math.max(max, rank(p) ?? 0), 0) ?? 0
+  const maxCountryRank = players?.reduce((max, p) => Math.max(max, countryRank(p) ?? 0), 0) ?? 0
+  const rankDigits = maxRank > 0 ? Math.floor(Math.log10(maxRank)) + 1 : 0
+  const countryRankDigits = maxCountryRank > 0 ? Math.floor(Math.log10(maxCountryRank)) + 1 : 0
+  const rankCommas = Math.floor((rankDigits - 1) / 3)
+  const countryRankCommas = Math.floor((countryRankDigits - 1) / 3)
+  const rankWidth = 35 + ((rankDigits + rankCommas + 1) * 7)
+  const countryRankWidth = 35 + ((countryRankDigits + countryRankCommas + 1) * 7)
+  return Math.max(rankWidth, 40) + Math.max(countryRankWidth, 40)
 }

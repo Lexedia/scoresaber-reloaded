@@ -1,67 +1,78 @@
-"use client";
+'use client'
 
-import { ChartConfig } from "@/common/chart/types";
-import { Colors } from "@/common/colors";
-import { DEFAULT_WHAT_IF_RANGE, SettingIds } from "@/common/database/database";
-import GenericChart from "@/components/api/chart/generic-chart-dynamic";
-import ScoreButton from "@/components/score/button/score-button";
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { DualRangeSlider } from "@/components/ui/dual-range-slider";
-import useDatabase from "@/hooks/use-database";
-import { useStableLiveQuery } from "@/hooks/use-stable-live-query";
-import { ScoreSaberCurve } from "@ssr/common/leaderboard-curve/scoresaber-curve";
-import { ScoreSaberLeaderboard } from "@ssr/common/schemas/scoresaber/leaderboard/leaderboard";
-import { useDebounce } from "@uidotdev/usehooks";
-import { ChartBarIcon } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { ChartConfig } from '@/common/chart/types'
+import { Colors } from '@/common/colors'
+import { DEFAULT_WHAT_IF_RANGE, SettingIds } from '@/common/database/database'
+import GenericChart from '@/components/api/chart/generic-chart-dynamic'
+import ScoreButton from '@/components/score/button/score-button'
+import {
+  Dialog, DialogContent, DialogTitle, DialogTrigger,
+} from '@/components/ui/dialog'
+import { DualRangeSlider } from '@/components/ui/dual-range-slider'
+import useDatabase from '@/hooks/use-database'
+import { useStableLiveQuery } from '@/hooks/use-stable-live-query'
+import { ScoreSaberCurve } from '@ssr/common/leaderboard-curve/scoresaber-curve'
+import { ScoreSaberLeaderboard } from '@ssr/common/schemas/scoresaber/leaderboard/leaderboard'
+import { useDebounce } from '@uidotdev/usehooks'
+import { ChartBarIcon } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 
 type Props = {
   /**
    * The player the chart is for
    */
   leaderboard: ScoreSaberLeaderboard;
-};
+}
 
 export default function LeaderboardPpChartButton({ leaderboard }: Props) {
-  const database = useDatabase();
-  const whatIfRange = useStableLiveQuery(() => database.getWhatIfRange());
+  const database = useDatabase()
+  const whatIfRange = useStableLiveQuery(() => database.getWhatIfRange())
 
-  const [values, setValues] = useState(DEFAULT_WHAT_IF_RANGE);
-  const debouncedValues = useDebounce(values, 250);
+  const [
+    values,
+    setValues,
+  ] = useState(DEFAULT_WHAT_IF_RANGE)
+  const debouncedValues = useDebounce(values, 250)
 
   useEffect(() => {
     if (whatIfRange) {
-      queueMicrotask(() => setValues(whatIfRange));
+      queueMicrotask(() => setValues(whatIfRange))
     }
-  }, [whatIfRange]);
+  }, [ whatIfRange ])
 
   const updateRange = (range: [number, number]) => {
-    setValues(range);
-    database.setSetting(SettingIds.WhatIfRange, range);
-  };
+    setValues(range)
+    database.setSetting(SettingIds.WhatIfRange, range)
+  }
 
   const { labels, dataPoints } = useMemo(() => {
-    const precision = 0.01;
-    const labels: number[] = [];
-    const dataPoints: (number | null)[] = [];
+    const precision = 0.01
+    const labels: number[] = []
+    const dataPoints: (number | null)[] = []
 
     for (let accuracy = debouncedValues[0]; accuracy <= debouncedValues[1]; accuracy += precision) {
-      labels.push(accuracy);
-      dataPoints.push(ScoreSaberCurve.getPp(leaderboard.stars, accuracy));
+      labels.push(accuracy)
+      dataPoints.push(ScoreSaberCurve.getPp(leaderboard.stars, accuracy))
     }
 
-    return { labels, dataPoints };
-  }, [debouncedValues, leaderboard.stars]);
+    return {
+      labels,
+      dataPoints,
+    }
+  }, [
+    debouncedValues,
+    leaderboard.stars,
+  ])
 
   const chartConfig: ChartConfig = useMemo(
     () => ({
       datasets: [
         {
-          label: "PP",
+          label: 'PP',
           data: dataPoints,
           color: Colors.pp,
-          axisId: "y",
-          type: "line",
+          axisId: 'y',
+          type: 'line',
           pointRadius: 0,
           showLegend: true,
           labelFormatter: (value: number) => `${value.toFixed(2)}pp`,
@@ -70,13 +81,13 @@ export default function LeaderboardPpChartButton({ leaderboard }: Props) {
       axes: {
         x: {
           display: true,
-          displayName: "",
+          displayName: '',
           valueFormatter: (value: number) => `${value.toFixed(2)}%`,
         },
         y: {
           display: true,
-          position: "left",
-          displayName: "PP",
+          position: 'left',
+          displayName: 'PP',
           valueFormatter: (value: number) => `${value.toFixed(0)}pp`,
         },
       },
@@ -91,19 +102,19 @@ export default function LeaderboardPpChartButton({ leaderboard }: Props) {
         },
         scales: {
           x: {
-            type: "linear",
+            type: 'linear',
             min: debouncedValues[0],
             max: debouncedValues[1],
-            grid: { color: "#252525" },
+            grid: { color: '#252525' },
             ticks: {
               stepSize: 1,
               callback: (tickValue: string | number) => {
-                const value = typeof tickValue === "number" ? tickValue : Number(tickValue);
-                return Number.isFinite(value) ? `${value.toFixed(2)}%` : String(tickValue);
+                const value = typeof tickValue === 'number' ? tickValue : Number(tickValue)
+                return Number.isFinite(value) ? `${value.toFixed(2)}%` : String(tickValue)
               },
               maxRotation: 45,
               minRotation: 45,
-              color: "white",
+              color: 'white',
               font: {
                 size: 11,
               },
@@ -115,8 +126,11 @@ export default function LeaderboardPpChartButton({ leaderboard }: Props) {
         },
       },
     }),
-    [dataPoints, debouncedValues]
-  );
+    [
+      dataPoints,
+      debouncedValues,
+    ],
+  )
 
   return (
     <Dialog>
@@ -146,5 +160,5 @@ export default function LeaderboardPpChartButton({ leaderboard }: Props) {
         </div>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

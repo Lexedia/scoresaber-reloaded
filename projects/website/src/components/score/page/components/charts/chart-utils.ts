@@ -1,46 +1,46 @@
-import { ChartConfig, ChartDataset } from "@/common/chart/types";
-import { Colors } from "@/common/colors";
-import { formatTime } from "@ssr/common/utils/time-utils";
+import { ChartConfig, ChartDataset } from '@/common/chart/types'
+import { Colors } from '@/common/colors'
+import { formatTime } from '@ssr/common/utils/time-utils'
 
 export const CHART_COLORS = {
   leftHand: Colors.hands.left,
   rightHand: Colors.hands.right,
   primary: Colors.hands.right,
-} as const;
+} as const
 
 export function createTimeLabels(seconds: number, interval: number = 1): string[] {
-  const labels: string[] = [];
+  const labels: string[] = []
   for (let second = 0; second <= seconds; second += interval) {
-    labels.push(formatTime(second));
+    labels.push(formatTime(second))
   }
-  return labels;
+  return labels
 }
 
 export function createHandDatasets(
   leftHandData: (number | null)[],
   rightHandData: (number | null)[],
-  labelFormatter?: (value: number) => string
+  labelFormatter?: (value: number) => string,
 ): ChartDataset[] {
   return [
     {
-      label: "Left Hand",
+      label: 'Left Hand',
       data: leftHandData,
       color: CHART_COLORS.leftHand,
-      axisId: "y",
-      type: "line" as const,
+      axisId: 'y',
+      type: 'line' as const,
       showLegend: true,
       ...(labelFormatter && { labelFormatter }),
     },
     {
-      label: "Right Hand",
+      label: 'Right Hand',
       data: rightHandData,
       color: CHART_COLORS.rightHand,
-      axisId: "y",
-      type: "line" as const,
+      axisId: 'y',
+      type: 'line' as const,
       showLegend: true,
       ...(labelFormatter && { labelFormatter }),
     },
-  ];
+  ]
 }
 
 export function createTimeChartConfig(id: string, datasets: ChartDataset[], yAxisName: string): ChartConfig {
@@ -50,7 +50,7 @@ export function createTimeChartConfig(id: string, datasets: ChartDataset[], yAxi
     axes: {
       x: {
         display: true,
-        displayName: "Time (seconds)",
+        displayName: 'Time (seconds)',
         hideOnMobile: false,
         valueFormatter: (value: number) => formatTime(value),
       },
@@ -58,7 +58,7 @@ export function createTimeChartConfig(id: string, datasets: ChartDataset[], yAxi
         display: true,
         displayName: yAxisName,
         hideOnMobile: false,
-        position: "left",
+        position: 'left',
       },
     },
     options: {
@@ -68,9 +68,9 @@ export function createTimeChartConfig(id: string, datasets: ChartDataset[], yAxi
         },
       },
     },
-  };
+  }
 }
 
 export function getEmptyStateClassName(height: number = 400): string {
-  return `border-border bg-muted flex h-[${height}px] w-full items-center justify-center rounded-xl border`;
+  return `border-border bg-muted flex h-[${height}px] w-full items-center justify-center rounded-xl border`
 }

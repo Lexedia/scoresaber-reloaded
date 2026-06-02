@@ -1,14 +1,20 @@
-"use client";
+'use client'
 
-import Link from "next/link";
-import { useState } from "react";
+import Link from 'next/link'
+import { useState } from 'react'
 
 export default function SimpleLink({
   children,
   href,
   ...props
-}: { children: React.ReactNode; href: string } & React.ComponentProps<typeof Link>) {
-  const [isHovering, setIsHovering] = useState(false);
+}: {
+  children: React.ReactNode;
+  href: string
+} & React.ComponentProps<typeof Link>) {
+  const [
+    isHovering,
+    setIsHovering,
+  ] = useState(false)
 
   return (
     <Link
@@ -20,5 +26,5 @@ export default function SimpleLink({
     >
       {children}
     </Link>
-  );
+  )
 }

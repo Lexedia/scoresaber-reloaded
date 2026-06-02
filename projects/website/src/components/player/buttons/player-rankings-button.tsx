@@ -1,10 +1,12 @@
-"use client";
+'use client'
 
-import SimpleTooltip from "@/components/simple-tooltip";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import ScoreSaberPlayer from "@ssr/common/player/impl/scoresaber-player";
-import PlayerMiniRankings from "../mini-ranking/player-mini-ranking";
+import SimpleTooltip from '@/components/simple-tooltip'
+import { Button } from '@/components/ui/button'
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
+} from '@/components/ui/dialog'
+import ScoreSaberPlayer from '@ssr/common/player/impl/scoresaber-player'
+import PlayerMiniRankings from '../mini-ranking/player-mini-ranking'
 
 interface PlayerRankingsButtonProps {
   player: ScoreSaberPlayer;
@@ -13,7 +15,7 @@ interface PlayerRankingsButtonProps {
 export default function PlayerRankingsButton({ player }: PlayerRankingsButtonProps) {
   // Don't show for inactive or banned players
   if (player.inactive || player.banned) {
-    return null;
+    return null
   }
 
   return (
@@ -40,5 +42,5 @@ export default function PlayerRankingsButton({ player }: PlayerRankingsButtonPro
         </div>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

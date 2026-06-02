@@ -1,9 +1,9 @@
-import { OverlayDataClients } from "@/common/overlay/data-client";
+import { OverlayDataClients } from '@/common/overlay/data-client'
 
 export enum OverlayViews {
-  ScoreInfo = "scoreInfo",
-  PlayerInfo = "playerInfo",
-  SongInfo = "songInfo",
+  ScoreInfo = 'scoreInfo',
+  PlayerInfo = 'playerInfo',
+  SongInfo = 'songInfo',
 }
 
 export type OverlaySettings = {
@@ -27,13 +27,13 @@ export type OverlaySettings = {
    * The state of the overlay views.
    */
   views: Record<OverlayViews, boolean>;
-};
+}
 
 /**
  * The default settings for the overlay.
  */
 export const defaultOverlaySettings: OverlaySettings = {
-  playerId: "",
+  playerId: '',
   useRealTimeData: true,
   dataClient: OverlayDataClients.BeatSaberPlus,
   views: {
@@ -41,7 +41,7 @@ export const defaultOverlaySettings: OverlaySettings = {
     [OverlayViews.PlayerInfo]: true,
     [OverlayViews.SongInfo]: true,
   },
-};
+}
 
 /**
  * Parses the raw settings into an overlay settings object.
@@ -51,8 +51,8 @@ export const defaultOverlaySettings: OverlaySettings = {
 export function parseOverlaySettings(settingsBase64: string) {
   return {
     ...defaultOverlaySettings, // Default values
-    ...(JSON.parse(Buffer.from(settingsBase64, "base64").toString()) as OverlaySettings), // Override defaults
-  };
+    ...(JSON.parse(Buffer.from(settingsBase64, 'base64').toString()) as OverlaySettings), // Override defaults
+  }
 }
 
 /**
@@ -62,5 +62,5 @@ export function parseOverlaySettings(settingsBase64: string) {
  * @returns the base64 encoded settings
  */
 export function encodeOverlaySettings(settings: OverlaySettings) {
-  return Buffer.from(JSON.stringify(settings)).toString("base64");
+  return Buffer.from(JSON.stringify(settings)).toString('base64')
 }

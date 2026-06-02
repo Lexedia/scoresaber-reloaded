@@ -1,40 +1,59 @@
-"use client";
+'use client'
 
-import { downloadFile } from "@/common/browser-utils";
-import Card from "@/components/card";
-import { Spinner } from "@/components/spinner";
-import { Button } from "@/components/ui/button";
-import { ButtonGroup, ControlButton } from "@/components/ui/control-panel";
-import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { DualRangeSlider } from "@/components/ui/dual-range-slider";
-import { Form, FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { env } from "@ssr/common/env";
+import { downloadFile } from '@/common/browser-utils'
+import Card from '@/components/card'
+import { Spinner } from '@/components/spinner'
+import { Button } from '@/components/ui/button'
+import { ButtonGroup, ControlButton } from '@/components/ui/control-panel'
+import {
+  Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger,
+} from '@/components/ui/dialog'
+import { DualRangeSlider } from '@/components/ui/dual-range-slider'
+import {
+  Form, FormControl, FormItem, FormLabel, FormMessage,
+} from '@/components/ui/form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { env } from '@ssr/common/env'
 import {
   customRankedPlaylistSchema,
   encodeCustomRankedPlaylistSettings,
-} from "@ssr/common/playlist/ranked/custom-ranked-playlist";
-import { SHARED_CONSTS } from "@ssr/common/shared-consts";
-import { ArrowDown, Download } from "lucide-react";
-import { useCallback, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
-import { z } from "zod";
+} from '@ssr/common/playlist/ranked/custom-ranked-playlist'
+import { SHARED_CONSTS } from '@ssr/common/shared-consts'
+import { ArrowDown, Download } from 'lucide-react'
+import { useCallback, useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import { z } from 'zod'
 
-type CustomRankedPlaylist = z.infer<typeof customRankedPlaylistSchema>;
+type CustomRankedPlaylist = z.infer<typeof customRankedPlaylistSchema>
 
 type CustomPlaylistCreatorProps = {
   trigger: React.ReactNode;
-};
+}
 
 const sortOptions = [
-  { value: "stars", label: "Stars" },
-  { value: "dateRanked", label: "Date Ranked" },
-  { value: "plays", label: "Plays" },
-  { value: "dailyPlays", label: "Daily Plays" },
-] as const;
+  {
+    value: 'stars',
+    label: 'Stars',
+  },
+  {
+    value: 'dateRanked',
+    label: 'Date Ranked',
+  },
+  {
+    value: 'plays',
+    label: 'Plays',
+  },
+  {
+    value: 'dailyPlays',
+    label: 'Daily Plays',
+  },
+] as const
 
 export default function CustomPlaylistCreator({ trigger }: CustomPlaylistCreatorProps) {
-  const [downloading, setDownloading] = useState(false);
+  const [
+    downloading,
+    setDownloading,
+  ] = useState(false)
 
   const form = useForm<CustomRankedPlaylist>({
     resolver: zodResolver(customRankedPlaylistSchema, { reportInput: true }),
@@ -43,30 +62,30 @@ export default function CustomPlaylistCreator({ trigger }: CustomPlaylistCreator
         min: 0,
         max: SHARED_CONSTS.maxStars,
       },
-      sort: "stars",
+      sort: 'stars',
     },
-  });
+  })
 
-  const sort = form.watch("sort");
+  const sort = form.watch('sort')
 
   const onSubmit = useCallback(async (data: CustomRankedPlaylist) => {
-    setDownloading(true);
+    setDownloading(true)
     try {
       await downloadFile(
         `${env.NEXT_PUBLIC_API_URL}/playlist/scoresaber-custom-ranked-maps?config=${encodeCustomRankedPlaylistSettings(data)}`,
-        `ssr-custom-ranked-${data.sort}-${data.stars.min}-${data.stars.max}-stars.bplist`
-      );
+        `ssr-custom-ranked-${data.sort}-${data.stars.min}-${data.stars.max}-stars.bplist`,
+      )
     } finally {
-      setDownloading(false);
+      setDownloading(false)
     }
-  }, []);
+  }, [])
 
   const handleSort = useCallback(
-    (newSort: CustomRankedPlaylist["sort"]) => {
-      form.setValue("sort", newSort);
+    (newSort: CustomRankedPlaylist['sort']) => {
+      form.setValue('sort', newSort)
     },
-    [form]
-  );
+    [ form ],
+  )
 
   return (
     <Dialog>
@@ -117,9 +136,15 @@ export default function CustomPlaylistCreator({ trigger }: CustomPlaylistCreator
                                 max={SHARED_CONSTS.maxStars}
                                 step={0.1}
                                 label={v => <span className="text-xs">{v}</span>}
-                                value={[field.value.min, field.value.max]}
+                                value={[
+                                  field.value.min,
+                                  field.value.max,
+                                ]}
                                 showLabelOnHover={false}
-                                onValueChange={vals => field.onChange({ min: vals[0], max: vals[1] })}
+                                onValueChange={vals => field.onChange({
+                                  min: vals[0],
+                                  max: vals[1],
+                                })}
                                 className="w-full pt-10 pb-1"
                               />
                             </div>
@@ -134,7 +159,8 @@ export default function CustomPlaylistCreator({ trigger }: CustomPlaylistCreator
             </div>
           </div>
 
-          <div className="border-border flex flex-wrap items-center justify-end gap-(--spacing-sm) border-t px-(--spacing-lg) py-(--spacing-lg) md:gap-(--spacing-lg) md:px-(--spacing-xl) md:py-(--spacing-xl)">
+          <div className="border-border flex flex-wrap items-center justify-end gap-(--spacing-sm) border-t px-(--spacing-lg)
+          py-(--spacing-lg) md:gap-(--spacing-lg) md:px-(--spacing-xl) md:py-(--spacing-xl)">
             <Button type="submit" form="custom-playlist-form" className="gap-2" disabled={downloading}>
               {downloading ? <Spinner className="size-4" /> : <Download className="size-4" />}
               <span>Download Playlist</span>
@@ -143,5 +169,5 @@ export default function CustomPlaylistCreator({ trigger }: CustomPlaylistCreator
         </Card>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

@@ -1,13 +1,17 @@
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
-import { useDebounce } from "@uidotdev/usehooks";
-import type { LucideIcon } from "lucide-react";
-import { ReactElement, ReactNode, Ref, useEffect, useState } from "react";
-import type { FieldValues, Path, UseFormReturn } from "react-hook-form";
-import { FormControl, FormDescription, FormField, FormItem, FormLabel } from "../ui/form";
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Slider } from '@/components/ui/slider'
+import { Switch } from '@/components/ui/switch'
+import { useDebounce } from '@uidotdev/usehooks'
+import type { LucideIcon } from 'lucide-react'
+import {
+  ReactElement, ReactNode, Ref, useEffect, useState,
+} from 'react'
+import type { FieldValues, Path, UseFormReturn } from 'react-hook-form'
+import {
+  FormControl, FormDescription, FormField, FormItem, FormLabel,
+} from '../ui/form'
 
 interface BaseField<TFormValues extends FieldValues, TName extends Path<TFormValues>> {
   name: TName;
@@ -19,15 +23,18 @@ export interface CheckboxField<
   TFormValues extends FieldValues,
   TName extends Path<TFormValues>,
 > extends BaseField<TFormValues, TName> {
-  type: "checkbox";
+  type: 'checkbox';
 }
 
 export interface SelectField<
   TFormValues extends FieldValues,
   TName extends Path<TFormValues>,
 > extends BaseField<TFormValues, TName> {
-  type: "select";
-  options?: readonly { label: string; value: string }[];
+  type: 'select';
+  options?: readonly {
+    label: string;
+    value: string
+  }[];
   customControl?: (props: {
     field: {
       value: TFormValues[TName];
@@ -40,26 +47,26 @@ export interface SliderField<
   TFormValues extends FieldValues,
   TName extends Path<TFormValues>,
 > extends BaseField<TFormValues, TName> {
-  type: "slider";
+  type: 'slider';
   min: number;
   max: number;
   step: number;
   labelFormatter?: (value: number | undefined) => ReactNode;
-  labelDisplay?: "inline" | "thumb";
+  labelDisplay?: 'inline' | 'thumb';
 }
 
 export interface TextField<
   TFormValues extends FieldValues,
   TName extends Path<TFormValues>,
 > extends BaseField<TFormValues, TName> {
-  type: "text";
+  type: 'text';
 }
 
 export type Field<TFormValues extends FieldValues, TName extends Path<TFormValues>> =
   | CheckboxField<TFormValues, TName>
   | SelectField<TFormValues, TName>
   | SliderField<TFormValues, TName>
-  | TextField<TFormValues, TName>;
+  | TextField<TFormValues, TName>
 
 interface SettingSectionProps<TFormValues extends FieldValues> {
   title: string;
@@ -86,7 +93,7 @@ type RenderFieldProps<TFormValues extends FieldValues, TName extends Path<TFormV
   field: Field<TFormValues, TName>;
   value: TFormValues[TName];
   onChange: (value: TFormValues[TName]) => void;
-};
+}
 
 function renderCheckboxField<TFormValues extends FieldValues, TName extends Path<TFormValues>>({
   value,
@@ -96,14 +103,14 @@ function renderCheckboxField<TFormValues extends FieldValues, TName extends Path
     <Switch
       checked={value as boolean}
       onCheckedChange={checked => {
-        onChange(checked as TFormValues[TName]);
+        onChange(checked as TFormValues[TName])
       }}
     />
-  );
+  )
 }
 
 function optionId(fieldName: string, value: string): string {
-  return `${fieldName}-${value.replace(/[^a-zA-Z0-9_-]/g, "_")}`;
+  return `${fieldName}-${value.replace(/[^a-zA-Z0-9_-]/g, '_')}`
 }
 
 function renderSelectField<TFormValues extends FieldValues, TName extends Path<TFormValues>>({
@@ -111,16 +118,16 @@ function renderSelectField<TFormValues extends FieldValues, TName extends Path<T
   value,
   onChange,
 }: RenderFieldProps<TFormValues, TName>) {
-  if (field.type !== "select") {
-    return null;
+  if (field.type !== 'select') {
+    return null
   }
 
-  const name = String(field.name);
+  const name = String(field.name)
 
   return (
     <RadioGroup value={value as string} onValueChange={onChange} className="flex w-full flex-col gap-2.5">
       {field.options?.map(option => {
-        const id = optionId(name, option.value);
+        const id = optionId(name, option.value)
         return (
           <div key={option.value} className="flex items-center gap-2.5">
             <RadioGroupItem value={option.value} id={id} />
@@ -128,10 +135,10 @@ function renderSelectField<TFormValues extends FieldValues, TName extends Path<T
               {option.label}
             </Label>
           </div>
-        );
+        )
       })}
     </RadioGroup>
-  );
+  )
 }
 
 function renderSliderField<TFormValues extends FieldValues, TName extends Path<TFormValues>>({
@@ -139,31 +146,31 @@ function renderSliderField<TFormValues extends FieldValues, TName extends Path<T
   value,
   onChange,
 }: RenderFieldProps<TFormValues, TName>) {
-  if (field.type !== "slider") {
-    return null;
+  if (field.type !== 'slider') {
+    return null
   }
 
-  const labelFormatter = field.labelFormatter ?? ((val: number | undefined) => `${val}%`);
+  const labelFormatter = field.labelFormatter ?? ((val: number | undefined) => `${val}%`)
 
   return (
     <div className="flex w-full max-w-xl items-center gap-4">
       <Slider
-        value={[value as number]}
+        value={[ value as number ]}
         onValueChange={values => onChange(values[0] as TFormValues[TName])}
         min={field.min}
         max={field.max}
         step={field.step}
-        label={field.labelDisplay === "thumb" ? labelFormatter : undefined}
-        labelPosition={field.labelDisplay === "thumb" ? "top" : "none"}
+        label={field.labelDisplay === 'thumb' ? labelFormatter : undefined}
+        labelPosition={field.labelDisplay === 'thumb' ? 'top' : 'none'}
         className="flex-1"
       />
-      {field.labelDisplay !== "thumb" && (
+      {field.labelDisplay !== 'thumb' && (
         <span className="text-muted-foreground min-w-12 text-right text-sm font-medium">
           {labelFormatter(value as number)}
         </span>
       )}
     </div>
-  );
+  )
 }
 
 function renderTextField<TFormValues extends FieldValues, TName extends Path<TFormValues>>({
@@ -176,7 +183,7 @@ function renderTextField<TFormValues extends FieldValues, TName extends Path<TFo
       onChange={e => onChange(e.target.value as TFormValues[TName])}
       className="w-full max-w-xl"
     />
-  );
+  )
 }
 
 function FormFieldComponent<TFormValues extends FieldValues, TName extends Path<TFormValues>>({
@@ -185,67 +192,77 @@ function FormFieldComponent<TFormValues extends FieldValues, TName extends Path<
   form,
   onFormSubmit,
 }: FormFieldComponentProps<TFormValues, TName>) {
-  const debouncedValue = useDebounce(formField.value, 500);
-  const [hasChanged, setHasChanged] = useState(false);
+  const debouncedValue = useDebounce(formField.value, 500)
+  const [
+    hasChanged,
+    setHasChanged,
+  ] = useState(false)
 
   const wrappedOnChange = (value: TFormValues[TName]) => {
-    setHasChanged(true);
-    formField.onChange(value);
-    if (field.type === "text" || field.type === "slider") {
+    setHasChanged(true)
+    formField.onChange(value)
+    if (field.type === 'text' || field.type === 'slider') {
       // For text and slider inputs, we'll let the debounced effect handle the save
-      return;
+      return
     }
     // For other inputs, save immediately
     if (onFormSubmit) {
-      form.handleSubmit(onFormSubmit)();
+      form.handleSubmit(onFormSubmit)()
     }
-  };
+  }
 
   // Effect to handle debounced saves for text and slider inputs
   useEffect(() => {
     if (!hasChanged) {
-      return;
+      return
     }
 
-    if ((field.type === "text" || field.type === "slider") && debouncedValue !== undefined) {
+    if ((field.type === 'text' || field.type === 'slider') && debouncedValue !== undefined) {
       if (onFormSubmit) {
-        form.handleSubmit(onFormSubmit)();
+        form.handleSubmit(onFormSubmit)()
       }
-      queueMicrotask(() => setHasChanged(false));
+      queueMicrotask(() => setHasChanged(false))
     }
-  }, [debouncedValue, field.type, form, hasChanged, onFormSubmit]);
+  }, [
+    debouncedValue,
+    field.type,
+    form,
+    hasChanged,
+    onFormSubmit,
+  ])
 
-  const hasCustomControl = field.type === "select" && field.customControl;
+  const hasCustomControl = field.type === 'select' && field.customControl
 
   const renderProps: RenderFieldProps<TFormValues, TName> = {
     field,
     value: formField.value,
     onChange: wrappedOnChange,
-  };
+  }
 
-  let control: ReactElement | null = null;
+  let control: ReactElement | null = null
   if (!hasCustomControl) {
     switch (field.type) {
-      case "checkbox":
-        control = renderCheckboxField(renderProps);
-        break;
-      case "select":
-        control = renderSelectField(renderProps);
-        break;
-      case "slider":
-        control = renderSliderField(renderProps);
-        break;
-      case "text":
-        control = renderTextField(renderProps);
-        break;
+      case 'checkbox':
+        control = renderCheckboxField(renderProps)
+        break
+      case 'select':
+        control = renderSelectField(renderProps)
+        break
+      case 'slider':
+        control = renderSliderField(renderProps)
+        break
+      case 'text':
+        control = renderTextField(renderProps)
+        break
       default:
-        control = null;
+        control = null
     }
   }
 
-  if (hasCustomControl && field.type === "select" && field.customControl) {
-    const CustomControl = field.customControl;
-    const { ref: _unusedFieldRef, ...fieldForCustom } = formField;
+  if (hasCustomControl && field.type === 'select' && field.customControl) {
+    const CustomControl = field.customControl
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { ref: _unusedFieldRef, ...fieldForCustom } = formField
     return (
       <FormItem className="space-y-0 py-4">
         <FormControl>
@@ -257,18 +274,18 @@ function FormFieldComponent<TFormValues extends FieldValues, TName extends Path<
           />
         </FormControl>
       </FormItem>
-    );
+    )
   }
 
-  const isToggleRow = field.type === "checkbox";
+  const isToggleRow = field.type === 'checkbox'
 
   return (
     <FormItem
       className={
-        isToggleRow ? "flex flex-row items-start gap-6 py-4 sm:items-center" : "flex flex-col gap-3 py-4"
+        isToggleRow ? 'flex flex-row items-start gap-6 py-4 sm:items-center' : 'flex flex-col gap-3 py-4'
       }
     >
-      <div className={isToggleRow ? "min-w-0 flex-1" : "w-full min-w-0"}>
+      <div className={isToggleRow ? 'min-w-0 flex-1' : 'w-full min-w-0'}>
         <FormLabel className="text-foreground text-[15px] leading-snug font-medium">{field.label}</FormLabel>
         {field.description && (
           <FormDescription className="text-muted-foreground mt-1 text-[13px] leading-snug">
@@ -276,11 +293,11 @@ function FormFieldComponent<TFormValues extends FieldValues, TName extends Path<
           </FormDescription>
         )}
       </div>
-      <FormControl className={isToggleRow ? "ml-auto shrink-0 pt-0.5 sm:pt-0" : "w-full min-w-0"}>
+      <FormControl className={isToggleRow ? 'ml-auto shrink-0 pt-0.5 sm:pt-0' : 'w-full min-w-0'}>
         {control}
       </FormControl>
     </FormItem>
-  );
+  )
 }
 
 export function SettingSection<TFormValues extends FieldValues>({
@@ -314,5 +331,5 @@ export function SettingSection<TFormValues extends FieldValues>({
         ))}
       </div>
     </section>
-  );
+  )
 }

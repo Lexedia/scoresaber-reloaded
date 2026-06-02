@@ -1,4 +1,4 @@
 export enum HistoryMode {
-  ADVANCED = "advanced",
-  SIMPLE = "simple",
+  ADVANCED = 'advanced',
+  SIMPLE = 'simple',
 }

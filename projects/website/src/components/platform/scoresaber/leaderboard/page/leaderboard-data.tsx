@@ -1,10 +1,10 @@
-"use client";
+'use client'
 
-import { LeaderboardInfo } from "@/components/platform/scoresaber/leaderboard/leaderboard-info";
-import LeaderboardScores from "@/components/platform/scoresaber/leaderboard/leaderboard-scores";
-import { LeaderboardFilterProvider } from "@/components/providers/leaderboard/leaderboard-filter-provider";
-import { LeaderboardStarChange } from "@ssr/common/schemas/leaderboard/leaderboard-star-change";
-import { LeaderboardResponse } from "@ssr/common/schemas/response/leaderboard/leaderboard";
+import { LeaderboardInfo } from '@/components/platform/scoresaber/leaderboard/leaderboard-info'
+import LeaderboardScores from '@/components/platform/scoresaber/leaderboard/leaderboard-scores'
+import { LeaderboardFilterProvider } from '@/components/providers/leaderboard/leaderboard-filter-provider'
+import { LeaderboardStarChange } from '@ssr/common/schemas/leaderboard/leaderboard-star-change'
+import { LeaderboardResponse } from '@ssr/common/schemas/response/leaderboard/leaderboard'
 
 type LeaderboardDataProps = {
   /**
@@ -12,10 +12,10 @@ type LeaderboardDataProps = {
    */
   leaderboardData: LeaderboardResponse;
   starChangeHistory: LeaderboardStarChange[];
-};
+}
 
 export function ScoreSaberLeaderboardData({ leaderboardData, starChangeHistory }: LeaderboardDataProps) {
-  const { leaderboard } = leaderboardData;
+  const { leaderboard } = leaderboardData
 
   return (
     <LeaderboardFilterProvider>
@@ -26,5 +26,5 @@ export function ScoreSaberLeaderboardData({ leaderboardData, starChangeHistory }
         </div>
       </div>
     </LeaderboardFilterProvider>
-  );
+  )
 }

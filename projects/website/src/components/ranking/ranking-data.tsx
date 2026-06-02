@@ -1,47 +1,59 @@
-"use client";
+'use client'
 
-import { getRankingColumnWidth } from "@/common/player-utils";
-import Card from "@/components/card";
-import CountrySelector from "@/components/country-selector";
-import SimpleLink from "@/components/simple-link";
-import SimplePagination from "@/components/simple-pagination";
-import CountryFlag from "@/components/ui/country-flag";
-import { Switch } from "@/components/ui/switch";
-import useDatabase from "@/hooks/use-database";
-import { usePageNavigation } from "@/hooks/use-page-navigation";
-import { useStableLiveQuery } from "@/hooks/use-stable-live-query";
-import { GlobeAmericasIcon } from "@heroicons/react/24/solid";
-import { countryFilter } from "@ssr/common/utils/country.util";
-import { ssrApi } from "@ssr/common/utils/ssr-api";
-import { useQuery } from "@tanstack/react-query";
-import { useDebounce } from "@uidotdev/usehooks";
-import { LinkIcon } from "lucide-react";
-import { useEffect, useState } from "react";
-import { FancyLoader } from "../fancy-loader";
-import AddFriend from "../friend/add-friend";
-import { ScoreSaberPlayerRanking } from "../player/player-ranking";
-import SimpleTooltip from "../simple-tooltip";
-import { Button } from "../ui/button";
-import { FilterField, FilterRow, FilterSection } from "../ui/filter-section";
-import { Input } from "../ui/input";
+import { getRankingColumnWidth } from '@/common/player-utils'
+import Card from '@/components/card'
+import CountrySelector from '@/components/country-selector'
+import SimpleLink from '@/components/simple-link'
+import SimplePagination from '@/components/simple-pagination'
+import CountryFlag from '@/components/ui/country-flag'
+import { Switch } from '@/components/ui/switch'
+import useDatabase from '@/hooks/use-database'
+import { usePageNavigation } from '@/hooks/use-page-navigation'
+import { useStableLiveQuery } from '@/hooks/use-stable-live-query'
+import { GlobeAmericasIcon } from '@heroicons/react/24/solid'
+import { countryFilter } from '@ssr/common/utils/country.util'
+import { ssrApi } from '@ssr/common/utils/ssr-api'
+import { useQuery } from '@tanstack/react-query'
+import { useDebounce } from '@uidotdev/usehooks'
+import { LinkIcon } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { FancyLoader } from '../fancy-loader'
+import AddFriend from '../friend/add-friend'
+import { ScoreSaberPlayerRanking } from '../player/player-ranking'
+import SimpleTooltip from '../simple-tooltip'
+import { Button } from '../ui/button'
+import { FilterField, FilterRow, FilterSection } from '../ui/filter-section'
+import { Input } from '../ui/input'
 
 type RankingDataProps = {
   initialPage: number;
   initialCountry?: string;
-};
+}
 
 export default function RankingData({ initialPage, initialCountry }: RankingDataProps) {
-  const navigation = usePageNavigation();
-  const database = useDatabase();
-  const mainPlayer = useStableLiveQuery(() => database.getMainPlayer());
+  const navigation = usePageNavigation()
+  const database = useDatabase()
+  const mainPlayer = useStableLiveQuery(() => database.getMainPlayer())
 
-  const [showRelativePPDifference, setShowRelativePPDifference] = useState<boolean>(false);
-  const [currentPage, setCurrentPage] = useState(initialPage);
-  const [currentCountry, setCurrentCountry] = useState(initialCountry);
-  const [currentSearch, setCurrentSearch] = useState<string | undefined>(undefined);
+  const [
+    showRelativePPDifference,
+    setShowRelativePPDifference,
+  ] = useState<boolean>(false)
+  const [
+    currentPage,
+    setCurrentPage,
+  ] = useState(initialPage)
+  const [
+    currentCountry,
+    setCurrentCountry,
+  ] = useState(initialCountry)
+  const [
+    currentSearch,
+    setCurrentSearch,
+  ] = useState<string | undefined>(undefined)
 
-  const debouncedSearch = useDebounce(currentSearch, 500);
-  const isValidSearch = debouncedSearch != undefined && debouncedSearch.length >= 3;
+  const debouncedSearch = useDebounce(currentSearch, 500)
+  const isValidSearch = debouncedSearch != undefined && debouncedSearch.length >= 3
 
   const {
     data: rankingData,
@@ -49,7 +61,12 @@ export default function RankingData({ initialPage, initialCountry }: RankingData
     isRefetching,
     isError,
   } = useQuery({
-    queryKey: ["rankingData", currentPage, currentCountry, isValidSearch],
+    queryKey: [
+      'rankingData',
+      currentPage,
+      currentCountry,
+      isValidSearch,
+    ],
     queryFn: async () =>
       ssrApi.searchPlayersRanking(currentPage, {
         country: currentCountry,
@@ -57,16 +74,20 @@ export default function RankingData({ initialPage, initialCountry }: RankingData
       }),
     refetchIntervalInBackground: false,
     placeholderData: prev => prev,
-  });
+  })
   useEffect(() => {
-    navigation.changePageUrl(buildPageUrl(currentCountry, currentPage));
-  }, [currentPage, currentCountry, navigation]);
+    navigation.changePageUrl(buildPageUrl(currentCountry, currentPage))
+  }, [
+    currentPage,
+    currentCountry,
+    navigation,
+  ])
 
   const firstColumnWidth = getRankingColumnWidth(
     rankingData?.items ?? [],
     player => player.rank,
-    player => player.countryRank
-  );
+    player => player.countryRank,
+  )
 
   return (
     <div className="flex w-full flex-col justify-center gap-2 xl:flex-row xl:gap-2">
@@ -170,9 +191,9 @@ export default function RankingData({ initialPage, initialCountry }: RankingData
           description="Filter players by country or search"
           hasActiveFilters={Boolean(currentCountry || currentSearch)}
           onClear={() => {
-            setCurrentCountry(undefined);
-            setCurrentSearch("");
-            setCurrentPage(1);
+            setCurrentCountry(undefined)
+            setCurrentSearch('')
+            setCurrentPage(1)
           }}
         >
           <FilterField label="Country">
@@ -181,8 +202,8 @@ export default function RankingData({ initialPage, initialCountry }: RankingData
                 className="h-10 w-full"
                 value={currentCountry}
                 onValueChange={(newCountry: string | undefined) => {
-                  setCurrentCountry(newCountry);
-                  setCurrentPage(1);
+                  setCurrentCountry(newCountry)
+                  setCurrentPage(1)
                 }}
                 placeholder="Select country..."
               />
@@ -193,7 +214,7 @@ export default function RankingData({ initialPage, initialCountry }: RankingData
             <FilterRow>
               <Input
                 placeholder="Search for players..."
-                value={currentSearch ?? ""}
+                value={currentSearch ?? ''}
                 onChange={e => setCurrentSearch(e.target.value)}
                 className="h-10"
               />
@@ -202,9 +223,9 @@ export default function RankingData({ initialPage, initialCountry }: RankingData
         </FilterSection>
       </div>
     </div>
-  );
+  )
 }
 
 function buildPageUrl(country: string | undefined, page: number): string {
-  return `/ranking/${country != undefined ? `${country}/` : ""}${page}`;
+  return `/ranking/${country != undefined ? `${country}/` : ''}${page}`
 }

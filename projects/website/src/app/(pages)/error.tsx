@@ -1,25 +1,25 @@
-"use client";
+'use client'
 
-import Card from "@/components/card";
-import SimpleLink from "@/components/simple-link";
-import { DiscordButton } from "@/components/social/discord-button";
-import { Button } from "@/components/ui/button";
-import { Frown, HomeIcon } from "lucide-react";
-import { useEffect } from "react";
+import Card from '@/components/card'
+import SimpleLink from '@/components/simple-link'
+import { DiscordButton } from '@/components/social/discord-button'
+import { Button } from '@/components/ui/button'
+import { Frown, HomeIcon } from 'lucide-react'
+import { useEffect } from 'react'
 
 type ErrorProps = {
   error: Error & { digest?: string };
   reset: () => void;
-};
+}
 
 export default function Error(props: ErrorProps) {
-  const { error } = props;
+  const { error } = props
 
   useEffect(() => {
-    console.error("Error:", error);
-  }, [error]);
+    console.error('Error:', error)
+  }, [ error ])
 
-  const errorMessage = error.message || "An unexpected error occurred";
+  const errorMessage = error.message || 'An unexpected error occurred'
   return (
     <div className="flex w-full justify-center">
       <Card className="mt-2 flex w-full max-w-2xl flex-col items-center gap-4">
@@ -69,5 +69,5 @@ export default function Error(props: ErrorProps) {
         </div>
       </Card>
     </div>
-  );
+  )
 }

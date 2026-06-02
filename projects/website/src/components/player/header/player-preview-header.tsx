@@ -1,15 +1,15 @@
-import Avatar from "@/components/avatar";
-import SimpleLink from "@/components/simple-link";
-import ScoreSaberPlayer from "@ssr/common/player/impl/scoresaber-player";
-import { getScoreSaberRoles } from "@ssr/common/utils/scoresaber.util";
-import PlayerOverview from "./player-overview";
+import Avatar from '@/components/avatar'
+import SimpleLink from '@/components/simple-link'
+import ScoreSaberPlayer from '@ssr/common/player/impl/scoresaber-player'
+import { getScoreSaberRoles } from '@ssr/common/utils/scoresaber.util'
+import PlayerOverview from './player-overview'
 
 type PlayerPreviewHeaderProps = {
   /**
    * The player to display.
    */
   player: ScoreSaberPlayer;
-};
+}
 
 export default function PlayerPreviewHeader({ player }: PlayerPreviewHeaderProps) {
   return (
@@ -34,5 +34,5 @@ export default function PlayerPreviewHeader({ player }: PlayerPreviewHeaderProps
         </div>
       </div>
     </div>
-  );
+  )
 }

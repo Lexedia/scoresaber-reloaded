@@ -1,6 +1,8 @@
-"use client";
+'use client'
 
-import { createContext, ReactNode, useCallback, useContext, useRef, useState } from "react";
+import {
+  createContext, ReactNode, useCallback, useContext, useRef, useState,
+} from 'react'
 
 interface PageTransitionContextType {
   currentPage: number;
@@ -12,27 +14,48 @@ interface PageTransitionContextType {
   isLoading: boolean;
 }
 
-const PageTransitionContext = createContext<PageTransitionContextType | null>(null);
+const PageTransitionContext = createContext<PageTransitionContextType | null>(null)
 
 export function PageTransitionProvider({ children }: { children: ReactNode }) {
-  const [[currentPage, direction], setPage] = useState([1, 0]);
-  const [isLoading, setIsLoading] = useState(false);
-  const prevPageRef = useRef(1);
+  const [
+    [
+      currentPage,
+      direction,
+    ],
+    setPage,
+  ] = useState([
+    1,
+    0,
+  ])
+  const [
+    isLoading,
+    setIsLoading,
+  ] = useState(false)
+  const prevPageRef = useRef(1)
 
   const animateLeft = useCallback(() => {
-    setPage([prevPageRef.current + 1, 1]);
-    prevPageRef.current = prevPageRef.current + 1;
-  }, []);
+    setPage([
+      prevPageRef.current + 1,
+      1,
+    ])
+    prevPageRef.current = prevPageRef.current + 1
+  }, [])
 
   const animateRight = useCallback(() => {
-    setPage([prevPageRef.current - 1, -1]);
-    prevPageRef.current = prevPageRef.current - 1;
-  }, []);
+    setPage([
+      prevPageRef.current - 1,
+      -1,
+    ])
+    prevPageRef.current = prevPageRef.current - 1
+  }, [])
 
   const reset = useCallback(() => {
-    setPage([1, 0]);
-    prevPageRef.current = 1;
-  }, []);
+    setPage([
+      1,
+      0,
+    ])
+    prevPageRef.current = 1
+  }, [])
 
   return (
     <PageTransitionContext.Provider
@@ -48,13 +71,13 @@ export function PageTransitionProvider({ children }: { children: ReactNode }) {
     >
       {children}
     </PageTransitionContext.Provider>
-  );
+  )
 }
 
 export function usePageTransition() {
-  const context = useContext(PageTransitionContext);
+  const context = useContext(PageTransitionContext)
   if (!context) {
-    throw new Error("usePageTransition must be used within a PageTransitionProvider");
+    throw new Error('usePageTransition must be used within a PageTransitionProvider')
   }
-  return context;
+  return context
 }

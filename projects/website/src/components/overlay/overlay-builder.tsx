@@ -1,164 +1,176 @@
-"use client";
+'use client'
 
-import { openInNewTab } from "@/common/browser-utils";
-import { SettingIds } from "@/common/database/database";
-import { OverlayDataClients } from "@/common/overlay/data-client";
+import { openInNewTab } from '@/common/browser-utils'
+import { SettingIds } from '@/common/database/database'
+import { OverlayDataClients } from '@/common/overlay/data-client'
 import {
   defaultOverlaySettings,
   encodeOverlaySettings,
   OverlayViews,
-} from "@/common/overlay/overlay-settings";
-import { cn } from "@/common/utils";
-import Card from "@/components/card";
-import Notice from "@/components/notice";
-import { Checkbox } from "@/components/ui/checkbox";
-import { FormField } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import useDatabase from "@/hooks/use-database";
-import { useStableLiveQuery } from "@/hooks/use-stable-live-query";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { ssrApi } from "@ssr/common/utils/ssr-api";
-import { Eye, Monitor, User } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
-import { Button } from "../ui/button";
-import { Form, FormControl, FormDescription, FormItem, FormLabel } from "../ui/form";
+} from '@/common/overlay/overlay-settings'
+import { cn } from '@/common/utils'
+import Card from '@/components/card'
+import Notice from '@/components/notice'
+import { Checkbox } from '@/components/ui/checkbox'
+import { FormField } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select'
+import useDatabase from '@/hooks/use-database'
+import { useStableLiveQuery } from '@/hooks/use-stable-live-query'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { ssrApi } from '@ssr/common/utils/ssr-api'
+import { Eye, Monitor, User } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
+import { z } from 'zod'
+import { Button } from '../ui/button'
+import {
+  Form, FormControl, FormDescription, FormItem, FormLabel,
+} from '../ui/form'
 
 const viewToggles = [
   {
-    name: "Player Info",
+    name: 'Player Info',
     value: OverlayViews.PlayerInfo,
     requiresRealTimeData: false,
     icon: <User className="size-4" />,
   },
   {
-    name: "Score Info",
+    name: 'Score Info',
     value: OverlayViews.ScoreInfo,
     requiresRealTimeData: true,
     icon: <Eye className="size-4" />,
   },
   {
-    name: "Song Info",
+    name: 'Song Info',
     value: OverlayViews.SongInfo,
     requiresRealTimeData: true,
     icon: <Monitor className="size-4" />,
   },
-];
+]
 
 const formSchema = z.object({
   playerId: z.string().min(1).max(32),
   useRealTimeData: z.boolean(),
   dataClient: z.string().min(1).max(32),
   views: z.record(z.string(), z.boolean()),
-});
+})
 
 export default function OverlayBuilder() {
-  const database = useDatabase();
-  const overlaySettings = useStableLiveQuery(async () => database.getOverlaySettings());
-  const [isRealTimeDataEnabled, setIsRealTimeDataEnabled] = useState(true);
-  const hasInitialized = useRef(false);
+  const database = useDatabase()
+  const overlaySettings = useStableLiveQuery(async () => database.getOverlaySettings())
+  const [
+    isRealTimeDataEnabled,
+    setIsRealTimeDataEnabled,
+  ] = useState(true)
+  const hasInitialized = useRef(false)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema, { reportInput: true }),
     defaultValues: defaultOverlaySettings,
-  });
+  })
 
   // Watch form values (React Compiler: watch() is intentionally not memo-safe)
-  // eslint-disable-next-line react-hooks/incompatible-library -- react-hook-form watch()
-  const formValues = form.watch();
+  const formValues = form.watch()
 
   useEffect(() => {
     if (!overlaySettings) {
-      return;
+      return
     }
 
-    form.setValue("playerId", overlaySettings.playerId || "");
-    form.setValue("useRealTimeData", overlaySettings.useRealTimeData);
-    form.setValue("dataClient", overlaySettings.dataClient || "");
+    form.setValue('playerId', overlaySettings.playerId || '')
+    form.setValue('useRealTimeData', overlaySettings.useRealTimeData)
+    form.setValue('dataClient', overlaySettings.dataClient || '')
 
     // Ensure views object has the correct structure
     const normalizedViews = {
       [OverlayViews.PlayerInfo]: overlaySettings.views?.[OverlayViews.PlayerInfo] ?? true,
       [OverlayViews.ScoreInfo]: overlaySettings.views?.[OverlayViews.ScoreInfo] ?? true,
       [OverlayViews.SongInfo]: overlaySettings.views?.[OverlayViews.SongInfo] ?? true,
-    };
+    }
 
-    form.setValue("views", normalizedViews);
-    setIsRealTimeDataEnabled(overlaySettings.useRealTimeData);
-    hasInitialized.current = true;
-  }, [overlaySettings]);
+    form.setValue('views', normalizedViews)
+    setIsRealTimeDataEnabled(overlaySettings.useRealTimeData)
+    hasInitialized.current = true
+  }, [ overlaySettings ])
 
   // Auto-save settings to database when form values change
   useEffect(() => {
     // Don't save on initial load
     if (!overlaySettings || !hasInitialized.current) {
-      return;
+      return
     }
 
-    const currentValues = form.getValues();
+    const currentValues = form.getValues()
     const settingsToSave = {
       playerId: currentValues.playerId,
       useRealTimeData: currentValues.useRealTimeData,
       dataClient: currentValues.dataClient as OverlayDataClients,
       views: currentValues.views as Record<OverlayViews, boolean>,
-    };
+    }
 
     // Only save if values have actually changed
-    const getStoredView = (view: OverlayViews) => overlaySettings.views?.[view] ?? true;
+    const getStoredView = (view: OverlayViews) => overlaySettings.views?.[view] ?? true
     const hasChanged =
       settingsToSave.playerId !== overlaySettings.playerId ||
       settingsToSave.useRealTimeData !== overlaySettings.useRealTimeData ||
       settingsToSave.dataClient !== overlaySettings.dataClient ||
       settingsToSave.views[OverlayViews.PlayerInfo] !== getStoredView(OverlayViews.PlayerInfo) ||
       settingsToSave.views[OverlayViews.ScoreInfo] !== getStoredView(OverlayViews.ScoreInfo) ||
-      settingsToSave.views[OverlayViews.SongInfo] !== getStoredView(OverlayViews.SongInfo);
+      settingsToSave.views[OverlayViews.SongInfo] !== getStoredView(OverlayViews.SongInfo)
 
     const timeoutId = setTimeout(() => {
       if (hasChanged) {
-        void database.setSetting(SettingIds.OverlaySettings, settingsToSave);
+        void database.setSetting(SettingIds.OverlaySettings, settingsToSave)
       }
-    }, 500);
+    }, 500)
 
-    return () => clearTimeout(timeoutId);
-  }, [formValues, overlaySettings, database]);
+    return () => clearTimeout(timeoutId)
+  }, [
+    formValues,
+    overlaySettings,
+    database,
+  ])
 
   const handleRealTimeDataChange = (value: boolean) => {
     // Don't run during initial load
     if (!hasInitialized.current) {
-      return;
+      return
     }
 
-    setIsRealTimeDataEnabled(value);
-    form.setValue("useRealTimeData", value);
+    setIsRealTimeDataEnabled(value)
+    form.setValue('useRealTimeData', value)
 
     // If turning off real-time data, disable views that require it
     if (!value) {
-      const currentViews = form.getValues("views");
-      const updatedViews = { ...currentViews };
+      const currentViews = form.getValues('views')
+      const updatedViews = { ...currentViews }
 
       viewToggles.forEach(viewToggle => {
         if (viewToggle.requiresRealTimeData) {
-          updatedViews[viewToggle.value] = false;
+          updatedViews[viewToggle.value] = false
         }
-      });
+      })
 
-      form.setValue("views", updatedViews);
+      form.setValue('views', updatedViews)
     }
-  };
+  }
 
   /**
    * Handles the form submission
    *
    * @param replayViewer the new replay viewer
    */
-  async function onSubmit({ playerId, useRealTimeData, dataClient, views }: z.infer<typeof formSchema>) {
-    const player = await ssrApi.getScoreSaberPlayer(playerId, "basic");
+  async function onSubmit({
+    playerId, useRealTimeData, dataClient, views,
+  }: z.infer<typeof formSchema>) {
+    const player = await ssrApi.getScoreSaberPlayer(playerId, 'basic')
     if (!player) {
-      toast.error("The player id you entered could not be found.");
-      return;
+      toast.error('The player id you entered could not be found.')
+      return
     }
 
     // Update the settings
@@ -167,9 +179,9 @@ export default function OverlayBuilder() {
       useRealTimeData: useRealTimeData,
       dataClient: dataClient as OverlayDataClients,
       views: views as Record<OverlayViews, boolean>,
-    };
-    await database.setSetting(SettingIds.OverlaySettings, overlaySettings);
-    openInNewTab(`/overlay?settings=${encodeOverlaySettings(overlaySettings)}`);
+    }
+    await database.setSetting(SettingIds.OverlaySettings, overlaySettings)
+    openInNewTab(`/overlay?settings=${encodeOverlaySettings(overlaySettings)}`)
   }
 
   return (
@@ -219,8 +231,8 @@ export default function OverlayBuilder() {
                   <Checkbox
                     checked={field.value}
                     onCheckedChange={checked => {
-                      field.onChange(checked);
-                      handleRealTimeDataChange(checked as boolean);
+                      field.onChange(checked)
+                      handleRealTimeDataChange(checked as boolean)
                     }}
                   />
                 </FormControl>
@@ -244,7 +256,7 @@ export default function OverlayBuilder() {
                   <FormControl>
                     <Select
                       onValueChange={value => {
-                        field.onChange(value);
+                        field.onChange(value)
                       }}
                       value={field.value}
                     >
@@ -252,12 +264,15 @@ export default function OverlayBuilder() {
                         <SelectValue placeholder="Select a data client to use" />
                       </SelectTrigger>
                       <SelectContent>
-                        {Object.entries(OverlayDataClients).map(([id, clientName]) => {
+                        {Object.entries(OverlayDataClients).map(([
+                          id,
+                          clientName,
+                        ]) => {
                           return (
                             <SelectItem key={id} value={id}>
                               {clientName}
                             </SelectItem>
-                          );
+                          )
                         })}
                       </SelectContent>
                     </Select>
@@ -275,7 +290,7 @@ export default function OverlayBuilder() {
             </div>
 
             {viewToggles.map(viewToggle => {
-              const isDisabled = viewToggle.requiresRealTimeData && !isRealTimeDataEnabled;
+              const isDisabled = viewToggle.requiresRealTimeData && !isRealTimeDataEnabled
 
               return (
                 <FormField
@@ -291,7 +306,7 @@ export default function OverlayBuilder() {
                           disabled={isDisabled}
                         />
                       </FormControl>
-                      <div className={cn("flex items-center gap-2", isDisabled && "opacity-50")}>
+                      <div className={cn('flex items-center gap-2', isDisabled && 'opacity-50')}>
                         {viewToggle.icon}
                         <FormLabel className="font-normal">
                           {viewToggle.name}
@@ -305,7 +320,7 @@ export default function OverlayBuilder() {
                     </FormItem>
                   )}
                 />
-              );
+              )
             })}
           </div>
 
@@ -318,5 +333,5 @@ export default function OverlayBuilder() {
         </form>
       </Form>
     </Card>
-  );
+  )
 }

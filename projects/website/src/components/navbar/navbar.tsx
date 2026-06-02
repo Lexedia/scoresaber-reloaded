@@ -1,93 +1,96 @@
-"use client";
+'use client'
 
-import { cn } from "@/common/utils";
-import FriendsButton from "@/components/friend/friends-button";
-import PlayerAndLeaderboardSearch from "@/components/navbar/player-and-leaderboard-search";
-import SimpleLink from "@/components/simple-link";
-import { CubeIcon } from "@radix-ui/react-icons";
-import { Medal, MusicIcon, Settings, TrendingUpIcon, TrophyIcon } from "lucide-react";
-import Image from "next/image";
-import { usePathname } from "next/navigation";
-import { ReactElement } from "react";
-import { useIsMobile } from "../../contexts/viewport-context";
-import NavbarButton from "./navbar-button";
-import ProfileButton from "./profile-button";
+import { cn } from '@/common/utils'
+import FriendsButton from '@/components/friend/friends-button'
+import PlayerAndLeaderboardSearch from '@/components/navbar/player-and-leaderboard-search'
+import SimpleLink from '@/components/simple-link'
+import { CubeIcon } from '@radix-ui/react-icons'
+import {
+  Medal, MusicIcon, Settings, TrendingUpIcon, TrophyIcon,
+} from 'lucide-react'
+import Image from 'next/image'
+import { usePathname } from 'next/navigation'
+import { ReactElement } from 'react'
+import { useIsMobile } from '../../contexts/viewport-context'
+import NavbarButton from './navbar-button'
+import ProfileButton from './profile-button'
 
 type Link = {
   name: string;
-  icon: ReactElement<any>;
+  icon: ReactElement<unknown>;
   href?: string;
   hideOnMobile?: boolean;
-  side: "left" | "right";
-};
+  side: 'left' | 'right';
+}
 
 const links: Link[] = [
   {
-    name: "",
+    name: '',
     icon: <ProfileButton />,
-    side: "left",
+    side: 'left',
   },
   {
-    name: "Friends",
+    name: 'Friends',
     icon: <FriendsButton key="friends" />,
-    side: "left",
+    side: 'left',
   },
   {
-    name: "Ranking",
+    name: 'Ranking',
     icon: <TrendingUpIcon className="size-5" />,
-    href: "/ranking",
-    side: "left",
+    href: '/ranking',
+    side: 'left',
   },
   {
-    name: "Medals",
+    name: 'Medals',
     icon: <Medal className="size-5" />,
-    href: "/medals",
-    side: "left",
+    href: '/medals',
+    side: 'left',
   },
 
   // Right
   {
-    name: "Maps",
+    name: 'Maps',
     icon: <MusicIcon className="size-5" />,
-    href: "/maps/leaderboards",
-    side: "right",
+    href: '/maps/leaderboards',
+    side: 'right',
   },
   {
-    name: "Overlay",
+    name: 'Overlay',
     icon: <CubeIcon className="size-5" />,
-    href: "/overlay/builder",
+    href: '/overlay/builder',
     hideOnMobile: true,
-    side: "right",
+    side: 'right',
   },
   {
-    name: "Top Scores",
+    name: 'Top Scores',
     icon: <TrophyIcon className="size-5" />,
-    href: "/scores/top",
-    side: "right",
+    href: '/scores/top',
+    side: 'right',
   },
   {
-    name: "Settings",
+    name: 'Settings',
     icon: <Settings className="size-5" />,
-    href: "/settings",
-    side: "right",
+    href: '/settings',
+    side: 'right',
   },
   {
-    name: "",
+    name: '',
     icon: <PlayerAndLeaderboardSearch />,
-    side: "right",
+    side: 'right',
   },
-];
+]
 
 export default function Navbar() {
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobile()
 
-  const leftLinks = links.filter(link => link.side === "left" && !(isMobile && link.hideOnMobile));
-  const rightLinks = links.filter(link => link.side === "right" && !(isMobile && link.hideOnMobile));
+  const leftLinks = links.filter(link => link.side === 'left' && !(isMobile && link.hideOnMobile))
+  const rightLinks = links.filter(link => link.side === 'right' && !(isMobile && link.hideOnMobile))
 
   return (
     <nav
       className={cn(
-        "border-border bg-background/55 sticky inset-x-0 top-0 z-50 flex h-12 w-full items-center justify-between border-b px-2 py-1 backdrop-blur-md select-none lg:justify-around"
+        'border-border bg-background/55 sticky inset-x-0 top-0 z-50 flex h-12 w-full items-center justify-between',
+        'border-b px-2 py-1 backdrop-blur-md select-none lg:justify-around',
       )}
     >
       {/* Left */}
@@ -125,22 +128,22 @@ export default function Navbar() {
         </div>
       </div>
     </nav>
-  );
+  )
 }
 
 function NavButton({ name, icon, href }: Link) {
-  const pathname = usePathname();
+  const pathname = usePathname()
 
   if (href == null) {
-    return <div>{icon}</div>;
+    return <div>{icon}</div>
   }
 
-  const isActive = pathname != null && (pathname === href || (href !== "/" && pathname.startsWith(href)));
+  const isActive = pathname != null && (pathname === href || (href !== '/' && pathname.startsWith(href)))
 
   return (
     <NavbarButton href={href} isActive={isActive}>
       {icon}
       <span className="hidden 2xl:flex">{name}</span>
     </NavbarButton>
-  );
+  )
 }

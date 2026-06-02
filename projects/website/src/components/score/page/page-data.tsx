@@ -1,20 +1,22 @@
-"use client";
+'use client'
 
-import Card from "@/components/card";
-import { FancyLoader } from "@/components/fancy-loader";
-import { ScoreOverview } from "@/components/platform/scoresaber/score/score-views/score-overview";
-import { MapStats } from "@/components/score/map-stats";
-import { getDecodedReplay } from "@ssr/common/replay/replay-utils";
-import { ScoreSaberScore } from "@ssr/common/schemas/scoresaber/score/score";
-import { PlayerScore } from "@ssr/common/score/player-score";
-import { ssrApi } from "@ssr/common/utils/ssr-api";
-import { useQuery } from "@tanstack/react-query";
-import { AlertCircle, BarChart3, FileX, Loader2 } from "lucide-react";
-import dynamic from "next/dynamic";
-import ScoreDetails from "./components/score-details";
+import Card from '@/components/card'
+import { FancyLoader } from '@/components/fancy-loader'
+import { ScoreOverview } from '@/components/platform/scoresaber/score/score-views/score-overview'
+import { MapStats } from '@/components/score/map-stats'
+import { getDecodedReplay } from '@ssr/common/replay/replay-utils'
+import { ScoreSaberScore } from '@ssr/common/schemas/scoresaber/score/score'
+import { PlayerScore } from '@ssr/common/score/player-score'
+import { ssrApi } from '@ssr/common/utils/ssr-api'
+import { useQuery } from '@tanstack/react-query'
+import {
+  AlertCircle, BarChart3, FileX, Loader2,
+} from 'lucide-react'
+import dynamic from 'next/dynamic'
+import ScoreDetails from './components/score-details'
 
 const CutDistributionChart = dynamic(
-  () => import("./components/charts/cut-distribution-chart").then(m => m.default),
+  () => import('./components/charts/cut-distribution-chart').then(m => m.default),
   {
     ssr: false,
     loading: () => (
@@ -22,49 +24,62 @@ const CutDistributionChart = dynamic(
         <Loader2 className="text-primary size-8 animate-spin" />
       </div>
     ),
-  }
-);
+  },
+)
 
-const SwingSpeedChart = dynamic(() => import("./components/charts/swing-speed-chart").then(m => m.default), {
+const SwingSpeedChart = dynamic(() => import('./components/charts/swing-speed-chart').then(m => m.default), {
   ssr: false,
   loading: () => (
     <div className="bg-chart-card flex min-h-[280px] items-center justify-center rounded-lg border">
       <Loader2 className="text-primary size-8 animate-spin" />
     </div>
   ),
-});
+})
 
 type ScorePageDataProps = {
   scoreId: string;
   initialScore?: PlayerScore<ScoreSaberScore>;
-};
+}
 
 export default function ScorePageData({ scoreId, initialScore }: ScorePageDataProps) {
-  const hasServerScore = initialScore !== undefined;
+  const hasServerScore = initialScore !== undefined
 
   const {
     data: score,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["score", scoreId],
+    queryKey: [
+      'score',
+      scoreId,
+    ],
     queryFn: () => ssrApi.getScore(scoreId),
-    ...(hasServerScore ? { initialData: initialScore, staleTime: 60_000, refetchOnMount: false } : {}),
-  });
+    ...(hasServerScore ? {
+      initialData: initialScore,
+      staleTime: 60_000,
+      refetchOnMount: false,
+    } : {}),
+  })
 
   const { data: scoreStats, isLoading: isScoreStatsLoading } = useQuery({
-    queryKey: ["scoreStats", score?.score.beatLeaderScore?.scoreId],
+    queryKey: [
+      'scoreStats',
+      score?.score.beatLeaderScore?.scoreId,
+    ],
     queryFn: () => ssrApi.fetchScoreStats(Number(score?.score.beatLeaderScore?.scoreId)),
     enabled: !!score?.score.beatLeaderScore?.scoreId,
-  });
+  })
 
-  const beatLeaderScoreId = score?.score.beatLeaderScore?.scoreId;
+  const beatLeaderScoreId = score?.score.beatLeaderScore?.scoreId
 
   const { data: replay, isLoading: isReplayLoading } = useQuery({
-    queryKey: ["replayAnalysis", beatLeaderScoreId],
+    queryKey: [
+      'replayAnalysis',
+      beatLeaderScoreId,
+    ],
     queryFn: () => getDecodedReplay(beatLeaderScoreId!.toString()),
     enabled: beatLeaderScoreId != null,
-  });
+  })
 
   if (isError) {
     return (
@@ -73,19 +88,19 @@ export default function ScorePageData({ scoreId, initialScore }: ScorePageDataPr
         <h2 className="mb-(--spacing-sm) text-xl font-semibold">Score Not Found</h2>
         <p className="text-muted-foreground">This score has not been tracked or may have been removed.</p>
       </Card>
-    );
+    )
   }
 
   if (isLoading || !score) {
-    return <FancyLoader title="Loading..." description="Loading score data..." />;
+    return <FancyLoader title="Loading..." description="Loading score data..." />
   }
 
   // Check if we have any additional data to show
-  const hasScoreStats = !!scoreStats;
-  const hasReplay = !!replay;
-  const hasBeatSaver = !!score.beatSaver;
-  const hasAnyAdditionalData = hasScoreStats || hasReplay;
-  const isAnyDataLoading = isScoreStatsLoading || isReplayLoading;
+  const hasScoreStats = !!scoreStats
+  const hasReplay = !!replay
+  const hasBeatSaver = !!score.beatSaver
+  const hasAnyAdditionalData = hasScoreStats || hasReplay
+  const isAnyDataLoading = isScoreStatsLoading || isReplayLoading
 
   return (
     <div className="flex w-full flex-col gap-4">
@@ -148,5 +163,5 @@ export default function ScorePageData({ scoreId, initialScore }: ScorePageDataPr
         </div>
       )}
     </div>
-  );
+  )
 }

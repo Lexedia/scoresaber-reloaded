@@ -1,33 +1,40 @@
-"use client";
+'use client'
 
-import Card from "@/components/card";
-import { useMapFilter } from "@/components/providers/maps/map-filter-provider";
-import ScoreSongInfo from "@/components/score/score-song-info";
-import SimpleLink from "@/components/simple-link";
-import SimplePagination from "@/components/simple-pagination";
-import SimpleTooltip from "@/components/simple-tooltip";
-import { Spinner } from "@/components/spinner";
-import { EmptyState } from "@/components/ui/empty-state";
-import { StarFilledIcon } from "@radix-ui/react-icons";
-import { formatNumberWithCommas } from "@ssr/common/utils/number-utils";
-import { ssrApi } from "@ssr/common/utils/ssr-api";
-import { formatDate, timeAgo } from "@ssr/common/utils/time-utils";
-import { useQuery } from "@tanstack/react-query";
-import { useDebounce } from "@uidotdev/usehooks";
-import { ChartBarIcon, PlayIcon } from "lucide-react";
-import { parseAsInteger, useQueryState } from "nuqs";
+import Card from '@/components/card'
+import { useMapFilter } from '@/components/providers/maps/map-filter-provider'
+import ScoreSongInfo from '@/components/score/score-song-info'
+import SimpleLink from '@/components/simple-link'
+import SimplePagination from '@/components/simple-pagination'
+import SimpleTooltip from '@/components/simple-tooltip'
+import { Spinner } from '@/components/spinner'
+import { EmptyState } from '@/components/ui/empty-state'
+import { StarFilledIcon } from '@radix-ui/react-icons'
+import { formatNumberWithCommas } from '@ssr/common/utils/number-utils'
+import { ssrApi } from '@ssr/common/utils/ssr-api'
+import { formatDate, timeAgo } from '@ssr/common/utils/time-utils'
+import { useQuery } from '@tanstack/react-query'
+import { useDebounce } from '@uidotdev/usehooks'
+import { ChartBarIcon, PlayIcon } from 'lucide-react'
+import { parseAsInteger, useQueryState } from 'nuqs'
 
 export default function Leaderboards() {
-  const filter = useMapFilter();
-  const filterDebounced = useDebounce(filter, 100);
-  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
+  const filter = useMapFilter()
+  const filterDebounced = useDebounce(filter, 100)
+  const [
+    page,
+    setPage,
+  ] = useQueryState('page', parseAsInteger.withDefault(1))
 
   const {
     data: leaderboardResponse,
     isLoading,
     isRefetching,
   } = useQuery({
-    queryKey: ["maps", filterDebounced, page],
+    queryKey: [
+      'maps',
+      filterDebounced,
+      page,
+    ],
     queryFn: async () =>
       ssrApi.searchLeaderboards(page, {
         category: filterDebounced.category,
@@ -39,9 +46,9 @@ export default function Leaderboards() {
         query: filterDebounced.search.length > 3 ? filterDebounced.search : undefined,
       }),
     placeholderData: data => data,
-  });
+  })
 
-  const leaderboards = leaderboardResponse?.items;
+  const leaderboards = leaderboardResponse?.items
   return (
     <Card>
       {isLoading && leaderboardResponse == undefined && (
@@ -143,13 +150,13 @@ export default function Leaderboards() {
                         {/* Created */}
                         <td className="px-3 py-1.5 text-center text-xs">
                           <SimpleTooltip
-                            display={<p>{formatDate(leaderboard.timestamp, "Do MMMM, YYYY HH:mm a")}</p>}
+                            display={<p>{formatDate(leaderboard.timestamp, 'Do MMMM, YYYY HH:mm a')}</p>}
                           >
                             <p className="text-gray-400">{timeAgo(leaderboard.timestamp)}</p>
                           </SimpleTooltip>
                         </td>
                       </tr>
-                    );
+                    )
                   })}
                 </tbody>
               </table>
@@ -168,5 +175,5 @@ export default function Leaderboards() {
         )}
       </div>
     </Card>
-  );
+  )
 }

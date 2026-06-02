@@ -1,25 +1,25 @@
-"use client";
+'use client'
 
-import { ScoreReplayButton } from "@/components/score/button/score-replay-button";
-import ScoreSongInfo from "@/components/score/score-song-info";
-import { SparklesIcon } from "@heroicons/react/24/solid";
-import { env } from "@ssr/common/env";
-import { getS3BucketName, StorageBucket } from "@ssr/common/minio-buckets";
-import { AccSaberScore } from "@ssr/common/schemas/accsaber/tokens/score/score";
-import { MapDifficulty } from "@ssr/common/schemas/map/map-difficulty";
-import { AccSaberBadges } from "./accsaber-badges";
-import { AccSaberRankTime } from "./accsaber-rank-time";
+import { ScoreReplayButton } from '@/components/score/button/score-replay-button'
+import ScoreSongInfo from '@/components/score/score-song-info'
+import { SparklesIcon } from '@heroicons/react/24/solid'
+import { env } from '@ssr/common/env'
+import { getS3BucketName, StorageBucket } from '@ssr/common/minio-buckets'
+import { AccSaberScore } from '@ssr/common/schemas/accsaber/tokens/score/score'
+import { MapDifficulty } from '@ssr/common/schemas/map/map-difficulty'
+import { AccSaberBadges } from './accsaber-badges'
+import { AccSaberRankTime } from './accsaber-rank-time'
 
 type AccSaberScoreProps = {
   score: AccSaberScore;
-};
+}
 
 export default function AccSaberScoreComponent({ score }: AccSaberScoreProps) {
   return (
-    <div className={`relative`}>
+    <div className={'relative'}>
       <div
         className={
-          "grid-cols-[20px 1fr_1fr] grid w-full gap-2 py-2 lg:grid-cols-[0.5fr_4fr_1fr_350px] lg:gap-0"
+          'grid-cols-[20px 1fr_1fr] grid w-full gap-2 py-2 lg:grid-cols-[0.5fr_4fr_1fr_350px] lg:gap-0'
         }
       >
         <AccSaberRankTime score={score} />
@@ -46,5 +46,5 @@ export default function AccSaberScoreComponent({ score }: AccSaberScoreProps) {
         <AccSaberBadges score={score} />
       </div>
     </div>
-  );
+  )
 }

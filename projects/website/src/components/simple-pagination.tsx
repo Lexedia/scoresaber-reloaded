@@ -1,15 +1,17 @@
-"use client";
+'use client'
 
-import { cn } from "@/common/utils";
-import { ArrowPathIcon } from "@heroicons/react/24/solid";
-import { formatNumberWithCommas } from "@ssr/common/utils/number-utils";
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
-import React, { useCallback } from "react";
-import { useIsMobile } from "../contexts/viewport-context";
-import { Button } from "./ui/button";
+import { cn } from '@/common/utils'
+import { ArrowPathIcon } from '@heroicons/react/24/solid'
+import { formatNumberWithCommas } from '@ssr/common/utils/number-utils'
+import {
+  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
+} from 'lucide-react'
+import React, { useCallback } from 'react'
+import { useIsMobile } from '../contexts/viewport-context'
+import { Button } from './ui/button'
 
 function formatPageLabel(page: number, useCommaSeparators: boolean): string {
-  return useCommaSeparators ? formatNumberWithCommas(page) : String(page);
+  return useCommaSeparators ? formatNumberWithCommas(page) : String(page)
 }
 
 type PageButtonProps = {
@@ -21,7 +23,7 @@ type PageButtonProps = {
   children: React.ReactNode;
   generatePageUrl?: (page: number) => string;
   onClick: (page: number, event: React.MouseEvent) => void;
-};
+}
 
 const PageButton = React.memo(
   ({
@@ -34,27 +36,27 @@ const PageButton = React.memo(
     generatePageUrl,
     onClick,
   }: PageButtonProps) => {
-    const isButtonLoading = loadingPage === buttonPage;
-    const isCurrentPage = buttonPage === currentPage;
+    const isButtonLoading = loadingPage === buttonPage
+    const isCurrentPage = buttonPage === currentPage
 
     return (
       <Button
         asChild
-        variant={isActive ? "primary" : "ghost"}
+        variant={isActive ? 'primary' : 'ghost'}
         size="sm"
         className={cn(
-          "relative h-9 min-w-10 shrink-0 px-3 whitespace-nowrap",
+          'relative h-9 min-w-10 shrink-0 px-3 whitespace-nowrap',
           // Avoid animating background/border: primary↔ghost cross-fade interpolates through near-white in some engines.
-          "transition-[transform,opacity,box-shadow]! duration-200 ease-out",
-          "motion-safe:active:scale-[0.97]",
-          isButtonLoading && "cursor-not-allowed opacity-50",
-          isCurrentPage && "cursor-not-allowed shadow-xs",
-          !isActive && !isButtonLoading && "hover:shadow-xs"
+          'transition-[transform,opacity,box-shadow]! duration-200 ease-out',
+          'motion-safe:active:scale-[0.97]',
+          isButtonLoading && 'cursor-not-allowed opacity-50',
+          isCurrentPage && 'cursor-not-allowed shadow-xs',
+          !isActive && !isButtonLoading && 'hover:shadow-xs',
         )}
-        aria-current={isCurrentPage ? "page" : undefined}
+        aria-current={isCurrentPage ? 'page' : undefined}
       >
         <a
-          href={generatePageUrl ? generatePageUrl(buttonPage) : "#"}
+          href={generatePageUrl ? generatePageUrl(buttonPage) : '#'}
           onClick={e => onClick(buttonPage, e)}
           aria-disabled={isLoading || isCurrentPage}
           aria-label={`Go to page ${buttonPage}`}
@@ -63,8 +65,8 @@ const PageButton = React.memo(
           <span
             className={cn(
               // Blur must not animate: filter interpolation reads as a flash on nearby controls (e.g. prev chevron).
-              "transition-opacity duration-200 ease-out",
-              isButtonLoading && "opacity-80 blur-[2px]"
+              'transition-opacity duration-200 ease-out',
+              isButtonLoading && 'opacity-80 blur-[2px]',
             )}
           >
             {children}
@@ -76,10 +78,10 @@ const PageButton = React.memo(
           )}
         </a>
       </Button>
-    );
-  }
-);
-PageButton.displayName = "PageButton";
+    )
+  },
+)
+PageButton.displayName = 'PageButton'
 
 type NavigationButtonProps = {
   page: number;
@@ -90,8 +92,8 @@ type NavigationButtonProps = {
   onClick: (page: number, event: React.MouseEvent) => void;
   ariaLabel?: string;
   /** Nudge chevrons on hover to hint prev/next direction */
-  chevronMotion?: "left" | "right";
-};
+  chevronMotion?: 'left' | 'right';
+}
 
 const NavigationButton = React.memo(
   ({
@@ -110,44 +112,44 @@ const NavigationButton = React.memo(
       size="icon"
       disabled={disabled || isLoading}
       className={cn(
-        "group shrink-0",
+        'group shrink-0',
         // Same as PageButton: don't animate colors (avoids flash when disabled/loading toggles ghost styles).
-        "transition-[transform,box-shadow]! duration-200 ease-out",
-        "motion-safe:active:scale-[0.96]",
-        disabled && "cursor-not-allowed opacity-50",
-        !disabled && !isLoading && "hover:shadow-xs"
+        'transition-[transform,box-shadow]! duration-200 ease-out',
+        'motion-safe:active:scale-[0.96]',
+        disabled && 'cursor-not-allowed opacity-50',
+        !disabled && !isLoading && 'hover:shadow-xs',
       )}
       aria-label={
         ariaLabel ??
         (buttonPage === 1
-          ? "Go to first page"
+          ? 'Go to first page'
           : buttonPage > 0
             ? `Go to page ${buttonPage}`
-            : "Go to previous page")
+            : 'Go to previous page')
       }
     >
       <a
-        href={generatePageUrl ? generatePageUrl(buttonPage) : "#"}
+        href={generatePageUrl ? generatePageUrl(buttonPage) : '#'}
         onClick={e => onClick(buttonPage, e)}
         aria-disabled={disabled || isLoading}
         className="flex items-center justify-center"
       >
         <span
           className={cn(
-            "inline-flex transition-transform duration-200 ease-out motion-reduce:transition-none",
-            chevronMotion === "left" &&
-              "translate-x-0 motion-safe:group-hover:-translate-x-1 motion-reduce:group-hover:translate-x-0",
-            chevronMotion === "right" &&
-              "translate-x-0 motion-safe:group-hover:translate-x-1 motion-reduce:group-hover:translate-x-0"
+            'inline-flex transition-transform duration-200 ease-out motion-reduce:transition-none',
+            chevronMotion === 'left' &&
+              'translate-x-0 motion-safe:group-hover:-translate-x-1 motion-reduce:group-hover:translate-x-0',
+            chevronMotion === 'right' &&
+              'translate-x-0 motion-safe:group-hover:translate-x-1 motion-reduce:group-hover:translate-x-0',
           )}
         >
           {children}
         </span>
       </a>
     </Button>
-  )
-);
-NavigationButton.displayName = "NavigationButton";
+  ),
+)
+NavigationButton.displayName = 'NavigationButton'
 
 export type SimplePaginationProps = {
   page: number;
@@ -156,7 +158,7 @@ export type SimplePaginationProps = {
   loadingPage?: number;
   onPageChange: (page: number) => void;
   generatePageUrl?: (page: number) => string;
-};
+}
 
 export default function SimplePagination({
   page,
@@ -166,50 +168,61 @@ export default function SimplePagination({
   onPageChange,
   generatePageUrl,
 }: SimplePaginationProps) {
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobile()
 
-  page = page == 0 ? 1 : page;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  page = page == 0 ? 1 : page
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
 
   // Calculate loading state once and ensure it's consistent
-  const isLoading = Boolean(loadingPage);
+  const isLoading = Boolean(loadingPage)
   const loadingState = isLoading
-    ? { isLoading: true, loadingPage }
-    : { isLoading: false, loadingPage: undefined };
+    ? {
+      isLoading: true,
+      loadingPage,
+    }
+    : {
+      isLoading: false,
+      loadingPage: undefined,
+    }
 
   const handlePageChange = useCallback(
     (newPage: number) => {
       if (newPage >= 1 && newPage <= totalPages && newPage !== page && !isLoading) {
-        onPageChange(newPage);
+        onPageChange(newPage)
       }
     },
-    [page, totalPages, isLoading, onPageChange]
-  );
+    [
+      page,
+      totalPages,
+      isLoading,
+      onPageChange,
+    ],
+  )
 
   const handleLinkClick = useCallback(
     (newPage: number, event: React.MouseEvent) => {
-      event.preventDefault();
-      handlePageChange(newPage);
+      event.preventDefault()
+      handlePageChange(newPage)
     },
-    [handlePageChange]
-  );
+    [ handlePageChange ],
+  )
 
   const renderPageNumbers = useCallback(() => {
-    const visiblePageCount = 7;
-    const halfVisibleCount = Math.floor(visiblePageCount / 2);
-    let left = Math.max(1, page - halfVisibleCount);
-    let right = Math.min(totalPages, page + halfVisibleCount);
+    const visiblePageCount = 7
+    const halfVisibleCount = Math.floor(visiblePageCount / 2)
+    let left = Math.max(1, page - halfVisibleCount)
+    let right = Math.min(totalPages, page + halfVisibleCount)
 
     // Keep a consistent 5-page window when possible by shifting near edges.
-    const currentWindowSize = right - left + 1;
+    const currentWindowSize = right - left + 1
     if (currentWindowSize < visiblePageCount) {
-      const remainingSlots = visiblePageCount - currentWindowSize;
-      const addToRight = Math.min(remainingSlots, totalPages - right);
-      right += addToRight;
-      left = Math.max(1, left - (remainingSlots - addToRight));
+      const remainingSlots = visiblePageCount - currentWindowSize
+      const addToRight = Math.min(remainingSlots, totalPages - right)
+      right += addToRight
+      left = Math.max(1, left - (remainingSlots - addToRight))
     }
 
-    const pageNumbers: React.ReactNode[] = [];
+    const pageNumbers: React.ReactNode[] = []
 
     for (let i = left; i <= right; i++) {
       pageNumbers.push(
@@ -224,24 +237,30 @@ export default function SimplePagination({
           loadingPage={loadingState.loadingPage}
         >
           {formatPageLabel(i, true)}
-        </PageButton>
-      );
+        </PageButton>,
+      )
     }
 
-    return pageNumbers;
-  }, [page, totalPages, loadingState, handleLinkClick, generatePageUrl]);
+    return pageNumbers
+  }, [
+    page,
+    totalPages,
+    loadingState,
+    handleLinkClick,
+    generatePageUrl,
+  ])
 
   // Calculate page numbers before render to ensure consistent timing (desktop only)
-  const pageNumbers = isMobile ? null : renderPageNumbers();
+  const pageNumbers = isMobile ? null : renderPageNumbers()
 
   return (
     <div className="flex w-full justify-center">
       <nav
         className={cn(
-          "flex max-w-full min-w-0 flex-nowrap items-center justify-center",
+          'flex max-w-full min-w-0 flex-nowrap items-center justify-center',
           isMobile
-            ? "w-full gap-2"
-            : "gap-1.5 overflow-x-auto overflow-y-hidden overscroll-x-contain scroll-smooth [-webkit-overflow-scrolling:touch]"
+            ? 'w-full gap-2'
+            : 'gap-1.5 overflow-x-auto overflow-y-hidden overscroll-x-contain scroll-smooth [-webkit-overflow-scrolling:touch]',
         )}
         aria-label="Pagination navigation"
       >
@@ -302,5 +321,5 @@ export default function SimplePagination({
         </NavigationButton>
       </nav>
     </div>
-  );
+  )
 }

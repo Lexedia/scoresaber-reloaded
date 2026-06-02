@@ -1,31 +1,31 @@
-import { cn } from "@/common/utils";
-import FallbackLink from "@/components/fallback-link";
-import SimpleLink from "@/components/simple-link";
-import SimpleTooltip from "@/components/simple-tooltip";
-import { GlobeAmericasIcon } from "@heroicons/react/24/solid";
-import ScoreSaberPlayer from "@ssr/common/player/impl/scoresaber-player";
-import { PlayerStatChange } from "@ssr/common/player/player-stat-change";
-import { formatNumberWithCommas, formatPp } from "@ssr/common/utils/number-utils";
-import { pluralize } from "@ssr/common/utils/string.util";
-import { Medal } from "lucide-react";
-import { ChangeOverTime } from "../../statistic/change-over-time";
-import { DailyChange } from "../../statistic/daily-change";
-import CountryFlag from "../../ui/country-flag";
+import { cn } from '@/common/utils'
+import FallbackLink from '@/components/fallback-link'
+import SimpleLink from '@/components/simple-link'
+import SimpleTooltip from '@/components/simple-tooltip'
+import { GlobeAmericasIcon } from '@heroicons/react/24/solid'
+import ScoreSaberPlayer from '@ssr/common/player/impl/scoresaber-player'
+import { PlayerStatChange } from '@ssr/common/player/player-stat-change'
+import { formatNumberWithCommas, formatPp } from '@ssr/common/utils/number-utils'
+import { pluralize } from '@ssr/common/utils/string.util'
+import { Medal } from 'lucide-react'
+import { ChangeOverTime } from '../../statistic/change-over-time'
+import { DailyChange } from '../../statistic/daily-change'
+import CountryFlag from '../../ui/country-flag'
 
 function PlayerOverviewItem({ children }: { children: React.ReactNode }) {
   return (
     <div className="bg-background/80 border-border flex h-9 items-center gap-2 rounded-lg border px-3 py-1.5 text-gray-300 shadow-xs backdrop-blur-xs">
       {children}
     </div>
-  );
+  )
 }
 
 const playerData = [
   {
     showWhenInactiveOrBanned: false,
     render: (player: ScoreSaberPlayer) => {
-      const statisticChange = player.statisticChange;
-      const rankChange = statisticChange?.daily?.rank ?? 0;
+      const statisticChange = player.statisticChange
+      const rankChange = statisticChange?.daily?.rank ?? 0
 
       return (
         <PlayerOverviewItem>
@@ -47,7 +47,8 @@ const playerData = [
               }
             >
               <SimpleLink href={`/ranking/${player.rankPages.global}`}>
-                <span className="hover:text-primary/80 focus-visible:outline-primary/50 m-0 text-sm transition-all focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2">
+                <span className="hover:text-primary/80 focus-visible:outline-primary/50 m-0 text-sm transition-all
+                  focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2">
                   #{formatNumberWithCommas(player.rank)}
                 </span>
               </SimpleLink>
@@ -55,14 +56,14 @@ const playerData = [
             <DailyChange type={PlayerStatChange.Rank} change={rankChange} />
           </div>
         </PlayerOverviewItem>
-      );
+      )
     },
   },
   {
     showWhenInactiveOrBanned: false,
     render: (player: ScoreSaberPlayer) => {
-      const statisticChange = player.statisticChange;
-      const rankChange = statisticChange?.daily?.countryRank ?? 0;
+      const statisticChange = player.statisticChange
+      const rankChange = statisticChange?.daily?.countryRank ?? 0
 
       return (
         <PlayerOverviewItem>
@@ -76,7 +77,8 @@ const playerData = [
             />
             <ChangeOverTime player={player} type={PlayerStatChange.CountryRank}>
               <SimpleLink href={`/ranking/${player.country}/${player.rankPages.country}`}>
-                <span className="hover:text-primary/80 focus-visible:outline-primary/50 m-0 text-sm transition-all focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2">
+                <span className="hover:text-primary/80 focus-visible:outline-primary/50 m-0 text-sm transition-all
+                  focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2">
                   #{formatNumberWithCommas(player.countryRank)}
                 </span>
               </SimpleLink>
@@ -84,7 +86,7 @@ const playerData = [
             <DailyChange type={PlayerStatChange.CountryRank} change={rankChange} />
           </div>
         </PlayerOverviewItem>
-      );
+      )
     },
   },
   {
@@ -96,30 +98,33 @@ const playerData = [
           <FallbackLink href={player.rankPages.medals ? `/medals/${player.rankPages.medals}` : undefined}>
             <span
               className={cn(
-                "m-0 text-sm leading-[1.4]",
-                player.rankPages.medals ? "hover:text-primary/80 cursor-pointer transition-all" : ""
+                'm-0 text-sm leading-[1.4]',
+                player.rankPages.medals ? 'hover:text-primary/80 cursor-pointer transition-all' : '',
               )}
             >
-              {formatNumberWithCommas(player.medals)} {pluralize(player.medals, "Medal")}
+              {formatNumberWithCommas(player.medals)} {pluralize(player.medals, 'Medal')}
             </span>
           </FallbackLink>
         </PlayerOverviewItem>
-      );
+      )
     },
   },
   {
     showWhenInactiveOrBanned: true,
     render: (player: ScoreSaberPlayer) => {
-      const statisticChange = player.statisticChange;
-      const ppChange = statisticChange?.daily?.pp ?? 0;
+      const statisticChange = player.statisticChange
+      const ppChange = statisticChange?.daily?.pp ?? 0
 
       return (
         <PlayerOverviewItem>
-          <div className="flex items-center gap-1" style={{ height: "100%" }}>
+          <div className="flex items-center gap-1" style={{ height: '100%' }}>
             <ChangeOverTime player={player} type={PlayerStatChange.PerformancePoints}>
               <span
                 className="text-pp hover:text-primary/80 m-0 truncate text-sm leading-[1.4] font-semibold transition-all"
-                style={{ display: "inline-block", verticalAlign: "middle" }}
+                style={{
+                  display: 'inline-block',
+                  verticalAlign: 'middle',
+                }}
               >
                 {formatPp(player.pp)}pp
               </span>
@@ -127,14 +132,14 @@ const playerData = [
             <DailyChange type={PlayerStatChange.PerformancePoints} change={ppChange} />
           </div>
         </PlayerOverviewItem>
-      );
+      )
     },
   },
-];
+]
 
 type PlayerOverviewProps = {
   player: ScoreSaberPlayer;
-};
+}
 
 export default function PlayerOverview({ player }: PlayerOverviewProps) {
   return (
@@ -142,15 +147,15 @@ export default function PlayerOverview({ player }: PlayerOverviewProps) {
       {playerData.map((subName, index) => {
         // Check if the player is inactive or banned and if the data should be shown
         if (!subName.showWhenInactiveOrBanned && (player.inactive || player.banned)) {
-          return null;
+          return null
         }
 
         return (
           <div key={`player-overview-${index}-${subName.showWhenInactiveOrBanned}`}>
             {subName.render && subName.render(player)}
           </div>
-        );
+        )
       })}
     </div>
-  );
+  )
 }

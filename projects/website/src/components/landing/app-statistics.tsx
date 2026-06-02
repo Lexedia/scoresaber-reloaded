@@ -1,9 +1,11 @@
-"use client";
+'use client'
 
-import { AppStatisticsResponse } from "@ssr/common/schemas/response/ssr/app-statistics";
-import { History, LucideIcon, Target, Trophy, User, UserX, Video } from "lucide-react";
-import CountUp from "react-countup";
-import Card from "../card";
+import { AppStatisticsResponse } from '@ssr/common/schemas/response/ssr/app-statistics'
+import {
+  History, LucideIcon, Target, Trophy, User, UserX, Video,
+} from 'lucide-react'
+import CountUp from 'react-countup'
+import Card from '../card'
 
 interface StatCardProps {
   icon: LucideIcon;
@@ -24,7 +26,7 @@ function StatCard({ icon: Icon, title, value }: StatCardProps) {
         </p>
       </div>
     </Card>
-  );
+  )
 }
 
 export function AppStats({
@@ -35,7 +37,7 @@ export function AppStats({
   className?: string;
 }) {
   if (statistics == undefined) {
-    return null;
+    return null
   }
 
   return (
@@ -47,5 +49,5 @@ export function AppStats({
       <StatCard icon={History} title="Score History Scores" value={statistics.scoreHistoryScores} />
       <StatCard icon={Video} title="Stored Replays" value={statistics.storedReplays} />
     </div>
-  );
+  )
 }

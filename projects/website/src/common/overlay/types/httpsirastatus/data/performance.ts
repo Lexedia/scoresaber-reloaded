@@ -90,4 +90,4 @@ export type HttpSiraStatus_Performance = {
    * Whether no-failed has been triggered.
    */
   softFailed: boolean;
-};
+}

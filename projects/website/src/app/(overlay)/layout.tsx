@@ -1,5 +1,5 @@
-import SSRLayout from "@/components/ssr-layout";
-import { ReactNode } from "react";
+import SSRLayout from '@/components/ssr-layout'
+import { ReactNode } from 'react'
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
@@ -8,5 +8,5 @@ export default function Layout({ children }: { children: ReactNode }) {
         <SSRLayout>{children}</SSRLayout>
       </main>
     </>
-  );
+  )
 }

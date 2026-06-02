@@ -1,24 +1,24 @@
-import { cn } from "@/common/utils";
-import Avatar from "@/components/avatar";
-import SimpleLink from "@/components/simple-link";
-import { Spinner } from "@/components/spinner";
-import { useIsMobile } from "@/contexts/viewport-context";
-import { GlobeAmericasIcon } from "@heroicons/react/24/solid";
-import ScoreSaberPlayer from "@ssr/common/player/impl/scoresaber-player";
-import { formatNumberWithCommas, formatPp } from "@ssr/common/utils/number-utils";
-import { getScoreSaberRoles } from "@ssr/common/utils/scoresaber.util";
-import { ssrApi } from "@ssr/common/utils/ssr-api";
-import { useQuery } from "@tanstack/react-query";
-import clsx from "clsx";
-import { ReactElement } from "react";
-import Card from "../../card";
-import CountryFlag from "../../ui/country-flag";
+import { cn } from '@/common/utils'
+import Avatar from '@/components/avatar'
+import SimpleLink from '@/components/simple-link'
+import { Spinner } from '@/components/spinner'
+import { useIsMobile } from '@/contexts/viewport-context'
+import { GlobeAmericasIcon } from '@heroicons/react/24/solid'
+import ScoreSaberPlayer from '@ssr/common/player/impl/scoresaber-player'
+import { formatNumberWithCommas, formatPp } from '@ssr/common/utils/number-utils'
+import { getScoreSaberRoles } from '@ssr/common/utils/scoresaber.util'
+import { ssrApi } from '@ssr/common/utils/ssr-api'
+import { useQuery } from '@tanstack/react-query'
+import clsx from 'clsx'
+import { ReactElement } from 'react'
+import Card from '../../card'
+import CountryFlag from '../../ui/country-flag'
 
 type Variants = {
   [key: string]: {
     icon: (player: ScoreSaberPlayer) => ReactElement<unknown>;
   };
-};
+}
 
 const miniVariants: Variants = {
   Global: {
@@ -26,10 +26,10 @@ const miniVariants: Variants = {
   },
   Country: {
     icon: (player: ScoreSaberPlayer) => {
-      return <CountryFlag code={player.country} size={16} className="rounded-full" />;
+      return <CountryFlag code={player.country} size={16} className="rounded-full" />
     },
   },
-};
+}
 
 export default function PlayerMiniRankings({ player }: { player: ScoreSaberPlayer }) {
   const {
@@ -37,9 +37,12 @@ export default function PlayerMiniRankings({ player }: { player: ScoreSaberPlaye
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["mini-ranking", player.id],
+    queryKey: [
+      'mini-ranking',
+      player.id,
+    ],
     queryFn: () => ssrApi.getPlayerMiniRanking(player.id),
-  });
+  })
 
   return (
     <>
@@ -58,7 +61,7 @@ export default function PlayerMiniRankings({ player }: { player: ScoreSaberPlaye
         isError={isError}
       />
     </>
-  );
+  )
 }
 
 function PlayerMiniRanking({
@@ -74,19 +77,19 @@ function PlayerMiniRanking({
   isLoading: boolean;
   isError: boolean;
 }) {
-  const isMobile = useIsMobile();
-  const variant = miniVariants[type];
-  const icon = variant.icon(player);
+  const isMobile = useIsMobile()
+  const variant = miniVariants[type]
+  const icon = variant.icon(player)
 
   const playerRankWidth = (() => {
     if (players.length === 0) {
-      return 0;
+      return 0
     }
-    const maxRank = Math.max(...players.map(p => (type === "Global" ? p.rank : p.countryRank) ?? 0));
-    const digits = maxRank > 0 ? Math.floor(Math.log10(maxRank)) + 1 : 0;
-    const commas = Math.floor((digits - 1) / 3);
-    return (digits + commas + 1) * 6.5;
-  })();
+    const maxRank = Math.max(...players.map(p => (type === 'Global' ? p.rank : p.countryRank) ?? 0))
+    const digits = maxRank > 0 ? Math.floor(Math.log10(maxRank)) + 1 : 0
+    const commas = Math.floor((digits - 1) / 3)
+    return (digits + commas + 1) * 6.5
+  })()
 
   return (
     <Card className="sticky flex w-full flex-col gap-(--spacing-md) p-(--spacing-md) text-xs select-none sm:w-[400px]">
@@ -100,14 +103,15 @@ function PlayerMiniRanking({
       <div className="divide-border bg-accent/50 divide-y rounded-md">
         {players.length > 0 ? (
           players.map(playerRanking => {
-            const rank = type == "Global" ? playerRanking.rank : playerRanking.countryRank;
-            const ppDifference = playerRanking.pp - player.pp;
+            const rank = type == 'Global' ? playerRanking.rank : playerRanking.countryRank
+            const ppDifference = playerRanking.pp - player.pp
 
             return (
               <SimpleLink
                 key={playerRanking.id}
                 href={`/player/${playerRanking.id}`}
-                className="group hover:bg-accent/50 sm:px-(--spacing-sm grid cursor-pointer items-center gap-(--spacing-md) px-(--spacing-sm) py-(--spacing-xs) transition-colors duration-200 first:rounded-t-md last:rounded-b-md"
+                className="group hover:bg-accent/50 sm:px-(--spacing-sm grid cursor-pointer items-center gap-(--spacing-md)
+                  px-(--spacing-sm) py-(--spacing-xs) transition-colors duration-200 first:rounded-t-md last:rounded-b-md"
                 style={{
                   gridTemplateColumns: isMobile
                     ? `${playerRankWidth}px 1fr auto`
@@ -115,7 +119,7 @@ function PlayerMiniRanking({
                 }}
               >
                 {/* Rank */}
-                <p className={cn("text-muted-foreground", playerRanking.id === player.id ? "font-bold" : "")}>
+                <p className={cn('text-muted-foreground', playerRanking.id === player.id ? 'font-bold' : '')}>
                   #{formatNumberWithCommas(rank)}
                 </p>
 
@@ -129,8 +133,8 @@ function PlayerMiniRanking({
 
                   <p
                     className={clsx(
-                      playerRanking.id == player.id ? "font-bold" : "",
-                      "w-[125px] overflow-hidden text-left break-all text-ellipsis whitespace-nowrap transition-all duration-200"
+                      playerRanking.id == player.id ? 'font-bold' : '',
+                      'w-[125px] overflow-hidden text-left break-all text-ellipsis whitespace-nowrap transition-all duration-200',
                     )}
                     style={{
                       color: getScoreSaberRoles(playerRanking)[0]?.color,
@@ -144,26 +148,26 @@ function PlayerMiniRanking({
                 <div
                   className="grid w-fit items-center gap-(--spacing-sm) md:w-[100px]"
                   style={{
-                    gridTemplateColumns: isMobile ? "1fr" : "1fr 0.3fr",
+                    gridTemplateColumns: isMobile ? '1fr' : '1fr 0.3fr',
                   }}
                 >
                   <p
                     className={cn(
-                      "text-pp text-right sm:text-left",
-                      playerRanking.id === player.id ? "font-bold" : ""
+                      'text-pp text-right sm:text-left',
+                      playerRanking.id === player.id ? 'font-bold' : '',
                     )}
                   >
                     {formatPp(playerRanking.pp, isMobile ? 1 : 2)}pp
                   </p>
                   {playerRanking.id !== player.id && !isMobile && (
-                    <p className={ppDifference > 0 ? "text-green-400" : "text-red-400"}>
-                      {ppDifference > 0 ? "+" : ""}
+                    <p className={ppDifference > 0 ? 'text-green-400' : 'text-red-400'}>
+                      {ppDifference > 0 ? '+' : ''}
                       {formatPp(ppDifference, 2)}
                     </p>
                   )}
                 </div>
               </SimpleLink>
-            );
+            )
           })
         ) : (
           <>
@@ -184,5 +188,5 @@ function PlayerMiniRanking({
         )}
       </div>
     </Card>
-  );
+  )
 }

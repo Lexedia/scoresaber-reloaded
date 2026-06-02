@@ -1,56 +1,59 @@
-"use client";
+'use client'
 
-import { GlobeAmericasIcon } from "@heroicons/react/24/solid";
-import { PersonIcon } from "@radix-ui/react-icons";
-import { TrendingUpIcon } from "lucide-react";
-import { ReactElement, useState } from "react";
-import { ControlRow, Tab, TabGroup } from "../ui/control-panel";
+import { GlobeAmericasIcon } from '@heroicons/react/24/solid'
+import { PersonIcon } from '@radix-ui/react-icons'
+import { TrendingUpIcon } from 'lucide-react'
+import { ReactElement, useState } from 'react'
+import { ControlRow, Tab, TabGroup } from '../ui/control-panel'
 
 export type ScoreModeType = {
   name: string;
   id: ScoreModeEnum;
   color: string;
   hoverColor: string;
-  icon: ReactElement<any>;
-};
+  icon: ReactElement<unknown>;
+}
 
 export enum ScoreModeEnum {
-  Global = "global",
-  Friends = "friend",
-  History = "history",
+  Global = 'global',
+  Friends = 'friend',
+  History = 'history',
 }
 
 export const scoreModes: ScoreModeType[] = [
   {
-    name: "Global",
+    name: 'Global',
     id: ScoreModeEnum.Global,
-    color: "bg-primary/15 border-primary text-primary",
-    hoverColor: "hover:border-primary hover:text-primary",
+    color: 'bg-primary/15 border-primary text-primary',
+    hoverColor: 'hover:border-primary hover:text-primary',
     icon: <GlobeAmericasIcon className="h-4 w-4" />,
   },
   {
-    name: "Friends",
+    name: 'Friends',
     id: ScoreModeEnum.Friends,
-    color: "bg-friends/15 border-friends text-friends",
-    hoverColor: "hover:border-friends hover:text-friends",
+    color: 'bg-friends/15 border-friends text-friends',
+    hoverColor: 'hover:border-friends hover:text-friends',
     icon: <PersonIcon className="h-4 w-4" />,
   },
   {
-    name: "History",
+    name: 'History',
     id: ScoreModeEnum.History,
-    color: "bg-history/15 border-history text-history",
-    hoverColor: "hover:border-history hover:text-history",
+    color: 'bg-history/15 border-history text-history',
+    hoverColor: 'hover:border-history hover:text-history',
     icon: <TrendingUpIcon className="h-4 w-4" />,
   },
-];
+]
 
 type ScoreModeProps = {
   initialMode?: ScoreModeEnum;
   onModeChange?: (mode: ScoreModeEnum) => void;
-};
+}
 
 export default function ScoreModeSwitcher({ initialMode, onModeChange }: ScoreModeProps) {
-  const [selectedMode, setSelectedMode] = useState<ScoreModeEnum>(initialMode ?? ScoreModeEnum.Global);
+  const [
+    selectedMode,
+    setSelectedMode,
+  ] = useState<ScoreModeEnum>(initialMode ?? ScoreModeEnum.Global)
 
   return (
     <ControlRow>
@@ -60,9 +63,9 @@ export default function ScoreModeSwitcher({ initialMode, onModeChange }: ScoreMo
             key={mode.id}
             isActive={mode.id === selectedMode}
             onClick={() => {
-              setSelectedMode(mode.id);
+              setSelectedMode(mode.id)
               if (onModeChange) {
-                onModeChange(mode.id);
+                onModeChange(mode.id)
               }
             }}
           >
@@ -72,30 +75,32 @@ export default function ScoreModeSwitcher({ initialMode, onModeChange }: ScoreMo
         ))}
       </TabGroup>
     </ControlRow>
-  );
+  )
 
-  // return (
-  //   <div className="flex flex-wrap items-center justify-center gap-(--spacing-sm)">
-  //     {scoreModes.map(mode => (
-  //       <Button
-  //         key={mode.name}
-  //         variant={selectedMode === mode.id ? "default" : "ghost"}
-  //         className={cn(
-  //           "flex items-center gap-2 px-(--spacing-lg) py-(--spacing-sm) transition-all duration-200",
-  //           mode.hoverColor,
-  //           selectedMode === mode.id ? `${mode.color} font-bold` : "hover:bg-accent/80"
-  //         )}
-  //         onClick={() => {
-  //           setSelectedMode(mode.id);
-  //           if (onModeChange) {
-  //             onModeChange(mode.id);
-  //           }
-  //         }}
-  //       >
-  //         <span>{mode.icon}</span>
-  //         <span>{mode.name}</span>
-  //       </Button>
-  //     ))}
-  //   </div>
-  // );
+  /*
+   * return (
+   *   <div className="flex flex-wrap items-center justify-center gap-(--spacing-sm)">
+   *     {scoreModes.map(mode => (
+   *       <Button
+   *         key={mode.name}
+   *         variant={selectedMode === mode.id ? "default" : "ghost"}
+   *         className={cn(
+   *           "flex items-center gap-2 px-(--spacing-lg) py-(--spacing-sm) transition-all duration-200",
+   *           mode.hoverColor,
+   *           selectedMode === mode.id ? `${mode.color} font-bold` : "hover:bg-accent/80"
+   *         )}
+   *         onClick={() => {
+   *           setSelectedMode(mode.id);
+   *           if (onModeChange) {
+   *             onModeChange(mode.id);
+   *           }
+   *         }}
+   *       >
+   *         <span>{mode.icon}</span>
+   *         <span>{mode.name}</span>
+   *       </Button>
+   *     ))}
+   *   </div>
+   * );
+   */
 }

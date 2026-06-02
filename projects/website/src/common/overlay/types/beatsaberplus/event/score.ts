@@ -7,4 +7,4 @@ export type BeatSaberPlus_ScoreEvent = {
     score: number;
     time: number;
   };
-};
+}

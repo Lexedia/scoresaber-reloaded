@@ -1,12 +1,12 @@
-import { BACKGROUND_COVERS } from "@/components/background-cover";
-import Logger from "@ssr/common/logger";
-import ScoreSaberPlayer from "@ssr/common/player/impl/scoresaber-player";
-import { ReplayViewer, ReplayViewers, ReplayViewerTypes } from "@ssr/common/replay-viewer";
-import { ssrApi } from "@ssr/common/utils/ssr-api";
-import Dexie, { EntityTable } from "dexie";
-import { deleteCookieValue, setCookieValue } from "../cookie.util";
-import { defaultOverlaySettings, OverlaySettings } from "../overlay/overlay-settings";
-import { HistoryMode } from "../player/history-mode";
+import { BACKGROUND_COVERS } from '@/components/background-cover'
+import Logger from '@ssr/common/logger'
+import ScoreSaberPlayer from '@ssr/common/player/impl/scoresaber-player'
+import { ReplayViewer, ReplayViewers, ReplayViewerTypes } from '@ssr/common/replay-viewer'
+import { ssrApi } from '@ssr/common/utils/ssr-api'
+import Dexie, { EntityTable } from 'dexie'
+import { deleteCookieValue, setCookieValue } from '../cookie.util'
+import { defaultOverlaySettings, OverlaySettings } from '../overlay/overlay-settings'
+import { HistoryMode } from '../player/history-mode'
 
 type CacheItem = {
   /**
@@ -23,7 +23,7 @@ type CacheItem = {
    * The item of the cache
    */
   item: unknown;
-};
+}
 
 type Setting = {
   /**
@@ -35,64 +35,67 @@ type Setting = {
    * The value of the setting
    */
   value: unknown;
-};
-
-export enum SettingIds {
-  MainPlayer = "mainPlayer",
-  BackgroundCover = "backgroundCover",
-  BackgroundCoverBrightness = "backgroundCoverBrightness",
-  BackgroundCoverBlur = "backgroundCoverBlur",
-  CustomBackgroundUrl = "customBackgroundCover",
-  ShowKitty = "showKitty",
-  SnowParticles = "snowParticles",
-  WhatIfRange = "whatIfRange",
-  ChartLegends = "chartLegends",
-  OverlaySettings = "overlaySettings",
-  ReplayViewer = "replayViewer",
-  Friends = "friends",
-  DefaultLeaderboardCountry = "defaultLeaderboardCountry",
-  WebsiteLanding = "websiteLanding",
-  PlusPpDefaultAccuracy = "plusPpDefaultAccuracy",
-  HistoryMode = "historyMode",
 }
 
-export const DEFAULT_WHAT_IF_RANGE: [number, number] = [90, 98.5];
-const DEFAULT_CACHE_TTL: number = 60 * 60;
-const DEFAULT_PLAYER_CACHE_TTL: number = 60 * 60 * 6;
-const DEFAULT_CHART_LEGEND_STATE: boolean = false;
-const DEFAULT_BACKGROUND_COVER_BRIGHTNESS: number = 50;
-const DEFAULT_BACKGROUND_COVER_BLUR: number = 6;
-const DEFAULT_SHOW_KITTY: boolean = false;
-const DEFAULT_SNOW_PARTICLES: boolean = false;
-const DEFAULT_REPLAY_VIEWER: ReplayViewerTypes = "beatleader";
-const DEFAULT_PLUS_PP_DEFAULT_ACCURACY: number = 95;
+export enum SettingIds {
+  MainPlayer = 'mainPlayer',
+  BackgroundCover = 'backgroundCover',
+  BackgroundCoverBrightness = 'backgroundCoverBrightness',
+  BackgroundCoverBlur = 'backgroundCoverBlur',
+  CustomBackgroundUrl = 'customBackgroundCover',
+  ShowKitty = 'showKitty',
+  SnowParticles = 'snowParticles',
+  WhatIfRange = 'whatIfRange',
+  ChartLegends = 'chartLegends',
+  OverlaySettings = 'overlaySettings',
+  ReplayViewer = 'replayViewer',
+  Friends = 'friends',
+  DefaultLeaderboardCountry = 'defaultLeaderboardCountry',
+  WebsiteLanding = 'websiteLanding',
+  PlusPpDefaultAccuracy = 'plusPpDefaultAccuracy',
+  HistoryMode = 'historyMode',
+}
+
+export const DEFAULT_WHAT_IF_RANGE: [number, number] = [
+  90,
+  98.5,
+]
+const DEFAULT_CACHE_TTL: number = 60 * 60
+const DEFAULT_PLAYER_CACHE_TTL: number = 60 * 60 * 6
+const DEFAULT_CHART_LEGEND_STATE: boolean = false
+const DEFAULT_BACKGROUND_COVER_BRIGHTNESS: number = 50
+const DEFAULT_BACKGROUND_COVER_BLUR: number = 6
+const DEFAULT_SHOW_KITTY: boolean = false
+const DEFAULT_SNOW_PARTICLES: boolean = false
+const DEFAULT_REPLAY_VIEWER: ReplayViewerTypes = 'beatleader'
+const DEFAULT_PLUS_PP_DEFAULT_ACCURACY: number = 95
 
 export enum WebsiteLanding {
-  PLAYER_HOME = "playerHome",
-  LANDING = "landing",
-  PLAYER_PAGE = "playerPage",
+  PLAYER_HOME = 'playerHome',
+  LANDING = 'landing',
+  PLAYER_PAGE = 'playerPage',
 }
 
 export default class Database extends Dexie {
-  settings!: EntityTable<Setting, "id">;
-  cache!: EntityTable<CacheItem, "id">;
+  settings!: EntityTable<Setting, 'id'>
+  cache!: EntityTable<CacheItem, 'id'>
 
-  chartLegendsCache!: Record<string, Record<string, boolean>>;
+  chartLegendsCache!: Record<string, Record<string, boolean>>
 
   constructor(before: number) {
-    super("ssr");
+    super('ssr')
 
     this.version(1).stores({
-      settings: "id",
-      cache: "id",
-    });
+      settings: 'id',
+      cache: 'id',
+    })
 
-    this.on("ready", async () => {
-      Logger.info(`Database ready in ${(performance.now() - before).toFixed(0)}ms`);
+    this.on('ready', async () => {
+      Logger.info(`Database ready in ${(performance.now() - before).toFixed(0)}ms`)
 
-      this.initializeCookie(); // Initialize cookie
-      this.getFriends(true); // Pre-fetch friends
-    });
+      this.initializeCookie() // Initialize cookie
+      this.getFriends(true) // Pre-fetch friends
+    })
   }
 
   /**
@@ -101,7 +104,7 @@ export default class Database extends Dexie {
    * @returns the main player
    */
   async getMainPlayerId(): Promise<string | undefined> {
-    return this.getSetting<string>(SettingIds.MainPlayer);
+    return this.getSetting<string>(SettingIds.MainPlayer)
   }
 
   /**
@@ -110,8 +113,8 @@ export default class Database extends Dexie {
    * @returns whether the database has a main player
    */
   async hasMainPlayer(): Promise<boolean> {
-    const id = await this.getMainPlayerId();
-    return id !== undefined && id !== "";
+    const id = await this.getMainPlayerId()
+    return id !== undefined && id !== ''
   }
 
   /**
@@ -120,11 +123,11 @@ export default class Database extends Dexie {
    * @returns the main player
    */
   async getMainPlayer(): Promise<ScoreSaberPlayer | undefined> {
-    const id = await this.getMainPlayerId();
+    const id = await this.getMainPlayerId()
     if (!id) {
-      return undefined;
+      return undefined
     }
-    return this.getPlayer(id);
+    return this.getPlayer(id)
   }
 
   /**
@@ -133,8 +136,8 @@ export default class Database extends Dexie {
    * @param id the id of the main player
    */
   async setMainPlayerId(id: string | undefined) {
-    await this.setSetting(SettingIds.MainPlayer, id);
-    deleteCookieValue("playerId");
+    await this.setSetting(SettingIds.MainPlayer, id)
+    deleteCookieValue('playerId')
   }
 
   /**
@@ -143,10 +146,10 @@ export default class Database extends Dexie {
    * @param id the id of the friend
    */
   async addFriend(id: string) {
-    const friends = await this.getFriendIds();
+    const friends = await this.getFriendIds()
     if (!friends.includes(id)) {
-      friends.push(id);
-      await this.setSetting(SettingIds.Friends, friends);
+      friends.push(id)
+      await this.setSetting(SettingIds.Friends, friends)
     }
   }
 
@@ -156,11 +159,11 @@ export default class Database extends Dexie {
    * @param id the id of the friend
    */
   async removeFriend(id: string) {
-    const friends = await this.getFriendIds();
-    const index = friends.indexOf(id);
+    const friends = await this.getFriendIds()
+    const index = friends.indexOf(id)
     if (index > -1) {
-      friends.splice(index, 1);
-      await this.setSetting(SettingIds.Friends, friends);
+      friends.splice(index, 1)
+      await this.setSetting(SettingIds.Friends, friends)
     }
   }
 
@@ -169,11 +172,11 @@ export default class Database extends Dexie {
    * @private
    */
   private async initializeCookie() {
-    const mainPlayerId = await this.getMainPlayerId();
+    const mainPlayerId = await this.getMainPlayerId()
     if (mainPlayerId) {
-      setCookieValue("playerId", mainPlayerId);
+      setCookieValue('playerId', mainPlayerId)
     } else {
-      deleteCookieValue("playerId");
+      deleteCookieValue('playerId')
     }
   }
 
@@ -184,7 +187,7 @@ export default class Database extends Dexie {
    * @returns whether the player is a friend
    */
   async isFriend(id: string): Promise<boolean> {
-    return (await this.getFriendIds()).includes(id);
+    return (await this.getFriendIds()).includes(id)
   }
 
   /**
@@ -193,20 +196,20 @@ export default class Database extends Dexie {
    * @returns the accounts
    */
   async getFriends(includeSelf?: boolean): Promise<ScoreSaberPlayer[]> {
-    const friends = await this.getFriendIds(includeSelf);
+    const friends = await this.getFriendIds(includeSelf)
     if (friends.length === 0) {
-      return [];
+      return []
     }
 
     const players = await Promise.all(
       friends.map(async id => {
-        return this.getPlayer(id);
-      })
-    );
+        return this.getPlayer(id)
+      }),
+    )
 
     return players
       .filter((player): player is ScoreSaberPlayer => player !== undefined)
-      .sort((a, b) => a.rank - b.rank);
+      .sort((a, b) => a.rank - b.rank)
   }
 
   /**
@@ -215,14 +218,14 @@ export default class Database extends Dexie {
    * @returns the ids of all friends
    */
   async getFriendIds(includeSelf?: boolean): Promise<string[]> {
-    const friends = (await this.getSetting<string[]>(SettingIds.Friends, [])) ?? [];
+    const friends = (await this.getSetting<string[]>(SettingIds.Friends, [])) ?? []
     if (includeSelf) {
-      const mainPlayerId = await this.getMainPlayerId();
+      const mainPlayerId = await this.getMainPlayerId()
       if (mainPlayerId) {
-        friends.push(mainPlayerId);
+        friends.push(mainPlayerId)
       }
     }
-    return friends;
+    return friends
   }
 
   /**
@@ -238,39 +241,39 @@ export default class Database extends Dexie {
   private async getCache<T>(
     key: string,
     ttl: number = DEFAULT_CACHE_TTL,
-    insertCallback?: () => Promise<T | undefined>
+    insertCallback?: () => Promise<T | undefined>,
   ): Promise<T | undefined> {
-    const item = await this.cache.get(key);
-    const ttlMs = ttl * 1000;
+    const item = await this.cache.get(key)
+    const ttlMs = ttl * 1000
 
     // Return cached item if valid
     if (item && item.lastUpdated + ttlMs >= Date.now()) {
-      return item.item as T;
+      return item.item as T
     }
 
     // Return undefined if no insert callback
     if (!insertCallback) {
-      return undefined;
+      return undefined
     }
 
     // Try to fetch and cache new item
     try {
-      const newItem = await insertCallback();
+      const newItem = await insertCallback()
       if (!newItem) {
-        return undefined;
+        return undefined
       }
 
       const cacheItem: CacheItem = {
         id: key,
         lastUpdated: Date.now(),
         item: newItem,
-      };
+      }
 
-      await this.cache.put(cacheItem);
-      return newItem;
+      await this.cache.put(cacheItem)
+      return newItem
     } catch (error) {
-      Logger.error(`Cache error details:`, error);
-      return undefined;
+      Logger.error('Cache error details:', error)
+      return undefined
     }
   }
 
@@ -284,12 +287,12 @@ export default class Database extends Dexie {
   public async getPlayer(id: string): Promise<ScoreSaberPlayer | undefined> {
     return this.getCache<ScoreSaberPlayer>(`player:${id}`, DEFAULT_PLAYER_CACHE_TTL, async () => {
       try {
-        return await ssrApi.getScoreSaberPlayer(id, "basic");
+        return await ssrApi.getScoreSaberPlayer(id, 'basic')
       } catch (error) {
-        Logger.error(`Failed to fetch player ${id}:`, error);
-        return undefined;
+        Logger.error(`Failed to fetch player ${id}:`, error)
+        return undefined
       }
-    });
+    })
   }
 
   /**
@@ -299,7 +302,7 @@ export default class Database extends Dexie {
     // Only initialize if not already done
     if (this.chartLegendsCache === undefined) {
       this.chartLegendsCache =
-        (await this.getSetting<Record<string, Record<string, boolean>>>(SettingIds.ChartLegends)) || {};
+        (await this.getSetting<Record<string, Record<string, boolean>>>(SettingIds.ChartLegends)) || {}
     }
   }
 
@@ -312,7 +315,7 @@ export default class Database extends Dexie {
    * @returns the chart legend
    */
   getChartLegend(id: string, title: string, defaultState?: boolean): boolean {
-    return this.chartLegendsCache[id]?.[title] ?? defaultState ?? DEFAULT_CHART_LEGEND_STATE;
+    return this.chartLegendsCache[id]?.[title] ?? defaultState ?? DEFAULT_CHART_LEGEND_STATE
   }
 
   /**
@@ -325,20 +328,20 @@ export default class Database extends Dexie {
   async setChartLegend(id: string, title: string, state: boolean) {
     const setting = await this.getSetting<Record<string, Record<string, boolean>>>(
       SettingIds.ChartLegends,
-      {}
-    );
+      {},
+    )
 
     if (!setting) {
-      return;
+      return
     }
 
-    setting[id] = setting[id] ?? {};
-    setting[id][title] = state;
+    setting[id] = setting[id] ?? {}
+    setting[id][title] = state
 
-    this.chartLegendsCache[id] = this.chartLegendsCache[id] ?? {};
-    this.chartLegendsCache[id][title] = state;
+    this.chartLegendsCache[id] = this.chartLegendsCache[id] ?? {}
+    this.chartLegendsCache[id][title] = state
 
-    await this.setSetting(SettingIds.ChartLegends, setting);
+    await this.setSetting(SettingIds.ChartLegends, setting)
   }
 
   /**
@@ -347,9 +350,9 @@ export default class Database extends Dexie {
    * @returns the background cover
    */
   async getBackgroundCover(): Promise<string> {
-    const cover = await this.getSetting<string>(SettingIds.BackgroundCover, BACKGROUND_COVERS[0].id);
+    const cover = await this.getSetting<string>(SettingIds.BackgroundCover, BACKGROUND_COVERS[0].id)
     // Default to the first cover if no cover is set
-    return cover ?? BACKGROUND_COVERS[0].id;
+    return cover ?? BACKGROUND_COVERS[0].id
   }
 
   /**
@@ -358,7 +361,7 @@ export default class Database extends Dexie {
    * @param cover the background cover
    */
   async setBackgroundCover(cover: string) {
-    await this.setSetting(SettingIds.BackgroundCover, cover);
+    await this.setSetting(SettingIds.BackgroundCover, cover)
   }
 
   /**
@@ -367,7 +370,7 @@ export default class Database extends Dexie {
    * @returns the custom background url
    */
   async getCustomBackgroundUrl(): Promise<string> {
-    return (await this.getSetting<string>(SettingIds.CustomBackgroundUrl, BACKGROUND_COVERS[0].value))!;
+    return (await this.getSetting<string>(SettingIds.CustomBackgroundUrl, BACKGROUND_COVERS[0].value))!
   }
 
   /**
@@ -376,7 +379,7 @@ export default class Database extends Dexie {
    * @param url the custom background url
    */
   async setCustomBackgroundUrl(url: string) {
-    await this.setSetting(SettingIds.CustomBackgroundUrl, url);
+    await this.setSetting(SettingIds.CustomBackgroundUrl, url)
   }
   /**
    * Gets the background cover brightness from the database
@@ -386,8 +389,8 @@ export default class Database extends Dexie {
   async getBackgroundCoverBrightness(): Promise<number> {
     return (await this.getSetting<number>(
       SettingIds.BackgroundCoverBrightness,
-      DEFAULT_BACKGROUND_COVER_BRIGHTNESS
-    ))!;
+      DEFAULT_BACKGROUND_COVER_BRIGHTNESS,
+    ))!
   }
 
   /**
@@ -396,7 +399,7 @@ export default class Database extends Dexie {
    * @param brightness the background cover brightness
    */
   async setBackgroundCoverBrightness(brightness: number) {
-    await this.setSetting(SettingIds.BackgroundCoverBrightness, brightness);
+    await this.setSetting(SettingIds.BackgroundCoverBrightness, brightness)
   }
 
   /**
@@ -405,7 +408,7 @@ export default class Database extends Dexie {
    * @returns the background cover blur
    */
   async getBackgroundCoverBlur(): Promise<number> {
-    return (await this.getSetting<number>(SettingIds.BackgroundCoverBlur, DEFAULT_BACKGROUND_COVER_BLUR))!;
+    return (await this.getSetting<number>(SettingIds.BackgroundCoverBlur, DEFAULT_BACKGROUND_COVER_BLUR))!
   }
 
   /**
@@ -414,7 +417,7 @@ export default class Database extends Dexie {
    * @param blur the background cover blur
    */
   async setBackgroundCoverBlur(blur: number) {
-    await this.setSetting(SettingIds.BackgroundCoverBlur, blur);
+    await this.setSetting(SettingIds.BackgroundCoverBlur, blur)
   }
 
   /**
@@ -423,7 +426,7 @@ export default class Database extends Dexie {
    * @returns the show kitty setting
    */
   async getShowKitty(): Promise<boolean> {
-    return (await this.getSetting<boolean>(SettingIds.ShowKitty, DEFAULT_SHOW_KITTY))!;
+    return (await this.getSetting<boolean>(SettingIds.ShowKitty, DEFAULT_SHOW_KITTY))!
   }
 
   /**
@@ -432,7 +435,7 @@ export default class Database extends Dexie {
    * @param showKitty the show kitty setting
    */
   async setShowKitty(showKitty: boolean) {
-    await this.setSetting(SettingIds.ShowKitty, showKitty);
+    await this.setSetting(SettingIds.ShowKitty, showKitty)
   }
 
   /**
@@ -441,7 +444,7 @@ export default class Database extends Dexie {
    * @returns the snow particles setting
    */
   async getSnowParticles(): Promise<boolean> {
-    return (await this.getSetting<boolean>(SettingIds.SnowParticles, DEFAULT_SNOW_PARTICLES))!;
+    return (await this.getSetting<boolean>(SettingIds.SnowParticles, DEFAULT_SNOW_PARTICLES))!
   }
 
   /**
@@ -450,7 +453,7 @@ export default class Database extends Dexie {
    * @param snowParticles the snow particles setting
    */
   async setSnowParticles(snowParticles: boolean) {
-    await this.setSetting(SettingIds.SnowParticles, snowParticles);
+    await this.setSetting(SettingIds.SnowParticles, snowParticles)
   }
 
   /**
@@ -459,7 +462,7 @@ export default class Database extends Dexie {
    * @returns the what if range setting
    */
   async getWhatIfRange(): Promise<[number, number]> {
-    return (await this.getSetting<[number, number]>(SettingIds.WhatIfRange, DEFAULT_WHAT_IF_RANGE))!;
+    return (await this.getSetting<[number, number]>(SettingIds.WhatIfRange, DEFAULT_WHAT_IF_RANGE))!
   }
 
   /**
@@ -468,7 +471,7 @@ export default class Database extends Dexie {
    * @param whatIfRange the what if range setting
    */
   async setWhatIfRange(whatIfRange: [number, number]) {
-    await this.setSetting(SettingIds.WhatIfRange, whatIfRange);
+    await this.setSetting(SettingIds.WhatIfRange, whatIfRange)
   }
 
   /**
@@ -479,8 +482,8 @@ export default class Database extends Dexie {
   async getOverlaySettings(): Promise<OverlaySettings> {
     return (await this.getSetting<OverlaySettings>(SettingIds.OverlaySettings, {
       ...defaultOverlaySettings,
-      playerId: (await this.getMainPlayerId()) ?? "",
-    } as OverlaySettings))!;
+      playerId: (await this.getMainPlayerId()) ?? '',
+    } as OverlaySettings))!
   }
 
   /**
@@ -489,7 +492,7 @@ export default class Database extends Dexie {
    * @returns the replay viewer
    */
   async getReplayViewer(): Promise<ReplayViewer> {
-    return ReplayViewers[(await this.getSetting<string>(SettingIds.ReplayViewer, DEFAULT_REPLAY_VIEWER))!];
+    return ReplayViewers[(await this.getSetting<string>(SettingIds.ReplayViewer, DEFAULT_REPLAY_VIEWER))!]
   }
 
   /**
@@ -498,7 +501,7 @@ export default class Database extends Dexie {
    * @param viewer the replay viewer
    */
   async setReplayViewer(viewer: string) {
-    await this.setSetting(SettingIds.ReplayViewer, viewer);
+    await this.setSetting(SettingIds.ReplayViewer, viewer)
   }
 
   /**
@@ -507,7 +510,7 @@ export default class Database extends Dexie {
    * @param overlaySettings the overlay settings
    */
   async setOverlaySettings(overlaySettings: OverlaySettings) {
-    await this.setSetting(SettingIds.OverlaySettings, overlaySettings);
+    await this.setSetting(SettingIds.OverlaySettings, overlaySettings)
   }
 
   /**
@@ -516,7 +519,7 @@ export default class Database extends Dexie {
    * @returns the website landing setting
    */
   async getWebsiteLanding(): Promise<WebsiteLanding> {
-    return (await this.getSetting<WebsiteLanding>(SettingIds.WebsiteLanding, WebsiteLanding.PLAYER_HOME))!;
+    return (await this.getSetting<WebsiteLanding>(SettingIds.WebsiteLanding, WebsiteLanding.PLAYER_HOME))!
   }
 
   /**
@@ -525,8 +528,8 @@ export default class Database extends Dexie {
    * @param websiteLanding the website landing setting
    */
   async setWebsiteLanding(websiteLanding: WebsiteLanding) {
-    setCookieValue("websiteLanding", websiteLanding);
-    await this.setSetting(SettingIds.WebsiteLanding, websiteLanding);
+    setCookieValue('websiteLanding', websiteLanding)
+    await this.setSetting(SettingIds.WebsiteLanding, websiteLanding)
   }
 
   /**
@@ -537,8 +540,8 @@ export default class Database extends Dexie {
   async getPlusPpDefaultAccuracy(): Promise<number> {
     return (await this.getSetting<number>(
       SettingIds.PlusPpDefaultAccuracy,
-      DEFAULT_PLUS_PP_DEFAULT_ACCURACY
-    ))!;
+      DEFAULT_PLUS_PP_DEFAULT_ACCURACY,
+    ))!
   }
 
   /**
@@ -547,7 +550,7 @@ export default class Database extends Dexie {
    * @param plusPpDefaultAccuracy the plus pp default accuracy setting
    */
   async setPlusPpDefaultAccuracy(plusPpDefaultAccuracy: number) {
-    await this.setSetting(SettingIds.PlusPpDefaultAccuracy, plusPpDefaultAccuracy);
+    await this.setSetting(SettingIds.PlusPpDefaultAccuracy, plusPpDefaultAccuracy)
   }
 
   /**
@@ -556,7 +559,7 @@ export default class Database extends Dexie {
    * @returns the history mode
    */
   async getHistoryMode(): Promise<HistoryMode> {
-    return (await this.getSetting<HistoryMode>(SettingIds.HistoryMode, HistoryMode.ADVANCED))!;
+    return (await this.getSetting<HistoryMode>(SettingIds.HistoryMode, HistoryMode.ADVANCED))!
   }
 
   /**
@@ -565,7 +568,7 @@ export default class Database extends Dexie {
    * @param historyMode the history mode
    */
   async setHistoryMode(historyMode: HistoryMode) {
-    await this.setSetting(SettingIds.HistoryMode, historyMode);
+    await this.setSetting(SettingIds.HistoryMode, historyMode)
   }
 
   /**
@@ -577,7 +580,7 @@ export default class Database extends Dexie {
     return JSON.stringify({
       version: this.verno,
       settings: await this.settings.toArray(),
-    });
+    })
   }
 
   /**
@@ -586,13 +589,13 @@ export default class Database extends Dexie {
    * @param settings the settings
    */
   async importSettings(settings: string) {
-    const parsed = JSON.parse(settings);
+    const parsed = JSON.parse(settings)
     if (parsed.version !== this.verno) {
-      throw new Error("Invalid settings version");
+      throw new Error('Invalid settings version')
     }
 
     for (const setting of parsed.settings) {
-      await this.setSetting(setting.id, setting.value);
+      await this.setSetting(setting.id, setting.value)
     }
   }
 
@@ -603,8 +606,8 @@ export default class Database extends Dexie {
    * @returns the setting
    */
   async getSetting<T>(id: string, defaultValue?: T): Promise<T | undefined> {
-    const setting = await this.settings.get(id);
-    return (setting?.value as T | undefined) ?? defaultValue;
+    const setting = await this.settings.get(id)
+    return (setting?.value as T | undefined) ?? defaultValue
   }
 
   /**
@@ -614,20 +617,23 @@ export default class Database extends Dexie {
    * @param value the value of the setting
    */
   async setSetting<T>(id: string, value: T) {
-    await this.settings.put({ id, value });
+    await this.settings.put({
+      id,
+      value,
+    })
   }
 
   /**
    * Resets the database to default values
    */
   async reset() {
-    await this.settings.clear();
-    await this.cache.clear();
+    await this.settings.clear()
+    await this.cache.clear()
   }
 }
 
 // Singleton database instance
-let databaseInstance: Database | undefined;
+let databaseInstance: Database | undefined
 
 /**
  * Gets the database (singleton pattern)
@@ -636,8 +642,8 @@ let databaseInstance: Database | undefined;
  */
 export function getDatabase(): Database {
   if (!databaseInstance) {
-    const before = performance.now();
-    databaseInstance = new Database(before);
+    const before = performance.now()
+    databaseInstance = new Database(before)
   }
-  return databaseInstance;
+  return databaseInstance
 }

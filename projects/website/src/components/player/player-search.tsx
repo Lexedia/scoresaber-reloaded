@@ -1,11 +1,11 @@
-import SearchDialog from "@/components/ui/search-dialog";
-import ScoreSaberPlayer from "@ssr/common/player/impl/scoresaber-player";
-import { ssrApi } from "@ssr/common/utils/ssr-api";
-import { useQuery } from "@tanstack/react-query";
-import { useDebounce } from "@uidotdev/usehooks";
-import { LoaderCircle, SearchX, Users } from "lucide-react";
-import { useState } from "react";
-import PlayerSearchResultItem from "./player-search-result-item";
+import SearchDialog from '@/components/ui/search-dialog'
+import ScoreSaberPlayer from '@ssr/common/player/impl/scoresaber-player'
+import { ssrApi } from '@ssr/common/utils/ssr-api'
+import { useQuery } from '@tanstack/react-query'
+import { useDebounce } from '@uidotdev/usehooks'
+import { LoaderCircle, SearchX, Users } from 'lucide-react'
+import { useState } from 'react'
+import PlayerSearchResultItem from './player-search-result-item'
 
 type PlayerSearchProps = {
   /**
@@ -28,37 +28,43 @@ type PlayerSearchProps = {
    * Player IDs to exclude from search results.
    */
   excludePlayerIds?: string[];
-};
+}
 
 const PlayerSearch = ({
   isOpen,
   onOpenChange,
   onPlayerSelect,
-  placeholder = "Search for a player...",
+  placeholder = 'Search for a player...',
   excludePlayerIds = [],
 }: PlayerSearchProps) => {
-  const [query, setQuery] = useState<string>("");
-  const debouncedQuery = useDebounce(query, 500);
-  const trimmedQuery = debouncedQuery.trim();
+  const [
+    query,
+    setQuery,
+  ] = useState<string>('')
+  const debouncedQuery = useDebounce(query, 500)
+  const trimmedQuery = debouncedQuery.trim()
 
   const { data: results, isLoading } = useQuery({
-    queryKey: ["player-search", trimmedQuery],
+    queryKey: [
+      'player-search',
+      trimmedQuery,
+    ],
     queryFn: async () => {
       if (trimmedQuery.length > 0 && trimmedQuery.length <= 3) {
-        return { players: [] };
+        return { players: [] }
       }
-      const playerResults = await ssrApi.searchPlayers(trimmedQuery);
-      return playerResults || { players: [] };
+      const playerResults = await ssrApi.searchPlayers(trimmedQuery)
+      return playerResults || { players: [] }
     },
     refetchInterval: false,
     enabled: isOpen,
-  });
+  })
 
   const handlePlayerSelect = (player: ScoreSaberPlayer) => {
-    onPlayerSelect(player);
-    onOpenChange(false);
-    setQuery("");
-  };
+    onPlayerSelect(player)
+    onOpenChange(false)
+    setQuery('')
+  }
 
   return (
     <SearchDialog
@@ -80,8 +86,8 @@ const PlayerSearch = ({
           <p className="text-muted-foreground mb-1 text-sm font-medium">No players found</p>
           <p className="text-muted-foreground/70 text-center text-xs">
             {query.trim().length > 0
-              ? "Try adjusting your search query"
-              : "Start typing to search for players"}
+              ? 'Try adjusting your search query'
+              : 'Start typing to search for players'}
           </p>
         </div>
       ) : (
@@ -108,7 +114,7 @@ const PlayerSearch = ({
         </div>
       )}
     </SearchDialog>
-  );
-};
+  )
+}
 
-export default PlayerSearch;
+export default PlayerSearch

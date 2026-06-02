@@ -1,14 +1,14 @@
-"use client";
+'use client'
 
-import { cn } from "@/common/utils";
-import GithubLogo from "@/components/logos/logos/github-logo";
-import TwitterLogo from "@/components/logos/logos/twitter-logo";
-import SimpleLink from "@/components/simple-link";
-import { env } from "@ssr/common/env";
-import { ExternalLink } from "lucide-react";
-import Image from "next/image";
-import { usePathname } from "next/navigation";
-import { ReactElement } from "react";
+import { cn } from '@/common/utils'
+import GithubLogo from '@/components/logos/logos/github-logo'
+import TwitterLogo from '@/components/logos/logos/twitter-logo'
+import SimpleLink from '@/components/simple-link'
+import { env } from '@ssr/common/env'
+import { ExternalLink } from 'lucide-react'
+import Image from 'next/image'
+import { usePathname } from 'next/navigation'
+import { ReactElement } from 'react'
 
 type FooterLink = {
   /**
@@ -26,7 +26,7 @@ type FooterLink = {
    * when the screen size is small.
    */
   shortName?: string;
-};
+}
 
 type SocialLinkType = {
   /**
@@ -37,67 +37,71 @@ type SocialLinkType = {
   /**
    * The logo for this social link.
    */
-  logo: ReactElement<any>;
+  logo: ReactElement<unknown>;
 
   /**
    * The href for this social link.
    */
   href: string;
-};
+}
 
 const links: {
   [category: string]: FooterLink[];
 } = {
   Resources: [
     {
-      name: "Source Code",
-      shortName: "Source",
+      name: 'Source Code',
+      shortName: 'Source',
       href: env.NEXT_PUBLIC_GITHUB_URL!,
     },
     {
-      name: "API Documentation",
-      shortName: "API",
+      name: 'API Documentation',
+      shortName: 'API',
       href: `${env.NEXT_PUBLIC_API_URL}/swagger`,
     },
   ],
   App: [
     {
-      name: "Score Feed",
-      href: "/scores/live",
+      name: 'Score Feed',
+      href: '/scores/live',
     },
     {
-      name: "Statistics",
+      name: 'Statistics',
       // TODO: Don't hardcode the dashboard id.
       href: `${env.NEXT_PUBLIC_GRAFANA_URL}/public-dashboards/8cb0b6d0553945cab26d5ddadd29d868`,
     },
   ],
-};
+}
 
 const socialLinks: SocialLinkType[] = [
-  ...(env.NEXT_PUBLIC_TWITTER_URL && [{
-    name: "Twitter",
-    logo: <TwitterLogo className="size-5 lg:size-6" />,
-    href: env.NEXT_PUBLIC_TWITTER_URL!,
-  }]) || [],
-  ...(env.NEXT_PUBLIC_DISCORD_URL && [{
-    name: "Discord",
-    logo: (
-      <Image
-        className="size-6 lg:size-7"
-        src="/assets/logos/discord.svg"
-        alt="Discord Logo"
-        width={24}
-        height={24}
-      />
-    ),
-    href: env.NEXT_PUBLIC_DISCORD_URL!,
-  }]) || [],
+  ...(env.NEXT_PUBLIC_TWITTER_URL && [
+    {
+      name: 'Twitter',
+      logo: <TwitterLogo className="size-5 lg:size-6" />,
+      href: env.NEXT_PUBLIC_TWITTER_URL!,
+    },
+  ]) || [],
+  ...(env.NEXT_PUBLIC_DISCORD_URL && [
+    {
+      name: 'Discord',
+      logo: (
+        <Image
+          className="size-6 lg:size-7"
+          src="/assets/logos/discord.svg"
+          alt="Discord Logo"
+          width={24}
+          height={24}
+        />
+      ),
+      href: env.NEXT_PUBLIC_DISCORD_URL!,
+    },
+  ]) || [],
   {
-    name: "GitHub",
+    name: 'GitHub',
     logo: <GithubLogo className="size-5 lg:size-6" />,
     href: env.NEXT_PUBLIC_GITHUB_URL!,
   },
-];
+]
 
 export default function Footer({
   buildId,
@@ -106,12 +110,12 @@ export default function Footer({
   buildId: string;
   buildTimeShort: string | undefined;
 }) {
-  const isHome: boolean = usePathname() === "/";
+  const isHome: boolean = usePathname() === '/'
   return (
     <footer
       className={cn(
-        "border-border flex min-h-60 flex-col justify-between gap-10 border-t px-10 py-5 select-none lg:gap-0",
-        isHome ? "bg-secondary" : "bg-secondary/60 mt-5"
+        'border-border flex min-h-60 flex-col justify-between gap-10 border-t px-10 py-5 select-none lg:gap-0',
+        isHome ? 'bg-secondary' : 'bg-secondary/60 mt-5',
       )}
     >
       {/* Top Section */}
@@ -158,24 +162,27 @@ export default function Footer({
 
           {/* Links */}
           <div className="flex gap-20 transition-all md:gap-32">
-            {Object.entries(links).map(([title, links]) => (
+            {Object.entries(links).map(([
+              title,
+              links,
+            ]) => (
               <div key={title} className="flex flex-col gap-0.5">
                 <h1 className="text-primary pb-0.5 text-lg font-semibold">{title}</h1>
                 {links.map(link => {
-                  const external: boolean = !link.href.startsWith("/");
+                  const external: boolean = !link.href.startsWith('/')
                   return (
                     <SimpleLink
                       key={link.name}
                       className="flex items-center gap-2 text-sm transition-all hover:opacity-75"
                       href={link.href}
-                      target={external ? "_blank" : undefined}
+                      target={external ? '_blank' : undefined}
                       draggable={false}
                     >
-                      <span className={cn("hidden sm:flex", !link.shortName && "flex")}>{link.name}</span>
+                      <span className={cn('hidden sm:flex', !link.shortName && 'flex')}>{link.name}</span>
                       {link.shortName && <span className="flex sm:hidden">{link.shortName}</span>}
                       {external && <ExternalLink className="h-3.5 w-3.5" />}
                     </SimpleLink>
-                  );
+                  )
                 })}
               </div>
             ))}
@@ -184,7 +191,7 @@ export default function Footer({
       </div>
 
       <div className="flex justify-center">
-        {buildId === "dev" ? (
+        {buildId === 'dev' ? (
           <span className="text-sm opacity-50">
             Build {buildId} ({buildTimeShort})
           </span>
@@ -198,5 +205,5 @@ export default function Footer({
         )}
       </div>
     </footer>
-  );
+  )
 }

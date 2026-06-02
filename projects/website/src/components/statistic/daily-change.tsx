@@ -1,9 +1,9 @@
-import { cn } from "@/common/utils";
-import SimpleTooltip from "@/components/simple-tooltip";
-import ScoreSaberPlayer from "@ssr/common/player/impl/scoresaber-player";
-import { PlayerStatValue } from "@ssr/common/player/player-stat-change";
-import { formatNumberWithCommas, formatPp } from "@ssr/common/utils/number-utils";
-import React from "react";
+import { cn } from '@/common/utils'
+import SimpleTooltip from '@/components/simple-tooltip'
+import ScoreSaberPlayer from '@ssr/common/player/impl/scoresaber-player'
+import { PlayerStatValue } from '@ssr/common/player/player-stat-change'
+import { formatNumberWithCommas, formatPp } from '@ssr/common/utils/number-utils'
+import React from 'react'
 
 interface DailyChangeProps {
   /**
@@ -24,7 +24,7 @@ interface DailyChangeProps {
   /**
    * The tooltip to display
    */
-  tooltip?: React.ReactElement<any> | string;
+  tooltip?: React.ReactElement<unknown> | string;
 
   /**
    * The class name
@@ -45,23 +45,23 @@ export function DailyChange({
   className,
   useTooltip = true,
 }: DailyChangeProps) {
-  const formatValue = type.type == "Performance Points" ? formatPp : formatNumberWithCommas;
+  const formatValue = type.type == 'Performance Points' ? formatPp : formatNumberWithCommas
   if (!change && player !== undefined) {
-    change = type.value?.(player, "daily");
+    change = type.value?.(player, 'daily')
   }
   if (change === 0 || (change && change < 0.01 && change > -0.01) || change === undefined) {
-    return null;
+    return null
   }
 
   const value = (
-    <p className={cn("text-xs", change > 0 ? "text-green-400" : "text-red-400", className)}>
-      {change > 0 ? "+" : ""}
-      {`${formatValue(change)}${type.type == "Performance Points" ? "pp" : ""}`}
+    <p className={cn('text-xs', change > 0 ? 'text-green-400' : 'text-red-400', className)}>
+      {change > 0 ? '+' : ''}
+      {`${formatValue(change)}${type.type == 'Performance Points' ? 'pp' : ''}`}
     </p>
-  );
+  )
 
   if (!tooltip) {
-    tooltip = `${type.type} change compared to yesterday`;
+    tooltip = `${type.type} change compared to yesterday`
   }
 
   return useTooltip ? (
@@ -70,5 +70,5 @@ export function DailyChange({
     </SimpleTooltip>
   ) : (
     value
-  );
+  )
 }

@@ -1,5 +1,5 @@
-import { BeatSaverMap } from "@ssr/common/schemas/beatsaver/map/map";
-import { ScoreSaberLeaderboard } from "@ssr/common/schemas/scoresaber/leaderboard/leaderboard";
+import { BeatSaverMap } from '@ssr/common/schemas/beatsaver/map/map'
+import { ScoreSaberLeaderboard } from '@ssr/common/schemas/scoresaber/leaderboard/leaderboard'
 
 export type OverlayScoreData = {
   /**
@@ -16,7 +16,7 @@ export type OverlayScoreData = {
    * The current accuracy.
    */
   accuracy: number;
-};
+}
 
 export type OverlayMapData = {
   /**
@@ -28,7 +28,7 @@ export type OverlayMapData = {
    * The ScoreSaber leaderboard associated with the map's hash.
    */
   leaderboard?: ScoreSaberLeaderboard;
-};
+}
 
 export type OverlayData = {
   /**
@@ -45,4 +45,4 @@ export type OverlayData = {
    * Whether the song is paused.
    */
   paused?: boolean;
-};
+}
