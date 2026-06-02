@@ -1,6 +1,5 @@
 FROM oven/bun:1.3.14-alpine AS base
 
-# Install dependencies
 FROM base AS depends
 WORKDIR /app
 
@@ -13,33 +12,33 @@ COPY projects/website/package.json ./projects/website/
 # Install production dependencies
 RUN bun install --frozen-lockfile --production
 
-# Copy source code after dependencies are installed
+FROM base AS builder
+WORKDIR /app
+
+# Copy workspace structure
+COPY package.json bun.lock ./
+COPY projects/common/package.json ./projects/common/
+COPY projects/backend/package.json ./projects/backend/
+COPY projects/website/package.json ./projects/website/
+
+# Install all dependencies (including dev)
+RUN bun install --frozen-lockfile
+
+# Copy source code and config
+COPY eslint.config.mjs ./
 COPY projects/common ./projects/common
 COPY projects/backend ./projects/backend
 
-# Run the app
-FROM base AS runner
-WORKDIR /app
-
-ENV NODE_ENV production
-ENV APP_ENV backend
-
-# Copy the depends
-COPY --from=depends /app/package.json* /app/bun.lock* ./
-COPY --from=depends /app/node_modules ./node_modules
-
 # Build the common library
-COPY --from=depends /app/projects/common ./projects/common
 RUN cd projects/common && bun run build
 
-COPY --from=depends /app/projects/backend ./projects/backend
-
-# Lint before starting
+# Lint before building
 RUN cd projects/backend && bun run lint
 
 # Build the backend
 RUN cd projects/backend && bun run build
 
+# -----------------------------------
 # Final stage - minimal runtime image
 FROM base AS final
 WORKDIR /app
@@ -47,18 +46,17 @@ WORKDIR /app
 ENV NODE_ENV production
 ENV APP_ENV backend
 
-# Copy only runtime dependencies
+# Copy only runtime dependencies from depends
 COPY --from=depends /app/package.json* /app/bun.lock* ./
 COPY --from=depends /app/node_modules ./node_modules
 
-# Copy built applications
-COPY --from=runner /app/projects/common ./projects/common
-COPY --from=runner /app/projects/backend/package.json ./projects/backend/
-COPY --from=runner /app/projects/backend/ssr-backend ./projects/backend/ssr-backend
+# Copy built applications from builder
+COPY --from=builder /app/projects/common ./projects/common
+COPY --from=builder /app/projects/backend/package.json ./projects/backend/
+COPY --from=builder /app/projects/backend/ssr-backend ./projects/backend/ssr-backend
 
-
-# SQL migrations for startup `runMigrations()` (resolved via process.cwd()/drizzle; WORKDIR is projects/backend)
-COPY --from=runner /app/projects/backend/drizzle ./projects/backend/drizzle
+# SQL migrations for startup `runMigrations()`
+COPY --from=builder /app/projects/backend/drizzle ./projects/backend/drizzle
 
 ARG PORT=8080
 ENV PORT $PORT
