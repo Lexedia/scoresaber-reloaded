@@ -1,8 +1,8 @@
-import { CurvePoint } from "../curve-point";
-import { clamp, lerp } from "../utils/math-utils";
+import { CurvePoint } from '../curve-point'
+import { clamp, lerp } from '../utils/math-utils'
 
-const WEIGHT_COEFFICIENT = 0.965;
-const STAR_MULTIPLIER = 42.117208413;
+const WEIGHT_COEFFICIENT = 0.965
+const STAR_MULTIPLIER = 42.117208413
 
 const curvePoints = [
   new CurvePoint(0, 0),
@@ -42,7 +42,7 @@ const curvePoints = [
   new CurvePoint(0.999, 4.715470646416203),
   new CurvePoint(0.9995, 5.019543595874787),
   new CurvePoint(1, 5.367394282890631),
-];
+]
 
 /**
  * Gets the modifier for the given accuracy.
@@ -51,29 +51,29 @@ const curvePoints = [
  * @return The modifier.
  */
 function getModifier(accuracy: number): number {
-  accuracy = clamp(accuracy, 0, 100) / 100; // Normalize accuracy to a range of [0, 1]
+  accuracy = clamp(accuracy, 0, 100) / 100 // Normalize accuracy to a range of [0, 1]
 
   if (accuracy <= 0) {
-    return 0;
+    return 0
   }
 
   if (accuracy >= 1) {
-    return curvePoints[curvePoints.length - 1].getMultiplier();
+    return curvePoints[curvePoints.length - 1].getMultiplier()
   }
 
   for (let i = 0; i < curvePoints.length - 1; i++) {
-    const point = curvePoints[i];
-    const nextPoint = curvePoints[i + 1];
+    const point = curvePoints[i]
+    const nextPoint = curvePoints[i + 1]
     if (accuracy >= point.getAcc() && accuracy <= nextPoint.getAcc()) {
       return lerp(
         point.getMultiplier(),
         nextPoint.getMultiplier(),
-        (accuracy - point.getAcc()) / (nextPoint.getAcc() - point.getAcc())
-      );
+        (accuracy - point.getAcc()) / (nextPoint.getAcc() - point.getAcc()),
+      )
     }
   }
 
-  return 0;
+  return 0
 }
 
 /**
@@ -84,13 +84,15 @@ function getModifier(accuracy: number): number {
  * @param expected
  * @private
  */
-function calcRawPpAtIdx(bottomScores: Array<any>, idx: number, expected: number) {
-  const oldBottomPp = getTotalWeightedPp(bottomScores, idx);
-  const newBottomPp = getTotalWeightedPp(bottomScores, idx + 1);
+function calcRawPpAtIdx(bottomScores: number[], idx: number, expected: number) {
+  const oldBottomPp = getTotalWeightedPp(bottomScores, idx)
+  const newBottomPp = getTotalWeightedPp(bottomScores, idx + 1)
 
-  // 0.965^idx * rawPpToFind = expected + oldBottomPp - newBottomPp;
-  // rawPpToFind = (expected + oldBottomPp - newBottomPp) / 0.965^idx;
-  return (expected + oldBottomPp - newBottomPp) / Math.pow(WEIGHT_COEFFICIENT, idx);
+  /*
+   * 0.965^idx * rawPpToFind = expected + oldBottomPp - newBottomPp;
+   * rawPpToFind = (expected + oldBottomPp - newBottomPp) / 0.965^idx;
+   */
+  return (expected + oldBottomPp - newBottomPp) / Math.pow(WEIGHT_COEFFICIENT, idx)
 }
 
 /**
@@ -102,11 +104,11 @@ function calcRawPpAtIdx(bottomScores: Array<any>, idx: number, expected: number)
  * @returns the total amount of weighted pp
  * @private
  */
-function getTotalWeightedPp(ppArray: Array<number>, startIdx = 0) {
+function getTotalWeightedPp(ppArray: number[], startIdx = 0) {
   return ppArray.reduce(
-    (cumulative, pp, idx) => cumulative + Math.pow(WEIGHT_COEFFICIENT, idx + startIdx) * pp,
-    0
-  );
+    (cumulative, pp, idx) => cumulative + (Math.pow(WEIGHT_COEFFICIENT, idx + startIdx) * pp),
+    0,
+  )
 }
 
 /**
@@ -118,10 +120,10 @@ function getTotalWeightedPp(ppArray: Array<number>, startIdx = 0) {
  */
 function getPp(stars: number, accuracy: number): number {
   if (accuracy <= 1) {
-    accuracy *= 100; // Convert the accuracy to a percentage
+    accuracy *= 100 // Convert the accuracy to a percentage
   }
-  const pp = stars * STAR_MULTIPLIER; // Calculate base PP value
-  return getModifier(accuracy) * pp; // Calculate and return final PP value
+  const pp = stars * STAR_MULTIPLIER // Calculate base PP value
+  return getModifier(accuracy) * pp // Calculate and return final PP value
 }
 
 /**
@@ -133,30 +135,30 @@ function getPp(stars: number, accuracy: number): number {
  * @returns the amount of raw pp
  */
 function calcRawPpForExpectedPp(scoresPps: number[], expectedPp = 1) {
-  let left = 0;
-  let right = scoresPps.length - 1;
-  let boundaryIdx = -1;
+  let left = 0
+  let right = scoresPps.length - 1
+  let boundaryIdx = -1
 
   while (left <= right) {
-    const mid = Math.floor((left + right) / 2);
-    const bottomSlice = scoresPps.slice(mid);
-    const bottomPp = getTotalWeightedPp(bottomSlice, mid);
+    const mid = Math.floor((left + right) / 2)
+    const bottomSlice = scoresPps.slice(mid)
+    const bottomPp = getTotalWeightedPp(bottomSlice, mid)
 
-    bottomSlice.unshift(scoresPps[mid]);
-    const modifiedBottomPp = getTotalWeightedPp(bottomSlice, mid);
-    const diff = modifiedBottomPp - bottomPp;
+    bottomSlice.unshift(scoresPps[mid])
+    const modifiedBottomPp = getTotalWeightedPp(bottomSlice, mid)
+    const diff = modifiedBottomPp - bottomPp
 
     if (diff > expectedPp) {
-      boundaryIdx = mid;
-      left = mid + 1;
+      boundaryIdx = mid
+      left = mid + 1
     } else {
-      right = mid - 1;
+      right = mid - 1
     }
   }
 
   return boundaryIdx === -1
     ? calcRawPpAtIdx(scoresPps, 0, expectedPp)
-    : calcRawPpAtIdx(scoresPps.slice(boundaryIdx + 1), boundaryIdx + 1, expectedPp);
+    : calcRawPpAtIdx(scoresPps.slice(boundaryIdx + 1), boundaryIdx + 1, expectedPp)
 }
 
 /**
@@ -169,27 +171,27 @@ function calcRawPpForExpectedPp(scoresPps: number[], expectedPp = 1) {
 function getRawPpForWeightedPpGain(scoresPps: number[], expectedPp: number): number {
   // If there are no existing scores, the amount of raw pp needed is just the expected weighted pp
   if (!scoresPps.length) {
-    return expectedPp;
+    return expectedPp
   }
 
   // Create a copy of scores and find where the expected weighted pp would fit
-  const newScores = [...scoresPps];
-  let insertIndex = newScores.findIndex(pp => expectedPp > pp);
+  const newScores = [ ...scoresPps ]
+  let insertIndex = newScores.findIndex(pp => expectedPp > pp)
 
   // If the expected weighted pp is smaller than all existing scores, add it to the end
   if (insertIndex === -1) {
-    insertIndex = newScores.length;
+    insertIndex = newScores.length
   }
 
   // Insert the expected weighted pp value at the correct position
-  newScores.splice(insertIndex, 0, expectedPp);
+  newScores.splice(insertIndex, 0, expectedPp)
 
   // Calculate the total weighted PP before and after insertion
-  const oldTotal = getTotalWeightedPp(scoresPps);
-  const newTotal = getTotalWeightedPp(newScores);
+  const oldTotal = getTotalWeightedPp(scoresPps)
+  const newTotal = getTotalWeightedPp(newScores)
 
   // The boundary is the difference between the new and old totals
-  return newTotal - oldTotal;
+  return newTotal - oldTotal
 }
 
 export const ScoreSaberCurve = {
@@ -200,4 +202,4 @@ export const ScoreSaberCurve = {
   calcRawPpForExpectedPp,
   getRawPpForWeightedPpGain,
   getTotalWeightedPp,
-};
+}

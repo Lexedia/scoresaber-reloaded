@@ -1,4 +1,4 @@
-import ScoreSaberDifficultyToken from "./difficulty";
+import ScoreSaberDifficultyToken from './difficulty'
 
 export default interface ScoreSaberLeaderboardToken {
   id: number;

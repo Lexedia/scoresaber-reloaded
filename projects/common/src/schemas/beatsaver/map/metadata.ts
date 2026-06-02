@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod'
 
 export const BeatSaverMapMetadataSchema = z.object({
   bpm: z.number(),
@@ -8,4 +8,4 @@ export const BeatSaverMapMetadataSchema = z.object({
   songAuthorName: z.string(),
   songAuthorUrl: z.string(),
   levelAuthorName: z.string(),
-});
+})

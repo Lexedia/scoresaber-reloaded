@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod'
 
 export const BeatLeaderClanSchema = z
   .object({
@@ -7,10 +7,10 @@ export const BeatLeaderClanSchema = z
     color: z.string().nullable().optional(),
     name: z.string().nullable(),
   })
-  .loose();
+  .loose()
 
-export type BeatLeaderClanToken = z.infer<typeof BeatLeaderClanSchema>;
+export type BeatLeaderClanToken = z.infer<typeof BeatLeaderClanSchema>
 
 // Backwards-compatible aliases
-export const BeatLeaderPlayerClanSchema = BeatLeaderClanSchema;
-export type BeatLeaderPlayerClan = BeatLeaderClanToken;
+export const BeatLeaderPlayerClanSchema = BeatLeaderClanSchema
+export type BeatLeaderPlayerClan = BeatLeaderClanToken

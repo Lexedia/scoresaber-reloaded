@@ -1,10 +1,13 @@
-import { z } from "zod";
+import { z } from 'zod'
 
 export const BeatLeaderScoreImprovementSchema = z
   .object({
     id: z.number(),
     // BeatLeader REST sometimes returns this as a unix timestamp number, but it can also be an empty string.
-    timeset: z.union([z.number(), z.string()]),
+    timeset: z.union([
+      z.number(),
+      z.string(),
+    ]),
     score: z.number(),
     accuracy: z.number(),
     pp: z.number(),
@@ -21,6 +24,6 @@ export const BeatLeaderScoreImprovementSchema = z
     wallsHit: z.number(),
     pauses: z.number(),
   })
-  .loose();
+  .loose()
 
-export type BeatLeaderScoreImprovementToken = z.infer<typeof BeatLeaderScoreImprovementSchema>;
+export type BeatLeaderScoreImprovementToken = z.infer<typeof BeatLeaderScoreImprovementSchema>

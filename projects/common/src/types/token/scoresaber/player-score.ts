@@ -1,5 +1,5 @@
-import ScoreSaberLeaderboardToken from "./leaderboard";
-import ScoreSaberScoreToken from "./score";
+import ScoreSaberLeaderboardToken from './leaderboard'
+import ScoreSaberScoreToken from './score'
 
 export default interface ScoreSaberPlayerScoreToken {
   /**

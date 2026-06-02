@@ -1,5 +1,5 @@
-import z from "zod";
-import { PaginationMetadataSchema } from "../../pagination";
+import z from 'zod'
+import { PaginationMetadataSchema } from '../../pagination'
 
 export const MedalsGlobalRankingSchema = z.object({
   id: z.string(),
@@ -11,13 +11,13 @@ export const MedalsGlobalRankingSchema = z.object({
   medalsCountryRank: z.number(),
   trackedSince: z.coerce.date(),
   joinedDate: z.coerce.date(),
-});
+})
 
-export type MedalRankingPlayer = z.infer<typeof MedalsGlobalRankingSchema>;
+export type MedalRankingPlayer = z.infer<typeof MedalsGlobalRankingSchema>
 
 export const PlayerMedalRankingsResponseSchema = z.object({
   items: z.array(MedalsGlobalRankingSchema),
   metadata: PaginationMetadataSchema,
-});
+})
 
-export type PlayerMedalRankingsResponse = z.infer<typeof PlayerMedalRankingsResponseSchema>;
+export type PlayerMedalRankingsResponse = z.infer<typeof PlayerMedalRankingsResponseSchema>

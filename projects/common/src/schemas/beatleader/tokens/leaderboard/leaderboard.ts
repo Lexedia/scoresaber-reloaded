@@ -1,6 +1,6 @@
-import { z } from "zod";
-import { BeatLeaderSongSchema } from "../score/song";
-import { BeatLeaderDifficultySchema } from "./difficulty";
+import { z } from 'zod'
+import { BeatLeaderSongSchema } from '../score/song'
+import { BeatLeaderDifficultySchema } from './difficulty'
 
 /** Player /scores and similar endpoints often return only id + song + difficulty. */
 export const BeatLeaderLeaderboardSchema = z
@@ -9,6 +9,6 @@ export const BeatLeaderLeaderboardSchema = z
     song: BeatLeaderSongSchema,
     difficulty: BeatLeaderDifficultySchema,
   })
-  .loose();
+  .loose()
 
-export type BeatLeaderLeaderboardToken = z.infer<typeof BeatLeaderLeaderboardSchema>;
+export type BeatLeaderLeaderboardToken = z.infer<typeof BeatLeaderLeaderboardSchema>

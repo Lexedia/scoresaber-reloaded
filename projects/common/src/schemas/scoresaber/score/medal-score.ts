@@ -1,12 +1,12 @@
-import { z } from "zod";
-import { HMD } from "../../../hmds";
-import { ModifiersSchema } from "../../../score/modifier";
-import { BeatLeaderScoreSchema } from "../../beatleader/score/score";
-import { MapCharacteristicSchema } from "../../map/map-characteristic";
-import { MapDifficultySchema } from "../../map/map-difficulty";
-import { numberIncludingInfinitySchema } from "../../number";
-import { ScoreSaberLeaderboardPlayerInfoSchema } from "../leaderboard/player-info";
-import { ScoreSaberHistoryScoreSchema } from "./history-score";
+import { z } from 'zod'
+import { HMD } from '../../../hmds'
+import { ModifiersSchema } from '../../../score/modifier'
+import { BeatLeaderScoreSchema } from '../../beatleader/score/score'
+import { MapCharacteristicSchema } from '../../map/map-characteristic'
+import { MapDifficultySchema } from '../../map/map-difficulty'
+import { numberIncludingInfinitySchema } from '../../number'
+import { ScoreSaberLeaderboardPlayerInfoSchema } from '../leaderboard/player-info'
+import { ScoreSaberHistoryScoreSchema } from './history-score'
 
 export const ScoreSaberMedalScoreSchema = z.object({
   // Identifiers
@@ -46,6 +46,6 @@ export const ScoreSaberMedalScoreSchema = z.object({
   previousScore: ScoreSaberHistoryScoreSchema.optional(),
 
   timestamp: z.date(),
-});
+})
 
-export type ScoreSaberMedalScore = z.infer<typeof ScoreSaberMedalScoreSchema>;
+export type ScoreSaberMedalScore = z.infer<typeof ScoreSaberMedalScoreSchema>

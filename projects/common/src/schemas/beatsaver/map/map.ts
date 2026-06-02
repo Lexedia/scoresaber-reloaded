@@ -1,7 +1,7 @@
-import { z } from "zod";
-import { BeatSaverAccountSchema } from "../account";
-import { BeatSaverMapDifficultySchema } from "./difficulty";
-import { BeatSaverMapMetadataSchema } from "./metadata";
+import { z } from 'zod'
+import { BeatSaverAccountSchema } from '../account'
+import { BeatSaverMapDifficultySchema } from './difficulty'
+import { BeatSaverMapMetadataSchema } from './metadata'
 
 export const BeatSaverMapSchema = z.object({
   id: z.string(),
@@ -12,6 +12,6 @@ export const BeatSaverMapSchema = z.object({
   author: BeatSaverAccountSchema,
   difficulty: BeatSaverMapDifficultySchema,
   metadata: BeatSaverMapMetadataSchema,
-});
+})
 
-export type BeatSaverMap = z.infer<typeof BeatSaverMapSchema>;
+export type BeatSaverMap = z.infer<typeof BeatSaverMapSchema>

@@ -1,8 +1,8 @@
 /** BeatSaver API `UserDetail.type` (Swagger). */
-export type BeatSaverAccountType = "DISCORD" | "SIMPLE" | "DUAL";
+export type BeatSaverAccountType = 'DISCORD' | 'SIMPLE' | 'DUAL'
 
 /** BeatSaver API `UserDetail.patreon` (Swagger). */
-export type BeatSaverAccountPatreon = "None" | "Supporter" | "SupporterPlus";
+export type BeatSaverAccountPatreon = 'None' | 'Supporter' | 'SupporterPlus'
 
 /** Shapes `UserDetail` where we use uploader / author in-app (BeatSaver Swagger). */
 export default interface BeatSaverAccountToken {

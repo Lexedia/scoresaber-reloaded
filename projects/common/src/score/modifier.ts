@@ -1,70 +1,76 @@
-import { z } from "zod";
+import { z } from 'zod'
 
 export enum Modifier {
-  NF = "NF",
-  PM = "PM",
-  FS = "FS",
-  SF = "SF",
-  SS = "SS",
-  GN = "GN",
-  DA = "DA",
-  SA = "SA",
-  SC = "SC",
-  IF = "IF",
-  NO = "NO",
-  BE = "BE",
-  NB = "NB",
-  NA = "NA",
+  NF = 'NF',
+  PM = 'PM',
+  FS = 'FS',
+  SF = 'SF',
+  SS = 'SS',
+  GN = 'GN',
+  DA = 'DA',
+  SA = 'SA',
+  SC = 'SC',
+  IF = 'IF',
+  NO = 'NO',
+  BE = 'BE',
+  NB = 'NB',
+  NA = 'NA',
 }
 
 /**
  * Maps a modifier code to its human-readable label.
  */
 export const ModifierLabels: Readonly<Record<Modifier, string>> = {
-  [Modifier.NF]: "No Fail",
-  [Modifier.PM]: "Pro Mode",
-  [Modifier.FS]: "Faster Song",
-  [Modifier.SF]: "Super Fast Song",
-  [Modifier.SS]: "Slower Song",
-  [Modifier.GN]: "Ghost Notes",
-  [Modifier.DA]: "Disappearing Arrows",
-  [Modifier.SA]: "Strict Angles",
-  [Modifier.SC]: "Small Notes",
-  [Modifier.IF]: "One Life",
-  [Modifier.NO]: "No Obstacles",
-  [Modifier.BE]: "Battery Energy",
-  [Modifier.NB]: "No Bombs",
-  [Modifier.NA]: "No Arrows",
-};
+  [Modifier.NF]: 'No Fail',
+  [Modifier.PM]: 'Pro Mode',
+  [Modifier.FS]: 'Faster Song',
+  [Modifier.SF]: 'Super Fast Song',
+  [Modifier.SS]: 'Slower Song',
+  [Modifier.GN]: 'Ghost Notes',
+  [Modifier.DA]: 'Disappearing Arrows',
+  [Modifier.SA]: 'Strict Angles',
+  [Modifier.SC]: 'Small Notes',
+  [Modifier.IF]: 'One Life',
+  [Modifier.NO]: 'No Obstacles',
+  [Modifier.BE]: 'Battery Energy',
+  [Modifier.NB]: 'No Bombs',
+  [Modifier.NA]: 'No Arrows',
+}
 
-const modifierCodes = new Set<string>(Object.values(Modifier));
+const modifierCodes = new Set<string>(Object.values(Modifier))
 
 const modifierByLabel = Object.freeze(
   Object.fromEntries(
-    (Object.entries(ModifierLabels) as [Modifier, string][]).map(([code, label]) => [label, code])
-  )
-) as Readonly<Record<string, Modifier>>;
+    (Object.entries(ModifierLabels) as [Modifier, string][]).map(([
+      code,
+      label,
+    ]) => [
+      label,
+      code,
+    ]),
+  ),
+) as Readonly<Record<string, Modifier>>
 
 /**
  * Zod schema for a single modifier code.
  */
-export const ModifierSchema = z.enum(Modifier);
+export const ModifierSchema = z.enum(Modifier)
 
 /**
  * Zod schema for a list of modifier codes.
  */
-export const ModifiersSchema = z.array(ModifierSchema);
+export const ModifiersSchema = z.array(ModifierSchema)
 
 /**
  * Normalizes a modifier value (code or legacy label) into a modifier code.
  */
 export function normalizeModifier(value: string): Modifier | undefined {
   if (modifierCodes.has(value)) {
-    return value as Modifier;
+    return value as Modifier
   }
 
   // Legacy DB/UI values stored as labels (e.g. "No Fail")
-  return modifierByLabel[value];
+  return modifierByLabel[value]
 }
 
 /**
@@ -72,26 +78,26 @@ export function normalizeModifier(value: string): Modifier | undefined {
  */
 export function normalizeModifiers(values: readonly string[] | undefined): Modifier[] {
   if (!values?.length) {
-    return [];
+    return []
   }
 
   return values.flatMap(value => {
-    const normalized = normalizeModifier(value);
-    return normalized ? [normalized] : [];
-  });
+    const normalized = normalizeModifier(value)
+    return normalized ? [ normalized ] : []
+  })
 }
 
 /**
  * Checks whether a modifier list contains a given modifier (supports codes or legacy labels).
  */
 export function hasModifier(values: readonly string[] | undefined, modifier: Modifier): boolean {
-  return values?.some(value => normalizeModifier(value) === modifier) ?? false;
+  return values?.some(value => normalizeModifier(value) === modifier) ?? false
 }
 
 /**
  * Gets a human-readable label for a modifier (accepts codes or legacy labels).
  */
 export function getModifierLabel(value: string): string {
-  const normalized = normalizeModifier(value);
-  return normalized ? ModifierLabels[normalized] : value;
+  const normalized = normalizeModifier(value)
+  return normalized ? ModifierLabels[normalized] : value
 }

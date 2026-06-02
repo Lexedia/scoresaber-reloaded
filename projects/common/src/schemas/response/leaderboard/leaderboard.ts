@@ -1,5 +1,5 @@
-import { BeatSaverMap } from "../../beatsaver/map/map";
-import { ScoreSaberLeaderboard } from "../../scoresaber/leaderboard/leaderboard";
+import { BeatSaverMap } from '../../beatsaver/map/map'
+import { ScoreSaberLeaderboard } from '../../scoresaber/leaderboard/leaderboard'
 
 export type LeaderboardResponse = {
   /**
@@ -11,4 +11,4 @@ export type LeaderboardResponse = {
    * The beatsaver map associated with this leaderboard.
    */
   beatsaver?: BeatSaverMap;
-};
+}

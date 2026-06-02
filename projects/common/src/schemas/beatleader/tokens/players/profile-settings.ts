@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod'
 
 export const BeatLeaderProfileSettingsSchema = z
   .object({
@@ -14,10 +14,10 @@ export const BeatLeaderProfileSettingsSchema = z
     showBots: z.boolean(),
     showAllRatings: z.boolean(),
   })
-  .loose();
+  .loose()
 
-export type BeatLeaderProfileSettingsToken = z.infer<typeof BeatLeaderProfileSettingsSchema>;
+export type BeatLeaderProfileSettingsToken = z.infer<typeof BeatLeaderProfileSettingsSchema>
 
 // Backwards-compatible aliases
-export const BeatLeaderPlayersProfileSettingsSchema = BeatLeaderProfileSettingsSchema;
-export type BeatLeaderPlayersProfileSettingsToken = BeatLeaderProfileSettingsToken;
+export const BeatLeaderPlayersProfileSettingsSchema = BeatLeaderProfileSettingsSchema
+export type BeatLeaderPlayersProfileSettingsToken = BeatLeaderProfileSettingsToken

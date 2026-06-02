@@ -1,7 +1,7 @@
-import { Metadata } from "../../../types/metadata";
-import { BeatSaverMap } from "../../beatsaver/map/map";
-import { ScoreSaberLeaderboard } from "../../scoresaber/leaderboard/leaderboard";
-import { ScoreSaberScore } from "../../scoresaber/score/score";
+import { Metadata } from '../../../types/metadata'
+import { BeatSaverMap } from '../../beatsaver/map/map'
+import { ScoreSaberLeaderboard } from '../../scoresaber/leaderboard/leaderboard'
+import { ScoreSaberScore } from '../../scoresaber/score/score'
 
 export default interface LeaderboardScoresResponse {
   /**

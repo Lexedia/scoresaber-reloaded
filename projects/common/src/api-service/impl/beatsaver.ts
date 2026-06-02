@@ -1,13 +1,13 @@
-import { Cooldown } from "../../cooldown";
-import { BeatSaverLatestMapsToken } from "../../types/token/beatsaver/api/latest-maps";
-import { BeatSaverMultiMapLookup } from "../../types/token/beatsaver/api/multi-map-lookup";
-import BeatSaverMapToken from "../../types/token/beatsaver/map";
-import ApiService from "../api-service";
-import { ApiServiceName } from "../api-service-registry";
+import { Cooldown } from '../../cooldown'
+import { BeatSaverLatestMapsToken } from '../../types/token/beatsaver/api/latest-maps'
+import { BeatSaverMultiMapLookup } from '../../types/token/beatsaver/api/multi-map-lookup'
+import BeatSaverMapToken from '../../types/token/beatsaver/map'
+import ApiService from '../api-service'
+import { ApiServiceName } from '../api-service-registry'
 
-const API_BASE = "https://api.beatsaver.com";
-const LOOKUP_MAP_BY_HASH_ENDPOINT = `${API_BASE}/maps/hash/:query`;
-const LOOKUP_LATEST_MAPS_ENDPOINT = `${API_BASE}/maps/latest`;
+const API_BASE = 'https://api.beatsaver.com'
+const LOOKUP_MAP_BY_HASH_ENDPOINT = `${API_BASE}/maps/hash/:query`
+const LOOKUP_LATEST_MAPS_ENDPOINT = `${API_BASE}/maps/latest`
 
 export class BeatSaverService extends ApiService {
   constructor() {
@@ -16,7 +16,7 @@ export class BeatSaverService extends ApiService {
       useProxy: true,
       proxySwitchThreshold: 10,
       proxyResetThreshold: 100,
-    });
+    })
   }
 
   /**
@@ -26,17 +26,17 @@ export class BeatSaverService extends ApiService {
    * @returns the map that match the query, or undefined if no map were found
    */
   async lookupMap(hash: string): Promise<BeatSaverMapToken | undefined> {
-    const before = performance.now();
-    this.log(`Looking up map "${hash}"...`);
+    const before = performance.now()
+    this.log(`Looking up map "${hash}"...`)
 
-    const response = await this.fetch<BeatSaverMapToken>(LOOKUP_MAP_BY_HASH_ENDPOINT.replace(":query", hash));
+    const response = await this.fetch<BeatSaverMapToken>(LOOKUP_MAP_BY_HASH_ENDPOINT.replace(':query', hash))
     // Map not found
     if (response == undefined) {
-      return undefined;
+      return undefined
     }
 
-    this.log(`Found map "${response.id}" in ${(performance.now() - before).toFixed(0)}ms`);
-    return response;
+    this.log(`Found map "${response.id}" in ${(performance.now() - before).toFixed(0)}ms`)
+    return response
   }
 
   /**
@@ -47,22 +47,22 @@ export class BeatSaverService extends ApiService {
    */
   async lookupMaps(hashes: string[]): Promise<BeatSaverMultiMapLookup | undefined> {
     if (hashes.length > 50) {
-      throw new Error(`Cannot lookup more than 50 maps at once`);
+      throw new Error('Cannot lookup more than 50 maps at once')
     }
 
-    const before = performance.now();
-    this.log(`Looking up maps "${hashes}"...`);
+    const before = performance.now()
+    this.log(`Looking up maps "${hashes}"...`)
 
     const response = await this.fetch<BeatSaverMultiMapLookup>(
-      LOOKUP_MAP_BY_HASH_ENDPOINT.replace(":query", hashes.join(","))
-    );
+      LOOKUP_MAP_BY_HASH_ENDPOINT.replace(':query', hashes.join(',')),
+    )
     // Map not found
     if (response == undefined) {
-      return undefined;
+      return undefined
     }
 
-    this.log(`Found ${Object.entries(response).length} maps in ${(performance.now() - before).toFixed(0)}ms`);
-    return response;
+    this.log(`Found ${Object.entries(response).length} maps in ${(performance.now() - before).toFixed(0)}ms`)
+    return response
   }
 
   /**
@@ -77,19 +77,19 @@ export class BeatSaverService extends ApiService {
     automapper: boolean,
     pageSize: number,
     options?: {
-      sort?: "FIRST_PUBLISHED" | "UPDATED" | "LAST_PUBLISHED" | "CREATED" | "CURATED";
+      sort?: 'FIRST_PUBLISHED' | 'UPDATED' | 'LAST_PUBLISHED' | 'CREATED' | 'CURATED';
       before?: Date;
       after?: Date;
-    }
+    },
   ): Promise<BeatSaverLatestMapsToken | undefined> {
-    const before = performance.now();
-    this.log(`Looking up latest maps...`);
+    const before = performance.now()
+    this.log('Looking up latest maps...')
 
     const formatDateForAPI = (date: Date): string => {
       // Format as YYYY-MM-DDTHH:MM:SS+00:00 (no milliseconds, +00:00 instead of Z)
-      const isoString = date.toISOString();
-      return isoString.replace(/\.\d{3}Z$/, "+00:00");
-    };
+      const isoString = date.toISOString()
+      return isoString.replace(/\.\d{3}Z$/, '+00:00')
+    }
 
     const response = await this.fetch<BeatSaverLatestMapsToken>(LOOKUP_LATEST_MAPS_ENDPOINT, {
       searchParams: {
@@ -99,12 +99,12 @@ export class BeatSaverService extends ApiService {
         ...(options?.before ? { before: formatDateForAPI(options.before) } : {}),
         ...(options?.after ? { after: formatDateForAPI(options.after) } : {}),
       },
-    });
+    })
     if (response == undefined) {
-      return undefined;
+      return undefined
     }
 
-    this.log(`Found ${response.docs.length} maps in ${(performance.now() - before).toFixed(0)}ms`);
-    return response;
+    this.log(`Found ${response.docs.length} maps in ${(performance.now() - before).toFixed(0)}ms`)
+    return response
   }
 }

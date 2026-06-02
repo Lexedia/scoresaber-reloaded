@@ -1,11 +1,15 @@
-import { z } from "zod";
-import { ScoreSaberScoreSortFieldSchema } from "../schemas/score/query/sort/scoresaber-scores-sort";
-import { SortDirectionSchema } from "../schemas/score/query/sort/sort-direction";
+import { z } from 'zod'
+import { ScoreSaberScoreSortFieldSchema } from '../schemas/score/query/sort/scoresaber-scores-sort'
+import { SortDirectionSchema } from '../schemas/score/query/sort/sort-direction'
 
 export const snipeSettingsSchema = z.object({
   sort: ScoreSaberScoreSortFieldSchema,
   sortDirection: SortDirectionSchema,
-  rankedStatus: z.enum(["all", "ranked", "unranked"]),
+  rankedStatus: z.enum([
+    'all',
+    'ranked',
+    'unranked',
+  ]),
   requireBothScores: z.boolean(),
   starRange: z.object({
     min: z.number().min(0).max(20),
@@ -15,6 +19,6 @@ export const snipeSettingsSchema = z.object({
     min: z.number().min(0).max(100),
     max: z.number().min(0).max(100),
   }),
-});
+})
 
-export type SnipeSettings = z.infer<typeof snipeSettingsSchema>;
+export type SnipeSettings = z.infer<typeof snipeSettingsSchema>

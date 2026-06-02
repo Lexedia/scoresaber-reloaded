@@ -1,6 +1,6 @@
-import { z } from "zod";
-import { ScoreSaberLeaderboardDifficultySchema } from "./difficulty";
-import { ScoreSaberLeaderboardStatusSchema } from "./status";
+import { z } from 'zod'
+import { ScoreSaberLeaderboardDifficultySchema } from './difficulty'
+import { ScoreSaberLeaderboardStatusSchema } from './status'
 
 export const ScoreSaberLeaderboardSchema = z.object({
   id: z.number(),
@@ -36,5 +36,5 @@ export const ScoreSaberLeaderboardSchema = z.object({
   dailyPlays: z.number(),
 
   timestamp: z.date(),
-});
-export type ScoreSaberLeaderboard = z.infer<typeof ScoreSaberLeaderboardSchema>;
+})
+export type ScoreSaberLeaderboard = z.infer<typeof ScoreSaberLeaderboardSchema>

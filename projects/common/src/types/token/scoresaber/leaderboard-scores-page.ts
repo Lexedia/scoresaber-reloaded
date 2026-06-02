@@ -1,5 +1,5 @@
-import ScoreSaberMetadataToken from "./metadata";
-import ScoreSaberScoreToken from "./score";
+import ScoreSaberMetadataToken from './metadata'
+import ScoreSaberScoreToken from './score'
 
 export default interface ScoreSaberLeaderboardScoresPageToken {
   /**

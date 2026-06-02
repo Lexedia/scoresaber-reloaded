@@ -1,14 +1,14 @@
-import WebSocket from "ws";
-import Logger from "../logger";
+import WebSocket from 'ws'
+import Logger from '../logger'
 
-const RECONNECT_DELAY_MS = 5000;
-const HEARTBEAT_INTERVAL_MS = 30000;
-const HEARTBEAT_TIMEOUT_MS = 10000;
+const RECONNECT_DELAY_MS = 5000
+const HEARTBEAT_INTERVAL_MS = 30000
+const HEARTBEAT_TIMEOUT_MS = 10000
 
 /** Optional details when a socket `error` event fired before `close` on the same connection. */
 export type WebsocketDisconnectContext = {
   precedingSocketError?: Error;
-};
+}
 
 export type WebsocketCallbacks = {
   /**
@@ -26,7 +26,7 @@ export type WebsocketCallbacks = {
    * @param context when present, `precedingSocketError` was set by a prior `error` on this socket.
    */
   onDisconnect?: (close: WebSocket.CloseEvent, context?: WebsocketDisconnectContext) => void;
-};
+}
 
 type Websocket = {
   /**
@@ -38,142 +38,145 @@ type Websocket = {
    * The url of the service we're connecting to.
    */
   url: string;
-} & WebsocketCallbacks;
+} & WebsocketCallbacks
 
 function formatCloseReason(reason: unknown): string {
-  if (typeof reason === "string") {
-    return reason;
+  if (typeof reason === 'string') {
+    return reason
   }
   if (Buffer.isBuffer(reason)) {
-    return reason.toString("utf8");
+    return reason.toString('utf8')
   }
-  return "";
+  return ''
 }
 
 /**
  * Connects to a WebSocket URL, parses JSON messages, and reconnects after disconnect.
  */
-export function connectWebSocket({ name, url, onMessage, onDisconnect }: Websocket) {
-  let reconnectTimer: NodeJS.Timeout | undefined;
-  let heartbeatInterval: NodeJS.Timeout | undefined;
-  let heartbeatTimeout: NodeJS.Timeout | undefined;
+export function connectWebSocket({
+  name, url, onMessage, onDisconnect,
+}: Websocket) {
+  let reconnectTimer: NodeJS.Timeout | undefined
+  let heartbeatInterval: NodeJS.Timeout | undefined
+  let heartbeatTimeout: NodeJS.Timeout | undefined
 
   function connectWs() {
-    let precedingSocketError: Error | undefined;
-    let reconnectScheduled = false;
+    let precedingSocketError: Error | undefined
+    let reconnectScheduled = false
 
     const scheduleReconnect = () => {
       if (reconnectScheduled) {
-        return;
+        return
       }
 
-      reconnectScheduled = true;
+      reconnectScheduled = true
       if (heartbeatInterval) {
-        clearInterval(heartbeatInterval);
-        heartbeatInterval = undefined;
+        clearInterval(heartbeatInterval)
+        heartbeatInterval = undefined
       }
       if (heartbeatTimeout) {
-        clearTimeout(heartbeatTimeout);
-        heartbeatTimeout = undefined;
+        clearTimeout(heartbeatTimeout)
+        heartbeatTimeout = undefined
       }
       if (reconnectTimer) {
-        clearTimeout(reconnectTimer);
+        clearTimeout(reconnectTimer)
       }
-      reconnectTimer = setTimeout(connectWs, RECONNECT_DELAY_MS);
-    };
+      reconnectTimer = setTimeout(connectWs, RECONNECT_DELAY_MS)
+    }
 
-    const websocket = new WebSocket(url);
+    const websocket = new WebSocket(url)
 
     const clearHeartbeatTimeout = () => {
       if (heartbeatTimeout) {
-        clearTimeout(heartbeatTimeout);
-        heartbeatTimeout = undefined;
+        clearTimeout(heartbeatTimeout)
+        heartbeatTimeout = undefined
       }
-    };
+    }
 
     const armHeartbeatTimeout = () => {
-      clearHeartbeatTimeout();
+      clearHeartbeatTimeout()
       heartbeatTimeout = setTimeout(() => {
         if (websocket.readyState === WebSocket.OPEN) {
           Logger.warn(
-            `WebSocket heartbeat timeout (${name}). Terminating stale connection to trigger reconnect...`
-          );
-          websocket.terminate();
+            `WebSocket heartbeat timeout (${name}). Terminating stale connection to trigger reconnect...`,
+          )
+          websocket.terminate()
         }
-      }, HEARTBEAT_TIMEOUT_MS);
-    };
+      }, HEARTBEAT_TIMEOUT_MS)
+    }
 
     websocket.onopen = () => {
-      precedingSocketError = undefined;
-      Logger.info(`Connected to the ${name} WebSocket!`);
+      precedingSocketError = undefined
+      Logger.info(`Connected to the ${name} WebSocket!`)
 
       // Actively probe socket liveness so silent/stale "open" sockets self-heal.
       heartbeatInterval = setInterval(() => {
         if (websocket.readyState !== WebSocket.OPEN) {
-          return;
+          return
         }
 
         try {
-          armHeartbeatTimeout();
-          websocket.ping();
+          armHeartbeatTimeout()
+          websocket.ping()
         } catch (error) {
-          Logger.warn(`Failed to ping ${name} WebSocket, reconnecting...`, error);
-          websocket.terminate();
+          Logger.warn(`Failed to ping ${name} WebSocket, reconnecting...`, error)
+          websocket.terminate()
         }
-      }, HEARTBEAT_INTERVAL_MS);
-    };
+      }, HEARTBEAT_INTERVAL_MS)
+    }
 
-    websocket.on("pong", () => {
-      clearHeartbeatTimeout();
-    });
+    websocket.on('pong', () => {
+      clearHeartbeatTimeout()
+    })
 
     websocket.onerror = event => {
-      const raw = event.error;
+      const raw = event.error
       precedingSocketError =
         raw instanceof Error
           ? raw
-          : typeof raw === "string"
+          : typeof raw === 'string'
             ? new Error(raw)
-            : new Error(event.message || "WebSocket error");
-      Logger.error(`WebSocket error (${name}):`, precedingSocketError);
+            : new Error(event.message || 'WebSocket error')
+      Logger.error(`WebSocket error (${name}):`, precedingSocketError)
       // `close` usually follows `error`, but schedule reconnect here as a fallback.
-      scheduleReconnect();
-    };
+      scheduleReconnect()
+    }
 
     websocket.onclose = event => {
-      const reasonText = formatCloseReason(event.reason);
-      const reasonLog = reasonText ? reasonText : "(none)";
-      const errHint = precedingSocketError ? ` Preceding error: ${precedingSocketError.message}` : "";
+      const reasonText = formatCloseReason(event.reason)
+      const reasonLog = reasonText ? reasonText : '(none)'
+      const errHint = precedingSocketError ? ` Preceding error: ${precedingSocketError.message}` : ''
 
       Logger.info(
-        `Lost connection to the ${name} WebSocket (code=${event.code}, reason=${reasonLog}, wasClean=${event.wasClean}).${errHint} Reconnecting in ${RECONNECT_DELAY_MS / 1000}s...`
-      );
+        `Lost connection to the ${name} WebSocket (code=${event.code}, reason=${reasonLog}, wasClean=${event.wasClean}).${errHint}
+ Reconnecting in ${RECONNECT_DELAY_MS / 1000}s...`,
+      )
 
       const context: WebsocketDisconnectContext | undefined = precedingSocketError
         ? { precedingSocketError }
-        : undefined;
+        : undefined
       try {
-        onDisconnect?.(event, context);
+        onDisconnect?.(event, context)
       } catch (disconnectError) {
-        Logger.error(`onDisconnect callback failed (${name}):`, disconnectError);
+        Logger.error(`onDisconnect callback failed (${name}):`, disconnectError)
       }
-      scheduleReconnect();
-    };
+      scheduleReconnect()
+    }
 
     websocket.onmessage = messageEvent => {
-      clearHeartbeatTimeout();
-      if (typeof messageEvent.data !== "string") {
-        return;
+      clearHeartbeatTimeout()
+      if (typeof messageEvent.data !== 'string') {
+        return
       }
 
       try {
-        const command = JSON.parse(messageEvent.data);
-        onMessage?.(command);
-      } catch (err) {
-        Logger.warn(`Received invalid json message on ${name}:`, messageEvent.data);
+        const command = JSON.parse(messageEvent.data)
+        onMessage?.(command)
+      } catch {
+        Logger.warn(`Received invalid json message on ${name}:`, messageEvent.data)
       }
-    };
+    }
   }
 
-  connectWs(); // Initiate the first connection
+  connectWs() // Initiate the first connection
 }

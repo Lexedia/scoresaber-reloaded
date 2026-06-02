@@ -1,5 +1,5 @@
-import { z } from "zod";
-import { ScoreSaberPeakRankSchema } from "./player/peak-rank";
+import { z } from 'zod'
+import { ScoreSaberPeakRankSchema } from './player/peak-rank'
 
 export const ScoreSaberAccountSchema = z.object({
   id: z.string(),
@@ -8,7 +8,7 @@ export const ScoreSaberAccountSchema = z.object({
   country: z
     .string()
     .nullable()
-    .transform(value => value ?? "Unknown"),
+    .transform(value => value ?? 'Unknown'),
   peakRank: ScoreSaberPeakRankSchema.optional(),
   seededScores: z.boolean().optional(),
   seededBeatLeaderScores: z.boolean().optional(),
@@ -24,6 +24,6 @@ export const ScoreSaberAccountSchema = z.object({
   longestStreak: z.number(),
   trackedSince: z.coerce.date(),
   joinedDate: z.coerce.date(),
-});
+})
 
-export type ScoreSaberAccount = z.infer<typeof ScoreSaberAccountSchema>;
+export type ScoreSaberAccount = z.infer<typeof ScoreSaberAccountSchema>

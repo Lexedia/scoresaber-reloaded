@@ -1,16 +1,16 @@
-import { Cooldown } from "../../cooldown";
-import Logger from "../../logger";
-import { Pagination } from "../../pagination";
-import { type AccSaberScoreSort, type AccSaberScoreType } from "../../schemas/accsaber/tokens/query/query";
-import { type AccSaberScore } from "../../schemas/accsaber/tokens/score/score";
-import type { AccSaberScoresPageResponse } from "../../schemas/response/score/accsaber-scores-page";
-import { SortDirection } from "../../schemas/score/query/sort/sort-direction";
-import { accSaberDifficultyToMapDifficulty } from "../../utils/accsaber-difficulty";
-import ApiService from "../api-service";
-import { ApiServiceName } from "../api-service-registry";
+import { Cooldown } from '../../cooldown'
+import Logger from '../../logger'
+import { Pagination } from '../../pagination'
+import { type AccSaberScoreSort, type AccSaberScoreType } from '../../schemas/accsaber/tokens/query/query'
+import { type AccSaberScore } from '../../schemas/accsaber/tokens/score/score'
+import type { AccSaberScoresPageResponse } from '../../schemas/response/score/accsaber-scores-page'
+import { SortDirection } from '../../schemas/score/query/sort/sort-direction'
+import { accSaberDifficultyToMapDifficulty } from '../../utils/accsaber-difficulty'
+import ApiService from '../api-service'
+import { ApiServiceName } from '../api-service-registry'
 
-const GQL_BASE = "https://gql.h2.accsaber.com/graphql";
-const SCORES_PER_PAGE = 8;
+const GQL_BASE = 'https://gql.h2.accsaber.com/graphql'
+const SCORES_PER_PAGE = 8
 
 export class AccSaberService extends ApiService {
   constructor() {
@@ -19,7 +19,7 @@ export class AccSaberService extends ApiService {
       useProxy: true,
       proxySwitchThreshold: 10,
       proxyResetThreshold: 100,
-    });
+    })
   }
 
   public async checkPlayerExists(playerId: string): Promise<boolean> {
@@ -29,16 +29,16 @@ export class AccSaberService extends ApiService {
           playerId
         }
       }
-    `;
+    `
 
     try {
       const result = await this.fetchGQL<{ data?: { playerDatum?: { playerId: string } } }>(GQL_BASE, query, {
         playerId: playerId,
-      });
+      })
 
-      return !!result?.data?.playerDatum?.playerId;
-    } catch (error) {
-      return false;
+      return !!result?.data?.playerDatum?.playerId
+    } catch {
+      return false
     }
   }
 
@@ -49,29 +49,29 @@ export class AccSaberService extends ApiService {
       sort?: AccSaberScoreSort;
       direction?: SortDirection;
       type?: AccSaberScoreType;
-    } = {}
+    } = {},
   ): Promise<AccSaberScoresPageResponse> {
-    const { sort = "date", direction = "desc", type = "overall" } = options;
+    const { sort = 'date', direction = 'desc', type = 'overall' } = options
     if (page < 1) {
-      page = 1;
+      page = 1
     }
 
     // Automatically generate sort options based on consistent naming pattern
     const generateSortOption = (sort: AccSaberScoreSort, direction: SortDirection): string => {
       const sortMapping: Record<AccSaberScoreSort, string> = {
-        date: "TIME_SET",
-        acc: "ACCURACY",
-        ap: "AP",
-        complexity: "COMPLEXITY",
-        ranking: "RANKING",
-      };
-      return `${sortMapping[sort]}_${direction.toUpperCase()}`;
-    };
+        date: 'TIME_SET',
+        acc: 'ACCURACY',
+        ap: 'AP',
+        complexity: 'COMPLEXITY',
+        ranking: 'RANKING',
+      }
+      return `${sortMapping[sort]}_${direction.toUpperCase()}`
+    }
 
     const query = `
       query GetPlayerScores(
         $playerId: BigInt, 
-        ${type !== "overall" ? "$category: String," : ""}
+        ${type !== 'overall' ? '$category: String,' : ''}
         $offset: Int, 
         $count: Int, 
         $order: [AccSaberScoresOrderBy!]
@@ -79,7 +79,7 @@ export class AccSaberService extends ApiService {
         accSaberScores(
           condition: { 
             playerId: $playerId
-            ${type !== "overall" ? ", categoryName: $category" : ""}
+            ${type !== 'overall' ? ', categoryName: $category' : ''}
           },
           orderBy: $order,
           offset: $offset,
@@ -106,13 +106,13 @@ export class AccSaberService extends ApiService {
           totalCount
         }
       }
-    `;
+    `
 
     try {
       const result = await this.fetchGQL<{
         data?: {
           accSaberScores: {
-            nodes: Array<{
+            nodes: {
               songHash: string;
               songName: string;
               songAuthorName: string;
@@ -129,25 +129,25 @@ export class AccSaberService extends ApiService {
               score: number;
               beatSaverKey: string;
               categoryName: string;
-            }>;
+            }[];
             totalCount: number;
           };
         };
       }>(GQL_BASE, query, {
         playerId,
-        ...(type !== "overall" ? { category: type } : {}),
+        ...(type !== 'overall' ? { category: type } : {}),
         count: SCORES_PER_PAGE,
         offset: SCORES_PER_PAGE * (page - 1),
-        order: [generateSortOption(sort, direction)],
-      });
+        order: [ generateSortOption(sort, direction) ],
+      })
 
       if (!result?.data?.accSaberScores?.nodes?.length) {
-        return Pagination.empty<AccSaberScore>();
+        return Pagination.empty<AccSaberScore>()
       }
 
       const scores = result.data.accSaberScores.nodes.map(score => {
-        const acc = score.accuracy * 100;
-        const leaderboardId = parseInt(score.leaderboardId, 10);
+        const acc = score.accuracy * 100
+        const leaderboardId = parseInt(score.leaderboardId, 10)
 
         return {
           id: `${playerId}-${score.leaderboardId}`,
@@ -161,13 +161,13 @@ export class AccSaberService extends ApiService {
             song: {
               hash: score.songHash,
               name: score.songName,
-              subName: "",
+              subName: '',
               author: score.songAuthorName,
               mapper: score.levelAuthorName,
               beatsaverKey: score.beatSaverKey,
             },
             diffInfo: {
-              type: "Standard",
+              type: 'Standard',
               diff: accSaberDifficultyToMapDifficulty(score.difficulty),
             },
             complexity: score.complexity,
@@ -186,11 +186,11 @@ export class AccSaberService extends ApiService {
           },
           fetchedAt: new Date(),
           lastUpdated: new Date(),
-        };
-      });
+        }
+      })
 
-      const totalItems = result.data.accSaberScores.totalCount;
-      const totalPages = Math.ceil(totalItems / SCORES_PER_PAGE);
+      const totalItems = result.data.accSaberScores.totalCount
+      const totalPages = Math.ceil(totalItems / SCORES_PER_PAGE)
 
       return {
         items: scores,
@@ -200,10 +200,10 @@ export class AccSaberService extends ApiService {
           page,
           totalPages,
         },
-      };
+      }
     } catch (error) {
-      Logger.error("Failed to fetch AccSaber scores: ", error);
-      return Pagination.empty<AccSaberScore>();
+      Logger.error('Failed to fetch AccSaber scores: ', error)
+      return Pagination.empty<AccSaberScore>()
     }
   }
 }

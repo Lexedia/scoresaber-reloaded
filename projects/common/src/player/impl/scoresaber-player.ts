@@ -1,7 +1,7 @@
-import { HMD } from "../../hmds";
-import { ScoreSaberPeakRank } from "../../schemas/scoresaber/player/peak-rank";
-import { ScoreSaberPlayerStatistics } from "../../schemas/scoresaber/player/statistics";
-import Player, { StatisticChange } from "../player";
+import { HMD } from '../../hmds'
+import { ScoreSaberPeakRank } from '../../schemas/scoresaber/player/peak-rank'
+import { ScoreSaberPlayerStatistics } from '../../schemas/scoresaber/player/statistics'
+import Player, { StatisticChange } from '../player'
 
 /**
  * A ScoreSaber player.
@@ -119,7 +119,7 @@ export type ScoreSaberBadge = {
    * The description of the badge.
    */
   description: string;
-};
+}
 
 export type ScoreSaberRankPages = {
   /**
@@ -136,4 +136,4 @@ export type ScoreSaberRankPages = {
    * Their page for their medal rank position.
    */
   medals?: number;
-};
+}

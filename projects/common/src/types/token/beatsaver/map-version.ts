@@ -1,9 +1,9 @@
-import type BeatSaverMapDifficultyToken from "./map-difficulty";
+import type BeatSaverMapDifficultyToken from './map-difficulty'
 
 export default interface BeatSaverMapVersionToken {
   hash: string;
   stage?: string;
-  state?: "Uploaded" | "Testplay" | "Published" | "Feedback" | "Scheduled";
+  state?: 'Uploaded' | 'Testplay' | 'Published' | 'Feedback' | 'Scheduled';
   createdAt: string;
   sageScore: number;
   feedback?: string;

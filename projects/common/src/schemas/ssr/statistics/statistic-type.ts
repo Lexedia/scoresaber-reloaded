@@ -1,4 +1,4 @@
-import { Statistic } from "./statistic";
+import { Statistic } from './statistic'
 
 interface DailyStatistics {
   [Statistic.DailyUniquePlayers]: number;
@@ -10,4 +10,4 @@ export type StatisticsType = {
     [date: string]: DailyStatistics;
   };
   hmdUsage: Record<string, number>;
-};
+}

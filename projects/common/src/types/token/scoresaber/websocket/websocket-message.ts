@@ -2,10 +2,10 @@ export type ScoreSaberWebsocketMessageToken = {
   /**
    * Command name
    */
-  commandName: "score";
+  commandName: 'score';
 
   /**
    * Command data
    */
-  commandData: any;
-};
+  commandData: unknown;
+}

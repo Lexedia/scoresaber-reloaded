@@ -5,4 +5,4 @@ export type ScoreSaberLeaderboardPlayerInfoToken = {
   country?: string;
   permissions?: number;
   role?: string;
-};
+}

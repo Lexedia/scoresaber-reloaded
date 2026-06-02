@@ -1,5 +1,5 @@
-import { z } from "zod";
-import { ScoreStatsSchema } from "../../beatleader/tokens/score-stats/score-stats";
+import { z } from 'zod'
+import { ScoreStatsSchema } from '../../beatleader/tokens/score-stats/score-stats'
 
 export const ScoreStatsResponseSchema = z.object({
   /**
@@ -11,6 +11,6 @@ export const ScoreStatsResponseSchema = z.object({
    * The previous score's scorestats.
    */
   previous: ScoreStatsSchema.optional(),
-});
+})
 
-export type ScoreStatsResponse = z.infer<typeof ScoreStatsResponseSchema>;
+export type ScoreStatsResponse = z.infer<typeof ScoreStatsResponseSchema>

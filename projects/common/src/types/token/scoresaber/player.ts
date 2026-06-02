@@ -1,5 +1,5 @@
-import { ScoreSaberBadgeToken } from "./badge";
-import ScoreSaberScoreStatsToken from "./score-stats";
+import { ScoreSaberBadgeToken } from './badge'
+import ScoreSaberScoreStatsToken from './score-stats'
 
 export type ScoreSaberPlayerToken = {
   /**
@@ -81,4 +81,4 @@ export type ScoreSaberPlayerToken = {
    * The date the player joined ScoreSaber.
    */
   firstSeen: string;
-};
+}

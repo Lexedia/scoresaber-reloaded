@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod'
 
 export const BeatLeaderModifierSchema = z
   .object({
@@ -17,6 +17,6 @@ export const BeatLeaderModifierSchema = z
     sa: z.number(),
     op: z.number(),
   })
-  .loose();
+  .loose()
 
-export type BeatLeaderModifierToken = z.infer<typeof BeatLeaderModifierSchema>;
+export type BeatLeaderModifierToken = z.infer<typeof BeatLeaderModifierSchema>

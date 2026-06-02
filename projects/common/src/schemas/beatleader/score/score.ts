@@ -1,6 +1,6 @@
-import { z } from "zod";
-import { MapCharacteristicSchema } from "../../map/map-characteristic";
-import { MapDifficultySchema } from "../../map/map-difficulty";
+import { z } from 'zod'
+import { MapCharacteristicSchema } from '../../map/map-characteristic'
+import { MapDifficultySchema } from '../../map/map-difficulty'
 
 export const BeatLeaderMissesSchema = z.object({
   misses: z.number(),
@@ -8,7 +8,7 @@ export const BeatLeaderMissesSchema = z.object({
   bombCuts: z.number(),
   wallsHit: z.number(),
   badCuts: z.number(),
-});
+})
 
 export const BeatLeaderScoreSchema = z.object({
   // Identifiers
@@ -38,6 +38,6 @@ export const BeatLeaderScoreSchema = z.object({
   }),
   savedReplay: z.boolean(),
   timestamp: z.date(),
-});
+})
 
-export type BeatLeaderScore = z.infer<typeof BeatLeaderScoreSchema>;
+export type BeatLeaderScore = z.infer<typeof BeatLeaderScoreSchema>

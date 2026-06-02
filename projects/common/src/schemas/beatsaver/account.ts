@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod'
 
 export const BeatSaverAccountSchema = z.object({
   id: z.number(),
@@ -11,4 +11,4 @@ export const BeatSaverAccountSchema = z.object({
   seniorCurator: z.boolean(),
   verifiedMapper: z.boolean(),
   playlistUrl: z.string(),
-});
+})

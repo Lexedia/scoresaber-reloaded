@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod'
 
 export const BeatLeaderPlayerSchema = z
   .object({
@@ -11,6 +11,6 @@ export const BeatLeaderPlayerSchema = z
     countryRank: z.number(),
     name: z.string(),
   })
-  .loose();
+  .loose()
 
-export type BeatLeaderPlayerToken = z.infer<typeof BeatLeaderPlayerSchema>;
+export type BeatLeaderPlayerToken = z.infer<typeof BeatLeaderPlayerSchema>

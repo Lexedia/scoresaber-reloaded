@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod'
 
 export const accSaberScoreSongSchema = z.object({
   hash: z.string(),
@@ -7,4 +7,4 @@ export const accSaberScoreSongSchema = z.object({
   author: z.string(),
   mapper: z.string(),
   beatsaverKey: z.string(),
-});
+})

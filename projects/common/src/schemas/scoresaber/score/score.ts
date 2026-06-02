@@ -1,12 +1,12 @@
-import { z } from "zod";
-import { HMD } from "../../../hmds";
-import { ModifiersSchema } from "../../../score/modifier";
-import { BeatLeaderScoreSchema } from "../../beatleader/score/score";
-import { MapCharacteristic } from "../../map/map-characteristic";
-import { MapDifficulty } from "../../map/map-difficulty";
-import { nullToZeroNumberSchema, numberIncludingInfinitySchema } from "../../number";
-import { ScoreSaberLeaderboardPlayerInfoSchema } from "../leaderboard/player-info";
-import { ScoreSaberHistoryScoreSchema } from "./history-score";
+import { z } from 'zod'
+import { HMD } from '../../../hmds'
+import { ModifiersSchema } from '../../../score/modifier'
+import { BeatLeaderScoreSchema } from '../../beatleader/score/score'
+import { MapCharacteristic } from '../../map/map-characteristic'
+import { MapDifficulty } from '../../map/map-difficulty'
+import { nullToZeroNumberSchema, numberIncludingInfinitySchema } from '../../number'
+import { ScoreSaberLeaderboardPlayerInfoSchema } from '../leaderboard/player-info'
+import { ScoreSaberHistoryScoreSchema } from './history-score'
 
 export const ScoreSaberScoreSchema = z.object({
   // Identifiers
@@ -35,7 +35,7 @@ export const ScoreSaberScoreSchema = z.object({
   hmd: z
     .string()
     .transform(v => v as HMD)
-    .default("Unknown"),
+    .default('Unknown'),
   rightController: z.string().nullable(),
   leftController: z.string().nullable(),
 
@@ -47,6 +47,6 @@ export const ScoreSaberScoreSchema = z.object({
   previousScore: ScoreSaberHistoryScoreSchema.optional(),
 
   timestamp: z.date(),
-});
+})
 
-export type ScoreSaberScore = z.infer<typeof ScoreSaberScoreSchema>;
+export type ScoreSaberScore = z.infer<typeof ScoreSaberScoreSchema>

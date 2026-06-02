@@ -1,10 +1,10 @@
-import type BeatSaverAccountToken from "./account";
-import type BeatSaverMapMetadataToken from "./map-metadata";
-import type BeatSaverMapStatsToken from "./map-stats";
-import type BeatSaverMapVersionToken from "./map-version";
+import type BeatSaverAccountToken from './account'
+import type BeatSaverMapMetadataToken from './map-metadata'
+import type BeatSaverMapStatsToken from './map-stats'
+import type BeatSaverMapVersionToken from './map-version'
 
 /** BeatSaver API `MapDetail.declaredAi` (Swagger). */
-export type BeatSaverMapDeclaredAi = "Admin" | "Uploader" | "SageScore" | "None";
+export type BeatSaverMapDeclaredAi = 'Admin' | 'Uploader' | 'SageScore' | 'None'
 
 /** Shapes `MapDetail` from BeatSaver Swagger where we already consume maps in-app. */
 export default interface BeatSaverMapToken {

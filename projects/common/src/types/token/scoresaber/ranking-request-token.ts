@@ -1,4 +1,4 @@
-import ScoreSaberLeaderboardToken from "./leaderboard";
+import ScoreSaberLeaderboardToken from './leaderboard'
 
 export default interface RankingRequestToken {
   requestId: number;

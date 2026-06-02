@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod'
 
 export const BeatLeaderSongSchema = z
   .object({
@@ -7,9 +7,15 @@ export const BeatLeaderSongSchema = z
     name: z.string(),
     subName: z.string(),
     author: z.string(),
-    mapperId: z.union([z.string(), z.number()]),
+    mapperId: z.union([
+      z.string(),
+      z.number(),
+    ]),
     coverImage: z.string(),
-    fullCoverImage: z.union([z.string(), z.null()]).optional(),
+    fullCoverImage: z.union([
+      z.string(),
+      z.null(),
+    ]).optional(),
     bpm: z.number(),
     duration: z.number(),
     downloadUrl: z.string().optional(),
@@ -17,6 +23,6 @@ export const BeatLeaderSongSchema = z
     uploadTime: z.number().optional(),
     difficulties: z.null().optional(),
   })
-  .loose();
+  .loose()
 
-export type BeatLeaderSongToken = z.infer<typeof BeatLeaderSongSchema>;
+export type BeatLeaderSongToken = z.infer<typeof BeatLeaderSongSchema>

@@ -1,5 +1,5 @@
-import { BeatSaverMap } from "../schemas/beatsaver/map/map";
-import { ScoreSaberLeaderboard } from "../schemas/scoresaber/leaderboard/leaderboard";
+import { BeatSaverMap } from '../schemas/beatsaver/map/map'
+import { ScoreSaberLeaderboard } from '../schemas/scoresaber/leaderboard/leaderboard'
 
 export interface PlayerScore<T> {
   /**

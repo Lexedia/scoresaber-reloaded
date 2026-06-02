@@ -1,8 +1,11 @@
-import { z } from "zod";
-import { BeatLeaderModifierRatingSchema } from "../modifier/modifier-rating";
-import { BeatLeaderModifierSchema } from "../modifier/modifiers";
+import { z } from 'zod'
+import { BeatLeaderModifierRatingSchema } from '../modifier/modifier-rating'
+import { BeatLeaderModifierSchema } from '../modifier/modifiers'
 
-const nullableNumber = z.union([z.number(), z.null()]);
+const nullableNumber = z.union([
+  z.number(),
+  z.null(),
+])
 
 export const BeatLeaderDifficultySchema = z
   .object({
@@ -13,7 +16,10 @@ export const BeatLeaderDifficultySchema = z
     modeName: z.string(),
     status: z.number(),
     modifierValues: BeatLeaderModifierSchema,
-    modifiersRating: z.union([BeatLeaderModifierRatingSchema, z.null()]),
+    modifiersRating: z.union([
+      BeatLeaderModifierRatingSchema,
+      z.null(),
+    ]),
     nominatedTime: z.number(),
     qualifiedTime: z.number(),
     rankedTime: z.number(),
@@ -33,6 +39,6 @@ export const BeatLeaderDifficultySchema = z
     duration: z.number(),
     requirements: z.number(),
   })
-  .loose();
+  .loose()
 
-export type BeatLeaderDifficultyToken = z.infer<typeof BeatLeaderDifficultySchema>;
+export type BeatLeaderDifficultyToken = z.infer<typeof BeatLeaderDifficultySchema>

@@ -18,4 +18,4 @@ export type Metadata = {
    * The amount of items per page
    */
   readonly itemsPerPage: number;
-};
+}

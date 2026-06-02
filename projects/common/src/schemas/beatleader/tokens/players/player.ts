@@ -1,7 +1,7 @@
-import { z } from "zod";
-import { BeatLeaderClanSchema } from "./clan";
-import { BeatLeaderProfileSettingsSchema } from "./profile-settings";
-import { BeatLeaderPlayerScoreStatsSchema } from "./score-stats";
+import { z } from 'zod'
+import { BeatLeaderClanSchema } from './clan'
+import { BeatLeaderProfileSettingsSchema } from './profile-settings'
+import { BeatLeaderPlayerScoreStatsSchema } from './score-stats'
 
 export const BeatLeaderPlayerResponseSchema = z
   .object({
@@ -26,10 +26,10 @@ export const BeatLeaderPlayerResponseSchema = z
     externalProfileUrl: z.string().nullable(),
     scoreStats: BeatLeaderPlayerScoreStatsSchema,
   })
-  .loose();
+  .loose()
 
-export type BeatLeaderPlayerResponseToken = z.infer<typeof BeatLeaderPlayerResponseSchema>;
+export type BeatLeaderPlayerResponseToken = z.infer<typeof BeatLeaderPlayerResponseSchema>
 
 // Backwards-compatible aliases
-export const BeatLeaderPlayersPlayerSchema = BeatLeaderPlayerResponseSchema;
-export type BeatLeaderPlayersPlayerToken = BeatLeaderPlayerResponseToken;
+export const BeatLeaderPlayersPlayerSchema = BeatLeaderPlayerResponseSchema
+export type BeatLeaderPlayersPlayerToken = BeatLeaderPlayerResponseToken

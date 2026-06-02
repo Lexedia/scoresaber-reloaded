@@ -1,5 +1,5 @@
-import { SHARED_CONSTS } from "../../shared-consts";
-import { SelfPlaylistSettings, selfPlaylistSettingsSchema } from "./self-playlist-settings-schema";
+import { SHARED_CONSTS } from '../../shared-consts'
+import { SelfPlaylistSettings, selfPlaylistSettingsSchema } from './self-playlist-settings-schema'
 
 /**
  * Parses the raw settings into a self playlist settings object.
@@ -9,9 +9,9 @@ import { SelfPlaylistSettings, selfPlaylistSettingsSchema } from "./self-playlis
 export function parseSelfPlaylistSettings(settingsBase64?: string) {
   return selfPlaylistSettingsSchema.parse(
     {
-      sort: "pp",
-      sortDirection: "desc",
-      rankedStatus: "all",
+      sort: 'pp',
+      sortDirection: 'desc',
+      rankedStatus: 'all',
       starRange: {
         min: 0,
         max: SHARED_CONSTS.maxStars,
@@ -21,11 +21,11 @@ export function parseSelfPlaylistSettings(settingsBase64?: string) {
         max: 100,
       },
       ...(settingsBase64
-        ? (JSON.parse(Buffer.from(settingsBase64, "base64").toString()) as SelfPlaylistSettings)
+        ? (JSON.parse(Buffer.from(settingsBase64, 'base64').toString()) as SelfPlaylistSettings)
         : {}),
     },
-    { reportInput: true }
-  );
+    { reportInput: true },
+  )
 }
 
 /**
@@ -35,5 +35,5 @@ export function parseSelfPlaylistSettings(settingsBase64?: string) {
  * @returns the base64 encoded settings
  */
 export function encodeSelfPlaylistSettings(settings: SelfPlaylistSettings) {
-  return Buffer.from(JSON.stringify(settings)).toString("base64");
+  return Buffer.from(JSON.stringify(settings)).toString('base64')
 }

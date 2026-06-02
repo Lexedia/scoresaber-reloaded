@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod'
 
 export const ScoreSaberLeaderboardPlayerInfoSchema = z.object({
   id: z.string(),
@@ -8,7 +8,7 @@ export const ScoreSaberLeaderboardPlayerInfoSchema = z.object({
   avatar: z
     .string()
     .nullish()
-    .transform(avatar => avatar ?? "/assets/unknown.png"),
-});
+    .transform(avatar => avatar ?? '/assets/unknown.png'),
+})
 
-export type ScoreSaberLeaderboardPlayerInfo = z.infer<typeof ScoreSaberLeaderboardPlayerInfoSchema>;
+export type ScoreSaberLeaderboardPlayerInfo = z.infer<typeof ScoreSaberLeaderboardPlayerInfoSchema>

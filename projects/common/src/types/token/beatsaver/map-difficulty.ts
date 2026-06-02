@@ -1,6 +1,6 @@
-import type { MapCharacteristic } from "../../../schemas/map/map-characteristic";
-import type { MapDifficulty } from "../../../schemas/map/map-difficulty";
-import type MapDifficultyParitySummaryToken from "./difficulty-parity-summary";
+import type { MapCharacteristic } from '../../../schemas/map/map-characteristic'
+import type { MapDifficulty } from '../../../schemas/map/map-difficulty'
+import type MapDifficultyParitySummaryToken from './difficulty-parity-summary'
 
 export default interface BeatSaverMapDifficultyToken {
   njs: number;

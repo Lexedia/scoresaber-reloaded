@@ -1,15 +1,20 @@
-import { z } from "zod";
-import { SHARED_CONSTS } from "../../shared-consts";
+import { z } from 'zod'
+import { SHARED_CONSTS } from '../../shared-consts'
 
 export const customRankedPlaylistSchema = z.object({
   stars: z.object({
     min: z.number().min(0),
     max: z.number().max(SHARED_CONSTS.maxStars),
   }),
-  sort: z.enum(["stars", "dateRanked", "plays", "dailyPlays"]),
-});
+  sort: z.enum([
+    'stars',
+    'dateRanked',
+    'plays',
+    'dailyPlays',
+  ]),
+})
 
-export type CustomRankedPlaylist = z.infer<typeof customRankedPlaylistSchema>;
+export type CustomRankedPlaylist = z.infer<typeof customRankedPlaylistSchema>
 
 /**
  * Parses the raw settings into a custom ranked playlist settings object.
@@ -19,25 +24,25 @@ export type CustomRankedPlaylist = z.infer<typeof customRankedPlaylistSchema>;
  */
 export function parseCustomRankedPlaylistSettings(settingsBase64?: string) {
   const settings: CustomRankedPlaylist = settingsBase64
-    ? (JSON.parse(Buffer.from(settingsBase64, "base64").toString()) as CustomRankedPlaylist)
+    ? (JSON.parse(Buffer.from(settingsBase64, 'base64').toString()) as CustomRankedPlaylist)
     : // Default values
 
-      {
-        stars: {
-          min: 0,
-          max: SHARED_CONSTS.maxStars,
-        },
-        sort: "stars",
-      };
+    {
+      stars: {
+        min: 0,
+        max: SHARED_CONSTS.maxStars,
+      },
+      sort: 'stars',
+    }
 
   // Enforce limitations
-  settings.sort = settings.sort ?? "stars";
+  settings.sort = settings.sort ?? 'stars'
   settings.stars = {
     min: settings.stars.min < 0 ? 0 : settings.stars.min,
     max: settings.stars.max > SHARED_CONSTS.maxStars ? SHARED_CONSTS.maxStars : settings.stars.max,
-  };
+  }
 
-  return settings;
+  return settings
 }
 
 /**
@@ -48,5 +53,5 @@ export function parseCustomRankedPlaylistSettings(settingsBase64?: string) {
  */
 
 export function encodeCustomRankedPlaylistSettings(settings: CustomRankedPlaylist) {
-  return Buffer.from(JSON.stringify(settings)).toString("base64");
+  return Buffer.from(JSON.stringify(settings)).toString('base64')
 }

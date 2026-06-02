@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod'
 
 export const BeatLeaderScoreOffsetsSchema = z
   .object({
@@ -9,6 +9,6 @@ export const BeatLeaderScoreOffsetsSchema = z
     heights: z.number(),
     pauses: z.number(),
   })
-  .loose();
+  .loose()
 
-export type BeatLeaderScoreOffsetsToken = z.infer<typeof BeatLeaderScoreOffsetsSchema>;
+export type BeatLeaderScoreOffsetsToken = z.infer<typeof BeatLeaderScoreOffsetsSchema>

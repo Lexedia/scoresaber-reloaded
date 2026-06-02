@@ -1,6 +1,6 @@
-import { z } from "zod";
-import { MapCharacteristicSchema } from "../../map/map-characteristic";
-import { MapDifficultySchema } from "../../map/map-difficulty";
+import { z } from 'zod'
+import { MapCharacteristicSchema } from '../../map/map-characteristic'
+import { MapDifficultySchema } from '../../map/map-difficulty'
 
 export const BeatSaverMapDifficultySchema = z.object({
   njs: z.number(),
@@ -20,4 +20,4 @@ export const BeatSaverMapDifficultySchema = z.object({
   seconds: z.number(),
   maxScore: z.number(),
   label: z.string(),
-});
+})

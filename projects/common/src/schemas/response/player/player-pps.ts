@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod'
 
 export const PlayerPpsResponseSchema = z.object({
   scores: z.array(
@@ -6,7 +6,7 @@ export const PlayerPpsResponseSchema = z.object({
       pp: z.number(),
       weight: z.number(),
       scoreId: z.number(),
-    })
+    }),
   ),
-});
-export type PlayerPpsResponse = z.infer<typeof PlayerPpsResponseSchema>;
+})
+export type PlayerPpsResponse = z.infer<typeof PlayerPpsResponseSchema>

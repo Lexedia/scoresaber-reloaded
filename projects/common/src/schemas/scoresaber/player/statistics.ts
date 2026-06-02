@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod'
 
 export const ScoreSaberPlayerStatisticsSchema = z.object({
   rank: z.number(),
@@ -23,6 +23,6 @@ export const ScoreSaberPlayerStatisticsSchema = z.object({
   ssPlays: z.number(),
   sspPlays: z.number(),
   godPlays: z.number(),
-});
+})
 
-export type ScoreSaberPlayerStatistics = z.infer<typeof ScoreSaberPlayerStatisticsSchema>;
+export type ScoreSaberPlayerStatistics = z.infer<typeof ScoreSaberPlayerStatisticsSchema>

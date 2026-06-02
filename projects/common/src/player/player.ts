@@ -1,45 +1,45 @@
-import { ScoreSaberPlayerHistory } from "../schemas/scoresaber/player/history";
+import { ScoreSaberPlayerHistory } from '../schemas/scoresaber/player/history'
 
 export default class Player {
   /**
    * The ID of this player.
    */
-  id: string;
+  id: string
 
   /**
    * The name of this player.
    */
-  name: string;
+  name: string
 
   /**
    * The avatar url for this player.
    */
-  avatar: string;
+  avatar: string
 
   /**
    * The country of this player.
    */
-  country: string;
+  country: string
 
   /**
    * The rank of the player.
    */
-  rank: number;
+  rank: number
 
   /**
    * The rank the player has in their country.
    */
-  countryRank: number;
+  countryRank: number
 
   /**
    * The player's hmd.
    */
-  hmd?: string;
+  hmd?: string
 
   /**
    * The date the player joined the playform.
    */
-  joinedDate: Date;
+  joinedDate: Date
 
   constructor(
     id: string,
@@ -48,19 +48,19 @@ export default class Player {
     country: string,
     rank: number,
     countryRank: number,
-    joinedDate: Date
+    joinedDate: Date,
   ) {
-    this.id = id;
-    this.name = name;
-    this.avatar = avatar;
-    this.country = country;
-    this.rank = rank;
-    this.countryRank = countryRank;
-    this.joinedDate = joinedDate;
+    this.id = id
+    this.name = name
+    this.avatar = avatar
+    this.country = country
+    this.rank = rank
+    this.countryRank = countryRank
+    this.joinedDate = joinedDate
   }
 }
 
-export type StatisticRange = "daily" | "weekly" | "monthly";
+export type StatisticRange = 'daily' | 'weekly' | 'monthly'
 export type StatisticChange = {
   [key in StatisticRange]: ScoreSaberPlayerHistory;
-};
+}

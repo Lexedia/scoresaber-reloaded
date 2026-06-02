@@ -1,10 +1,10 @@
-import { z } from "zod";
-import { ModifiersSchema } from "../../../score/modifier";
-import { BeatLeaderScoreSchema } from "../../beatleader/score/score";
-import { MapCharacteristicSchema } from "../../map/map-characteristic";
-import { MapDifficultySchema } from "../../map/map-difficulty";
-import { nullToZeroNumberSchema, numberIncludingInfinitySchema } from "../../number";
-import { ScoreSaberLeaderboardPlayerInfoSchema } from "../leaderboard/player-info";
+import { z } from 'zod'
+import { ModifiersSchema } from '../../../score/modifier'
+import { BeatLeaderScoreSchema } from '../../beatleader/score/score'
+import { MapCharacteristicSchema } from '../../map/map-characteristic'
+import { MapDifficultySchema } from '../../map/map-difficulty'
+import { nullToZeroNumberSchema, numberIncludingInfinitySchema } from '../../number'
+import { ScoreSaberLeaderboardPlayerInfoSchema } from '../leaderboard/player-info'
 
 export const ScoreSaberHistoryScoreSchema = z.object({
   // Identifiers
@@ -52,6 +52,6 @@ export const ScoreSaberHistoryScoreSchema = z.object({
   beatLeaderScore: BeatLeaderScoreSchema.optional(),
 
   timestamp: z.date(),
-});
+})
 
-export type ScoreSaberHistoryScore = z.infer<typeof ScoreSaberHistoryScoreSchema>;
+export type ScoreSaberHistoryScore = z.infer<typeof ScoreSaberHistoryScoreSchema>

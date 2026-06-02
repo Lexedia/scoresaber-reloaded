@@ -1,4 +1,4 @@
-import ScoreSaberPlayer from "../../../player/impl/scoresaber-player";
+import ScoreSaberPlayer from '../../../player/impl/scoresaber-player'
 
 export type MiniRankingResponse = {
   /**
@@ -10,4 +10,4 @@ export type MiniRankingResponse = {
    * The country rankings of the player.
    */
   countryRankings: ScoreSaberPlayer[];
-};
+}

@@ -1,13 +1,16 @@
-import { z } from "zod";
-import { BeatLeaderLeaderboardSchema } from "../leaderboard/leaderboard";
-import { BeatLeaderPlayerSchema } from "../player/player";
-import { BeatLeaderScoreImprovementSchema } from "./score-improvement";
-import { BeatLeaderScoreOffsetsSchema } from "./score-offsets";
+import { z } from 'zod'
+import { BeatLeaderLeaderboardSchema } from '../leaderboard/leaderboard'
+import { BeatLeaderPlayerSchema } from '../player/player'
+import { BeatLeaderScoreImprovementSchema } from './score-improvement'
+import { BeatLeaderScoreOffsetsSchema } from './score-offsets'
 
 export const BeatLeaderScoreSchema = z
   .object({
     /** API returns null or a nested score summary object. */
-    myScore: z.union([z.null(), z.object({}).loose()]),
+    myScore: z.union([
+      z.null(),
+      z.object({}).loose(),
+    ]),
     validContexts: z.number(),
     leaderboard: BeatLeaderLeaderboardSchema,
     contextExtensions: z.null().optional(),
@@ -24,7 +27,10 @@ export const BeatLeaderScoreSchema = z
     accPP: z.number(),
     techPP: z.number(),
     rank: z.number(),
-    country: z.union([z.string(), z.null()]),
+    country: z.union([
+      z.string(),
+      z.null(),
+    ]),
     fcAccuracy: z.number(),
     fcPp: z.number(),
     weight: z.number(),
@@ -38,7 +44,10 @@ export const BeatLeaderScoreSchema = z
     fullCombo: z.boolean(),
     platform: z.string(),
     maxCombo: z.number(),
-    maxStreak: z.union([z.number(), z.null()]),
+    maxStreak: z.union([
+      z.number(),
+      z.null(),
+    ]),
     hmd: z.number(),
     controller: z.number(),
     leaderboardId: z.string(),
@@ -53,6 +62,6 @@ export const BeatLeaderScoreSchema = z
     metadata: z.null(),
     offsets: BeatLeaderScoreOffsetsSchema.nullable().optional(),
   })
-  .loose();
+  .loose()
 
-export type BeatLeaderScoreToken = z.infer<typeof BeatLeaderScoreSchema>;
+export type BeatLeaderScoreToken = z.infer<typeof BeatLeaderScoreSchema>
