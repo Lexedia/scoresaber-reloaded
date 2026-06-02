@@ -1,17 +1,17 @@
-import { getRankColor } from "@/common/rank-color-utils";
-import { cn } from "@/common/utils";
-import HMDIcon from "@/components/hmd-icon";
-import { ScoreSaberScoreTimeSetVs } from "@/components/platform/scoresaber/score/score-time-set-vs";
-import { ScoreTimeSet } from "@/components/score/score-time-set";
-import SimpleLink from "@/components/simple-link";
-import SimpleTooltip from "@/components/simple-tooltip";
-import { GlobeAmericasIcon } from "@heroicons/react/24/solid";
-import { getHMDInfo, HMD } from "@ssr/common/hmds";
-import { ScoreSaberLeaderboard } from "@ssr/common/schemas/scoresaber/leaderboard/leaderboard";
-import { ScoreSaberScore } from "@ssr/common/schemas/scoresaber/score/score";
-import { formatNumberWithCommas } from "@ssr/common/utils/number-utils";
-import { getPageFromRank } from "@ssr/common/utils/utils";
-import { ScoreSaberScoreHMD } from "./score-hmd";
+import { getRankColor } from '@/common/rank-color-utils'
+import { cn } from '@/common/utils'
+import HMDIcon from '@/components/hmd-icon'
+import { ScoreSaberScoreTimeSetVs } from '@/components/platform/scoresaber/score/score-time-set-vs'
+import { ScoreTimeSet } from '@/components/score/score-time-set'
+import SimpleLink from '@/components/simple-link'
+import SimpleTooltip from '@/components/simple-tooltip'
+import { GlobeAmericasIcon } from '@heroicons/react/24/solid'
+import { getHMDInfo, HMD } from '@ssr/common/hmds'
+import { ScoreSaberLeaderboard } from '@ssr/common/schemas/scoresaber/leaderboard/leaderboard'
+import { ScoreSaberScore } from '@ssr/common/schemas/scoresaber/score/score'
+import { formatNumberWithCommas } from '@ssr/common/utils/number-utils'
+import { getPageFromRank } from '@ssr/common/utils/utils'
+import { ScoreSaberScoreHMD } from './score-hmd'
 
 export default function ScoreSaberScoreInfo({
   score,
@@ -20,7 +20,7 @@ export default function ScoreSaberScoreInfo({
   score: ScoreSaberScore;
   leaderboard: ScoreSaberLeaderboard;
 }) {
-  const hmd = getHMDInfo(score.hmd as HMD);
+  const hmd = getHMDInfo(score.hmd as HMD)
 
   return (
     <div className="flex w-full flex-row items-center justify-between lg:w-[120px] lg:flex-col lg:justify-center">
@@ -35,7 +35,7 @@ export default function ScoreSaberScoreInfo({
             <p
               className={cn(
                 getRankColor(score.rank),
-                "hover:text-primary/80 cursor-pointer font-semibold transition-all"
+                'hover:text-primary/80 cursor-pointer font-semibold transition-all',
               )}
             >
               #{formatNumberWithCommas(score.rank)}
@@ -53,5 +53,5 @@ export default function ScoreSaberScoreInfo({
         <ScoreSaberScoreTimeSetVs score={score} />
       </div>
     </div>
-  );
+  )
 }

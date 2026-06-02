@@ -22,6 +22,8 @@ export const scoresaberScoresBulkUpsertSet = {
   score: sql`excluded."score"`,
   accuracy: sql`excluded."accuracy"`,
   pp: sql`excluded."pp"`,
+  rank: sql`excluded."rank"`,
+  weight: sql`excluded."weight"`,
   missedNotes: sql`excluded."missedNotes"`,
   badCuts: sql`excluded."badCuts"`,
   maxCombo: sql`excluded."maxCombo"`,

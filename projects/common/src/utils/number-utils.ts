@@ -5,7 +5,7 @@
  * @returns whether the number is a whole number
  */
 export function isWholeNumber(number: number) {
-  return number % 1 === 0;
+  return number % 1 === 0
 }
 
 /**
@@ -15,8 +15,9 @@ export function isWholeNumber(number: number) {
  * @returns the formatted number
  */
 export function formatNumberWithCommas(num: number | undefined | null) {
-  if (num === undefined || num === null) return "0";
-  return num.toLocaleString();
+  if (num === undefined || num === null)
+    return '0'
+  return num.toLocaleString()
 }
 
 /**
@@ -27,11 +28,12 @@ export function formatNumberWithCommas(num: number | undefined | null) {
  * @returns the formatted pp
  */
 export function formatPp(num: number | undefined | null, fractionDigits: number = 2) {
-  if (num === undefined || num === null) return "0";
+  if (num === undefined || num === null)
+    return '0'
   return num.toLocaleString(undefined, {
     minimumFractionDigits: fractionDigits,
     maximumFractionDigits: fractionDigits,
-  });
+  })
 }
 
 /**
@@ -41,12 +43,13 @@ export function formatPp(num: number | undefined | null, fractionDigits: number 
  * @param type the type of number to format
  * @returns the formatted number
  */
-export function formatNumber(num: number | undefined | null, type: "number" | "pp" = "number") {
-  if (num === undefined || num === null) return "0";
-  if (type == "pp") {
-    return formatPp(num);
+export function formatNumber(num: number | undefined | null, type: 'number' | 'pp' = 'number') {
+  if (num === undefined || num === null)
+    return '0'
+  if (type == 'pp') {
+    return formatPp(num)
   }
-  return formatNumberWithCommas(num);
+  return formatNumberWithCommas(num)
 }
 
 /**
@@ -56,8 +59,8 @@ export function formatNumber(num: number | undefined | null, type: "number" | "p
  * @returns the positive number
  */
 export function ensurePositiveNumber(num: number) {
-  if (num == -0) {
-    return 0;
+  if (Object.is(num, -0)) {
+    return 0
   }
-  return num < 0 ? num * -1 : num;
+  return num < 0 ? num * -1 : num
 }

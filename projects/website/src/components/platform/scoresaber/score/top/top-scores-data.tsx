@@ -1,31 +1,36 @@
-"use client";
+'use client'
 
-import Card from "@/components/card";
-import PlayerScoreHeader from "@/components/score/player-score-header";
-import SimplePagination from "@/components/simple-pagination";
-import { Spinner } from "@/components/spinner";
-import { ssrApi } from "@ssr/common/utils/ssr-api";
-import { useQuery } from "@tanstack/react-query";
-import { parseAsInteger, useQueryState } from "nuqs";
-import ScoreSaberScoreDisplay from "../scoresaber-score";
+import Card from '@/components/card'
+import PlayerScoreHeader from '@/components/score/player-score-header'
+import SimplePagination from '@/components/simple-pagination'
+import { Spinner } from '@/components/spinner'
+import { ssrApi } from '@ssr/common/utils/ssr-api'
+import { useQuery } from '@tanstack/react-query'
+import { parseAsInteger, useQueryState } from 'nuqs'
+import ScoreSaberScoreDisplay from '../scoresaber-score'
 
 export function TopScoresData() {
-  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
+  const [
+    page,
+    setPage,
+  ] = useQueryState('page', parseAsInteger.withDefault(1))
 
   const {
     data: scores,
     isLoading,
     isRefetching,
   } = useQuery({
-    queryKey: ["top-scores", page],
+    queryKey: [
+      'top-scores',
+      page,
+    ],
     queryFn: () => ssrApi.fetchTopScores(page),
     refetchInterval: false,
     placeholderData: data => data,
-  });
+  })
 
   return (
     <Card className="flex h-fit w-full flex-col 2xl:w-[75%]">
-      {/* Header Section */}
       <div className="mb-(--spacing-lg)">
         <h1 className="text-2xl font-semibold">Top ScoreSaber Scores</h1>
         <p className="text-muted-foreground mt-(--spacing-xs) text-sm">
@@ -39,9 +44,8 @@ export function TopScoresData() {
         </div>
       ) : (
         <div className="flex flex-col gap-(--spacing-sm)">
-          {/* Scores */}
           {scores.items.map(({ score, leaderboard, beatSaver }) => {
-            const player = score.playerInfo;
+            const player = score.playerInfo
 
             return (
               <div key={score.scoreId} className="flex flex-col">
@@ -59,7 +63,7 @@ export function TopScoresData() {
                   />
                 </Card>
               </div>
-            );
+            )
           })}
 
           {/* Pagination */}
@@ -73,5 +77,5 @@ export function TopScoresData() {
         </div>
       )}
     </Card>
-  );
+  )
 }

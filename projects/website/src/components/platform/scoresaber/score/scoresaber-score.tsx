@@ -1,25 +1,25 @@
-"use client";
+'use client'
 
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react'
 
-import { cn } from "@/common/utils";
-import { useIsMobile } from "@/contexts/viewport-context";
+import { cn } from '@/common/utils'
+import { useIsMobile } from '@/contexts/viewport-context'
 
-import FallbackLink from "@/components/fallback-link";
-import ScoreSaberScoreButtons from "@/components/platform/scoresaber/score/buttons/score-buttons";
-import ScoreSaberScoreInfo from "@/components/platform/scoresaber/score/score-info";
-import ScoreSaberScoreStats from "@/components/platform/scoresaber/score/score-stats";
-import ScoreSongInfo from "@/components/score/score-song-info";
-import SimpleTooltip from "@/components/simple-tooltip";
-import { Spinner } from "@/components/spinner";
-import { StarIcon } from "@heroicons/react/24/solid";
-import { ScoreSaberCurve } from "@ssr/common/leaderboard-curve/scoresaber-curve";
-import { BeatSaverMap } from "@ssr/common/schemas/beatsaver/map/map";
-import { ScoreSaberLeaderboard } from "@ssr/common/schemas/scoresaber/leaderboard/leaderboard";
-import { ScoreSaberLeaderboardPlayerInfo } from "@ssr/common/schemas/scoresaber/leaderboard/player-info";
-import { ScoreSaberScore } from "@ssr/common/schemas/scoresaber/score/score";
-import { ChevronDown } from "lucide-react";
-import ScoreDetailsDropdown from "./score-details-dropdown";
+import FallbackLink from '@/components/fallback-link'
+import ScoreSaberScoreButtons from '@/components/platform/scoresaber/score/buttons/score-buttons'
+import ScoreSaberScoreInfo from '@/components/platform/scoresaber/score/score-info'
+import ScoreSaberScoreStats from '@/components/platform/scoresaber/score/score-stats'
+import ScoreSongInfo from '@/components/score/score-song-info'
+import SimpleTooltip from '@/components/simple-tooltip'
+import { Spinner } from '@/components/spinner'
+import { StarIcon } from '@heroicons/react/24/solid'
+import { ScoreSaberCurve } from '@ssr/common/leaderboard-curve/scoresaber-curve'
+import { BeatSaverMap } from '@ssr/common/schemas/beatsaver/map/map'
+import { ScoreSaberLeaderboard } from '@ssr/common/schemas/scoresaber/leaderboard/leaderboard'
+import { ScoreSaberLeaderboardPlayerInfo } from '@ssr/common/schemas/scoresaber/leaderboard/player-info'
+import { ScoreSaberScore } from '@ssr/common/schemas/scoresaber/score/score'
+import { ChevronDown } from 'lucide-react'
+import ScoreDetailsDropdown from './score-details-dropdown'
 
 export default function ScoreSaberScoreDisplay({
   leaderboard,
@@ -40,32 +40,41 @@ export default function ScoreSaberScoreDisplay({
     isPreviousScore?: boolean;
   };
 }) {
-  const isMobile = useIsMobile("2xl");
-  const [baseScore, setBaseScore] = useState(score.score);
+  const isMobile = useIsMobile('2xl')
+  const [
+    baseScore,
+    setBaseScore,
+  ] = useState(score.score)
 
-  const [detailsExpanded, setDetailsExpanded] = useState(false);
-  const [isDetailsLoading, setIsDetailsLoading] = useState(false);
+  const [
+    detailsExpanded,
+    setDetailsExpanded,
+  ] = useState(false)
+  const [
+    isDetailsLoading,
+    setIsDetailsLoading,
+  ] = useState(false)
 
   useEffect(() => {
-    setDetailsExpanded(false);
-  }, [score.scoreId]);
+    setDetailsExpanded(false)
+  }, [ score.scoreId ])
 
   useEffect(() => {
-    setBaseScore(score.score);
-  }, [score]);
+    setBaseScore(score.score)
+  }, [ score ])
 
-  const accuracy = (baseScore / leaderboard.maxScore) * 100;
-  const pp = baseScore === score.score ? score.pp : ScoreSaberCurve.getPp(leaderboard.stars, accuracy);
+  const accuracy = (baseScore / leaderboard.maxScore) * 100
+  const pp = baseScore === score.score ? score.pp : ScoreSaberCurve.getPp(leaderboard.stars, accuracy)
 
-  const isTracked = score.beatLeaderScore != undefined;
+  const isTracked = score.beatLeaderScore != undefined
 
   return (
     <div data-ss-score-row className="relative px-2 pt-2 pb-2 lg:pl-0">
       <div className="flex items-center">
         <div
           className={cn(
-            "grid w-full gap-2 lg:gap-0",
-            "grid-cols-[20px 1fr_1fr] lg:grid-cols-[0.5fr_4fr_1fr_350px]"
+            'grid w-full gap-2 lg:gap-0',
+            'grid-cols-[20px 1fr_1fr] lg:grid-cols-[0.5fr_4fr_1fr_350px]',
           )}
         >
           <ScoreSaberScoreInfo score={score} leaderboard={leaderboard} />
@@ -105,28 +114,32 @@ export default function ScoreSaberScoreDisplay({
             {detailsExpanded != undefined &&
               setDetailsExpanded != undefined &&
               !settings?.hideDetailsDropdown && (
-                <SimpleTooltip display="View score details and leaderboard scores">
-                  <button
-                    className="size-6 cursor-pointer"
-                    onClick={() => setDetailsExpanded(!detailsExpanded)}
-                  >
-                    {isDetailsLoading ? (
-                      <Spinner size="sm" />
-                    ) : (
-                      <ChevronDown
-                        className={cn(
-                          "size-6 transition-transform duration-200",
-                          detailsExpanded ? "" : "rotate-180"
-                        )}
-                      />
-                    )}
-                  </button>
-                </SimpleTooltip>
-              )}
+              <SimpleTooltip display="View score details and leaderboard scores">
+                <button
+                  className="size-6 cursor-pointer"
+                  onClick={() => setDetailsExpanded(!detailsExpanded)}
+                >
+                  {isDetailsLoading ? (
+                    <Spinner size="sm" />
+                  ) : (
+                    <ChevronDown
+                      className={cn(
+                        'size-6 transition-transform duration-200',
+                        detailsExpanded ? '' : 'rotate-180',
+                      )}
+                    />
+                  )}
+                </button>
+              </SimpleTooltip>
+            )}
           </div>
 
           <ScoreSaberScoreStats
-            score={{ ...score, accuracy, pp }}
+            score={{
+              ...score,
+              accuracy,
+              pp,
+            }}
             leaderboard={leaderboard}
             medalsMode={settings?.medalsMode}
           />
@@ -136,15 +149,15 @@ export default function ScoreSaberScoreDisplay({
         {!isMobile && (
           <FallbackLink href={isTracked ? `/score/${score.scoreId}` : undefined}>
             <SimpleTooltip
-              display={isTracked ? "Open score page" : "No score data found :("}
+              display={isTracked ? 'Open score page' : 'No score data found :('}
               className="pl-1.5"
             >
               <svg
                 className={cn(
-                  "h-8 w-3",
+                  'h-8 w-3',
                   isTracked
-                    ? "text-muted-foreground hover:text-primary/80 cursor-pointer transition-colors duration-200"
-                    : "cursor-not-allowed text-red-400"
+                    ? 'text-muted-foreground hover:text-primary/80 cursor-pointer transition-colors duration-200'
+                    : 'cursor-not-allowed text-red-400',
                 )}
                 fill="none"
                 viewBox="0 0 6 32"
@@ -169,5 +182,5 @@ export default function ScoreSaberScoreDisplay({
         isLoading={setIsDetailsLoading}
       />
     </div>
-  );
+  )
 }

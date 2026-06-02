@@ -3,12 +3,12 @@
 import { cn } from '@/common/utils'
 import useDatabase from '@/hooks/use-database'
 import { useStableLiveQuery } from '@/hooks/use-stable-live-query'
-import { TimeUnit } from '@ssr/common/utils/time-utils'
+import { TimeUnit, toMillis } from '@ssr/common/utils/time-utils'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
-const IMAGE_CHANGE_INTERVAL = TimeUnit.toMillis(TimeUnit.Second, 30)
+const IMAGE_CHANGE_INTERVAL = toMillis(TimeUnit.Second, 30)
 const TRANSITION_DURATION = 500
 
 type BackgroundCover = {

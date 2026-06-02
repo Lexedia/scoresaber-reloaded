@@ -288,6 +288,13 @@
       "when": 1780296523973,
       "tag": "0040_amazing_captain_universe",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1780392615003,
+      "tag": "0041_shallow_iron_fist",
+      "breakpoints": true
     }
   ]
 }
