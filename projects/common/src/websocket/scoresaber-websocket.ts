@@ -1,6 +1,6 @@
-import ScoreSaberPlayerScoreToken from "../types/token/scoresaber/player-score";
-import { ScoreSaberWebsocketMessageToken } from "../types/token/scoresaber/websocket/websocket-message";
-import { connectWebSocket, WebsocketCallbacks } from "./websocket";
+import ScoreSaberPlayerScoreToken from '../types/token/scoresaber/player-score'
+import { ScoreSaberWebsocketMessageToken } from '../types/token/scoresaber/websocket/websocket-message'
+import { connectWebSocket, WebsocketCallbacks } from './websocket'
 
 type ScoresaberWebsocket = {
   /**
@@ -9,7 +9,7 @@ type ScoresaberWebsocket = {
    * @param score the received score data.
    */
   onScore?: (score: ScoreSaberPlayerScoreToken) => void;
-} & WebsocketCallbacks;
+} & WebsocketCallbacks
 
 /**
  * Connects to the Scoresaber websocket and handles incoming messages.
@@ -20,24 +20,24 @@ type ScoresaberWebsocket = {
  */
 export function connectScoresaberWebsocket({ onMessage, onScore, onDisconnect }: ScoresaberWebsocket) {
   return connectWebSocket({
-    name: "Scoresaber",
-    url: "wss://scoresaber.com/ws",
+    name: 'Scoresaber',
+    url: 'wss://scoresaber.com/ws',
     onMessage: (message: unknown) => {
       // ScoreSaber sends a plain text welcome message on connect, ignore it
-      if (typeof message === "string" && message.includes("Connected to the ScoreSaber")) {
-        return;
+      if (typeof message === 'string' && message.includes('Connected to the ScoreSaber')) {
+        return
       }
 
-      const command = message as ScoreSaberWebsocketMessageToken;
-      if (typeof command !== "object" || command === null) {
-        return;
+      const command = message as ScoreSaberWebsocketMessageToken
+      if (typeof command !== 'object' || command === null) {
+        return
       }
-      if (command.commandName === "score") {
-        onScore && onScore(command.commandData as ScoreSaberPlayerScoreToken);
+      if (command.commandName === 'score') {
+        onScore?.(command.commandData as ScoreSaberPlayerScoreToken)
       } else {
-        onMessage && onMessage(command);
+        onMessage?.(command)
       }
     },
     onDisconnect,
-  });
+  })
 }

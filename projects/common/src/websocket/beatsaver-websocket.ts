@@ -1,6 +1,6 @@
-import BeatSaverMapToken from "../types/token/beatsaver/map";
-import { BeatSaverWebsocketMessageToken } from "../types/token/beatsaver/websocket/websocket-message";
-import { connectWebSocket, WebsocketCallbacks } from "./websocket";
+import BeatSaverMapToken from '../types/token/beatsaver/map'
+import { BeatSaverWebsocketMessageToken } from '../types/token/beatsaver/websocket/websocket-message'
+import { connectWebSocket, WebsocketCallbacks } from './websocket'
 
 type ScoresaberWebsocket = {
   /**
@@ -9,7 +9,7 @@ type ScoresaberWebsocket = {
    * @param map the received map update data.
    */
   onMapUpdate?: (map: BeatSaverMapToken) => void;
-} & WebsocketCallbacks;
+} & WebsocketCallbacks
 
 /**
  * Connects to the Scoresaber websocket and handles incoming messages.
@@ -20,21 +20,21 @@ type ScoresaberWebsocket = {
  */
 export function connectBeatSaverWebsocket({ onMessage, onDisconnect, onMapUpdate }: ScoresaberWebsocket) {
   return connectWebSocket({
-    name: "BeatSaver",
-    url: "wss://ws.beatsaver.com/maps",
+    name: 'BeatSaver',
+    url: 'wss://ws.beatsaver.com/maps',
     onMessage: (message: unknown) => {
-      const command = message as BeatSaverWebsocketMessageToken;
-      if (typeof command !== "object" || command === null) {
-        return;
+      const command = message as BeatSaverWebsocketMessageToken
+      if (typeof command !== 'object' || command === null) {
+        return
       }
 
       // Handle map update messages
-      if (command.type === "MAP_UPDATE") {
-        onMapUpdate && onMapUpdate(command.msg as BeatSaverMapToken);
+      if (command.type === 'MAP_UPDATE') {
+        onMapUpdate?.(command.msg as BeatSaverMapToken)
       } else {
-        onMessage && onMessage(command);
+        onMessage?.(command)
       }
     },
     onDisconnect,
-  });
+  })
 }

@@ -1,5 +1,5 @@
-import { BeatLeaderScoreToken } from "../schemas/beatleader/tokens/score/score";
-import { connectWebSocket, WebsocketCallbacks } from "./websocket";
+import { BeatLeaderScoreToken } from '../schemas/beatleader/tokens/score/score'
+import { connectWebSocket, WebsocketCallbacks } from './websocket'
 
 type BeatLeaderWebsocket = {
   /**
@@ -8,7 +8,7 @@ type BeatLeaderWebsocket = {
    * @param score the received score data.
    */
   onScore?: (score: BeatLeaderScoreToken) => void;
-} & WebsocketCallbacks;
+} & WebsocketCallbacks
 
 /**
  * Connects to the BeatLeader websocket and handles incoming messages.
@@ -19,12 +19,12 @@ type BeatLeaderWebsocket = {
  */
 export function connectBeatLeaderWebsocket({ onMessage, onScore, onDisconnect }: BeatLeaderWebsocket) {
   return connectWebSocket({
-    name: "BeatLeader",
-    url: "wss://sockets.api.beatleader.xyz/scores",
+    name: 'BeatLeader',
+    url: 'wss://sockets.api.beatleader.xyz/scores',
     onMessage: (message: unknown) => {
-      onScore && onScore(message as BeatLeaderScoreToken);
-      onMessage && onMessage(message);
+      onScore?.(message as BeatLeaderScoreToken)
+      onMessage?.(message)
     },
     onDisconnect,
-  });
+  })
 }
