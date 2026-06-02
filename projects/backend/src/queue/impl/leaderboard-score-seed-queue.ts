@@ -1,119 +1,121 @@
-import Logger, { type ScopedLogger } from "@ssr/common/logger";
-import { getScoreSaberScoreFromToken } from "@ssr/common/token-creators";
-import { TimeUnit } from "@ssr/common/utils/time-utils";
-import { asc, eq } from "drizzle-orm";
-import { db } from "../../db";
-import { scoreSaberLeaderboardsTable } from "../../db/schema";
-import { ScoreSaberScoresRepository } from "../../repositories/scoresaber-scores.repository";
-import { ScoreSaberApiService } from "../../service/external/scoresaber-api.service";
-import { ScoreSaberLeaderboardsService } from "../../service/leaderboard/scoresaber-leaderboards.service";
-import { PlayerMedalsService } from "../../service/medals/player-medals.service";
-import { PlayerCoreService } from "../../service/player/player-core.service";
-import { ScoreCoreService } from "../../service/score/score-core.service";
-import { Queue, QueueItem } from "../queue";
-import { QueueId } from "../queue-manager";
+import Logger, { type ScopedLogger } from '@ssr/common/logger'
+import { getScoreSaberScoreFromToken } from '@ssr/common/token-creators'
+import { TimeUnit, toMillis } from '@ssr/common/utils/time-utils'
+import { asc, eq } from 'drizzle-orm'
+import { db } from '../../db'
+import { scoreSaberLeaderboardsTable } from '../../db/schema'
+import { ScoreSaberScoresRepository } from '../../repositories/scoresaber-scores.repository'
+import { ScoreSaberApiService } from '../../service/external/scoresaber-api.service'
+import { ScoreSaberLeaderboardsService } from '../../service/leaderboard/scoresaber-leaderboards.service'
+import { PlayerMedalsService } from '../../service/medals/player-medals.service'
+import { PlayerCoreService } from '../../service/player/player-core.service'
+import { ScoreCoreService } from '../../service/score/score-core.service'
+import { Queue, QueueItem } from '../queue'
+import { QueueId } from '../queue-manager'
 
 export class LeaderboardScoreSeedQueue extends Queue<QueueItem<number>> {
-  private static readonly logger: ScopedLogger = Logger.withTopic("Leaderboard Score Seed Queue");
+  private static readonly logger: ScopedLogger = Logger.withTopic('Leaderboard Score Seed Queue')
 
   constructor() {
-    super(QueueId.LeaderboardScoreSeedQueue, "fifo", 10);
+    super(QueueId.LeaderboardScoreSeedQueue, 'fifo', 10)
 
-    setImmediate(() => this.insertLeaderboards());
-    setInterval(() => this.insertLeaderboards(), TimeUnit.toMillis(TimeUnit.Minute, 10));
+    setImmediate(() => this.insertLeaderboards())
+    setInterval(() => this.insertLeaderboards(), toMillis(TimeUnit.Minute, 10))
   }
 
   protected async processItem(item: QueueItem<number>): Promise<void> {
-    const leaderboardId = Number(item.id);
-    const leaderboard = await ScoreSaberLeaderboardsService.getLeaderboard(leaderboardId);
+    const leaderboardId = Number(item.id)
+    const leaderboard = await ScoreSaberLeaderboardsService.getLeaderboard(leaderboardId)
 
-    let newScoresTracked = 0;
-    let rankedScoresUpdated = 0;
+    let newScoresTracked = 0
+    let rankedScoresUpdated = 0
 
-    let consecutiveFailures = 0;
-    let scrape = true;
-    let page = 1;
-    let lastSeenTotalPages: number | undefined;
+    let consecutiveFailures = 0
+    let scrape = true
+    let page = 1
+    let lastSeenTotalPages: number | undefined
 
     while (scrape) {
-      const response = await ScoreSaberApiService.lookupLeaderboardScores(leaderboardId, page);
+      const response = await ScoreSaberApiService.lookupLeaderboardScores(leaderboardId, page)
       if (!response) {
-        consecutiveFailures++;
+        consecutiveFailures++
         if (consecutiveFailures >= 2) {
           if (lastSeenTotalPages !== undefined && page < lastSeenTotalPages) {
             LeaderboardScoreSeedQueue.logger.warn(
-              `Failed to fetch page ${page} for leaderboard "${leaderboardId}" after 2 attempts; skipping this page and continuing (leaderboard may be incompletely seeded)`
-            );
-            consecutiveFailures = 0;
-            page++;
-            continue;
+              `Failed to fetch page ${page} for leaderboard "${leaderboardId}" after 2 attempts;
+ skipping this page and continuing (leaderboard may be incompletely seeded)`,
+            )
+            consecutiveFailures = 0
+            page++
+            continue
           }
           LeaderboardScoreSeedQueue.logger.warn(
-            `Aborting leaderboard "${leaderboardId}" after 2 consecutive page failures (page ${page}${lastSeenTotalPages !== undefined ? ` of ${lastSeenTotalPages}` : ""})`
-          );
-          break;
+            `Aborting leaderboard "${leaderboardId}" after 2 consecutive page failures
+ (page ${page}${lastSeenTotalPages !== undefined ? ` of ${lastSeenTotalPages}` : ''})`,
+          )
+          break
         }
         LeaderboardScoreSeedQueue.logger.warn(
-          `Tried to get page ${page} for leaderboard "${leaderboardId}" and failed`
-        );
-        continue;
+          `Tried to get page ${page} for leaderboard "${leaderboardId}" and failed`,
+        )
+        continue
       }
 
-      const totalPages = Math.ceil(response.metadata.total / response.metadata.itemsPerPage);
-      lastSeenTotalPages = totalPages;
-      consecutiveFailures = 0;
+      const totalPages = Math.ceil(response.metadata.total / response.metadata.itemsPerPage)
+      lastSeenTotalPages = totalPages
+      consecutiveFailures = 0
 
       if (page % 100 === 0 || page === 1 || page === totalPages) {
         LeaderboardScoreSeedQueue.logger.info(
-          `Fetching scores for leaderboard "${leaderboardId}" on page ${page}/${totalPages}`
-        );
+          `Fetching scores for leaderboard "${leaderboardId}" on page ${page}/${totalPages}`,
+        )
       }
 
       const parsedScores = response.scores.map(rawScore =>
-        getScoreSaberScoreFromToken(rawScore, leaderboard, undefined)
-      );
+        getScoreSaberScoreFromToken(rawScore, leaderboard, undefined),
+      )
       const existingScoreIds = await ScoreSaberScoresRepository.findExistingScoreIds(
-        parsedScores.map(score => score.scoreId)
-      );
+        parsedScores.map(score => score.scoreId),
+      )
 
       await Promise.all(
         parsedScores.map(async score => {
-          PlayerCoreService.createIfMissing(score.playerId); // no need to await this
+          PlayerCoreService.createIfMissing(score.playerId) // no need to await this
 
           if (!existingScoreIds.has(score.scoreId)) {
             await ScoreCoreService.trackScoreSaberScore(score, leaderboard, false, undefined, {
               skipDuplicateCheck: true,
-            });
-            newScoresTracked++;
-            return;
+            })
+            newScoresTracked++
+            return
           }
 
           if (score.pp > 0) {
-            await ScoreCoreService.upsertScore(score);
-            rankedScoresUpdated++;
+            await ScoreCoreService.upsertScore(score)
+            rankedScoresUpdated++
           }
-        })
-      );
+        }),
+      )
 
       if (page === totalPages) {
-        scrape = false;
+        scrape = false
       }
-      page++;
+      page++
     }
 
-    await PlayerMedalsService.refreshLeaderboardMedals(leaderboard);
+    await PlayerMedalsService.refreshLeaderboardMedals(leaderboard)
 
-    await this.markLeaderboardSeeded(leaderboardId);
+    await this.markLeaderboardSeeded(leaderboardId)
     LeaderboardScoreSeedQueue.logger.info(
-      `Updated seeded scores status for leaderboard "${leaderboardId}" tracked ${newScoresTracked} new scores and updated ${rankedScoresUpdated} ranked scores`
-    );
+      `Updated seeded scores status for leaderboard "${leaderboardId}" tracked ${newScoresTracked} new scores and updated ${rankedScoresUpdated} ranked scores`,
+    )
   }
 
   private async markLeaderboardSeeded(leaderboardId: number): Promise<void> {
     await db
       .update(scoreSaberLeaderboardsTable)
       .set({ seededScores: true })
-      .where(eq(scoreSaberLeaderboardsTable.id, leaderboardId));
+      .where(eq(scoreSaberLeaderboardsTable.id, leaderboardId))
   }
 
   /**
@@ -122,32 +124,35 @@ export class LeaderboardScoreSeedQueue extends Queue<QueueItem<number>> {
   private async insertLeaderboards() {
     // If there are already items in the queue, don't add more
     if ((await this.getSize()) !== 0 || this.getActiveWorkers() > 0) {
-      return;
+      return
     }
     try {
       const leaderboards = await db
         .select({ id: scoreSaberLeaderboardsTable.id })
         .from(scoreSaberLeaderboardsTable)
         .where(eq(scoreSaberLeaderboardsTable.seededScores, false))
-        .orderBy(asc(scoreSaberLeaderboardsTable.plays));
+        .orderBy(asc(scoreSaberLeaderboardsTable.plays))
 
-      const leaderboardIds = leaderboards.map(l => l.id);
+      const leaderboardIds = leaderboards.map(l => l.id)
       if (leaderboardIds.length === 0) {
-        LeaderboardScoreSeedQueue.logger.info("No leaderboard to seed scores for");
-        return;
+        LeaderboardScoreSeedQueue.logger.info('No leaderboard to seed scores for')
+        return
       }
 
       for (const leaderboardId of leaderboardIds) {
-        await this.add({ id: leaderboardId.toString(), data: leaderboardId });
+        await this.add({
+          id: leaderboardId.toString(),
+          data: leaderboardId,
+        })
       }
 
-      await this.processQueue(); // Process the queue immediately
+      await this.processQueue() // Process the queue immediately
       LeaderboardScoreSeedQueue.logger.info(
-        `Added ${leaderboardIds.length} leaderboards to score seed queue`
-      );
+        `Added ${leaderboardIds.length} leaderboards to score seed queue`,
+      )
     } catch (error) {
-      LeaderboardScoreSeedQueue.logger.error("Failed to load unseeded leaderboards:", error);
-      return;
+      LeaderboardScoreSeedQueue.logger.error('Failed to load unseeded leaderboards:', error)
+      return
     }
   }
 }

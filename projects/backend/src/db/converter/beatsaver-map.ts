@@ -1,12 +1,12 @@
-import { BeatSaverMap, BeatSaverMapSchema } from "@ssr/common/schemas/beatsaver/map/map";
-import { MapCharacteristic } from "@ssr/common/schemas/map/map-characteristic";
-import { MapDifficulty } from "@ssr/common/schemas/map/map-difficulty";
+import { BeatSaverMap, BeatSaverMapSchema } from '@ssr/common/schemas/beatsaver/map/map'
+import { MapCharacteristic } from '@ssr/common/schemas/map/map-characteristic'
+import { MapDifficulty } from '@ssr/common/schemas/map/map-difficulty'
 import {
   BeatSaverMapDifficultyRow,
   BeatSaverMapRow,
   BeatSaverMapVersionRow,
   BeatSaverUploaderRow,
-} from "../schema";
+} from '../schema'
 
 type BeatSaverRowsToMapArgs = {
   hash: string;
@@ -16,7 +16,7 @@ type BeatSaverRowsToMapArgs = {
   uploader: BeatSaverUploaderRow | null;
   version: BeatSaverMapVersionRow;
   difficulties: BeatSaverMapDifficultyRow[];
-};
+}
 
 export function beatSaverRowsToMap({
   hash,
@@ -31,10 +31,10 @@ export function beatSaverRowsToMap({
     diff =>
       diff.versionId === version.id &&
       diff.characteristic === characteristic &&
-      diff.difficulty === difficulty
-  );
+      diff.difficulty === difficulty,
+  )
   if (!selectedDifficulty) {
-    return undefined;
+    return undefined
   }
 
   return BeatSaverMapSchema.parse(
@@ -46,24 +46,24 @@ export function beatSaverRowsToMap({
       songArt: `https://eu.cdn.beatsaver.com/${hash.toLowerCase()}.jpg`,
       author: {
         id: uploader?.id ?? 0,
-        name: uploader?.name ?? "Unknown",
-        hash: uploader?.hash ?? "",
-        avatar: uploader?.avatar ?? "",
-        type: uploader?.type ?? "SIMPLE",
+        name: uploader?.name ?? 'Unknown',
+        hash: uploader?.hash ?? '',
+        avatar: uploader?.avatar ?? '',
+        type: uploader?.type ?? 'SIMPLE',
         admin: uploader?.admin ?? false,
         curator: uploader?.curator ?? false,
         seniorCurator: uploader?.seniorCurator ?? false,
         verifiedMapper: uploader?.verifiedMapper ?? false,
-        playlistUrl: uploader?.playlistUrl ?? "",
+        playlistUrl: uploader?.playlistUrl ?? '',
       },
       metadata: {
         bpm: map.bpm ?? 0,
         duration: map.duration ?? 0,
-        songName: map.songName ?? "",
-        songSubName: map.songSubName ?? "",
-        songAuthorName: map.songAuthorName ?? "",
-        songAuthorUrl: map.songAuthorUrl ?? "",
-        levelAuthorName: map.levelAuthorName ?? "",
+        songName: map.songName ?? '',
+        songSubName: map.songSubName ?? '',
+        songAuthorName: map.songAuthorName ?? '',
+        songAuthorUrl: map.songAuthorUrl ?? '',
+        levelAuthorName: map.levelAuthorName ?? '',
       },
       difficulty: {
         njs: selectedDifficulty.njs ?? 0,
@@ -82,9 +82,9 @@ export function beatSaverRowsToMap({
         cinema: selectedDifficulty.cinema ?? false,
         seconds: selectedDifficulty.seconds ?? 0,
         maxScore: selectedDifficulty.maxScore ?? 0,
-        label: selectedDifficulty.label ?? "",
+        label: selectedDifficulty.label ?? '',
       },
     },
-    { reportInput: true }
-  );
+    { reportInput: true },
+  )
 }

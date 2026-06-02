@@ -1,7 +1,9 @@
-import { ScoreSaberPlayerToken } from "@ssr/common/types/token/scoresaber/player";
-import { formatPp } from "@ssr/common/utils/number-utils";
-import { EmbedBuilder } from "discord.js";
-import { DiscordChannels, sendEmbedToChannel } from "../bot/bot";
+import { env } from '@ssr/common/env'
+
+import { ScoreSaberPlayerToken } from '@ssr/common/types/token/scoresaber/player'
+import { formatPp } from '@ssr/common/utils/number-utils'
+import { EmbedBuilder } from 'discord.js'
+import { DiscordChannels, sendEmbedToChannel } from '../bot/bot'
 
 /**
  * Logs that a new player is being tracked
@@ -12,26 +14,26 @@ export async function logNewTrackedPlayer(player: ScoreSaberPlayerToken) {
   await sendEmbedToChannel(
     DiscordChannels.TRACKED_PLAYER_LOGS,
     new EmbedBuilder()
-      .setTitle("New Player Tracked")
-      .setDescription(`https://ssr.fascinated.cc/player/${player.id}`)
+      .setTitle('New Player Tracked')
+      .setDescription(`${env.NEXT_PUBLIC_WEBSITE_URL}/player/${player.id}`)
       .addFields([
         {
-          name: "Username",
+          name: 'Username',
           value: player.name,
           inline: true,
         },
         {
-          name: "ID",
+          name: 'ID',
           value: player.id,
           inline: true,
         },
         {
-          name: "PP",
-          value: formatPp(player.pp) + "pp",
+          name: 'PP',
+          value: formatPp(player.pp) + 'pp',
           inline: true,
         },
       ])
       .setThumbnail(player.profilePicture)
-      .setColor("#00ff00")
-  );
+      .setColor('#00ff00'),
+  )
 }

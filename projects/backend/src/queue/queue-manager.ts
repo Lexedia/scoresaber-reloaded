@@ -1,26 +1,26 @@
-import { EventListener } from "../event/event-listener";
-import { LeaderboardScoreSeedQueue } from "./impl/leaderboard-score-seed-queue";
-import { PlayerBeatLeaderScoreSeedQueue } from "./impl/player-beatleader-score-seed-queue";
-import { FetchMissingScoresQueue } from "./impl/player-scoresaber-scores-queue";
-import { Queue, QueueItem } from "./queue";
+import { EventListener } from '../event/event-listener'
+import { LeaderboardScoreSeedQueue } from './impl/leaderboard-score-seed-queue'
+import { PlayerBeatLeaderScoreSeedQueue } from './impl/player-beatleader-score-seed-queue'
+import { FetchMissingScoresQueue } from './impl/player-scoresaber-scores-queue'
+import { Queue, QueueItem } from './queue'
 
 export enum QueueId {
-  PlayerScoreRefreshQueue = "player-score-refresh-queue",
-  LeaderboardScoreSeedQueue = "leaderboard-score-seed-queue",
-  PlayerBeatLeaderScoreSeedQueue = "player-beatleader-score-seed-queue",
+  PlayerScoreRefreshQueue = 'player-score-refresh-queue',
+  LeaderboardScoreSeedQueue = 'leaderboard-score-seed-queue',
+  PlayerBeatLeaderScoreSeedQueue = 'player-beatleader-score-seed-queue',
 }
 
 export class QueueManager implements EventListener {
-  private static queues: Map<QueueId, Queue<QueueItem<unknown>>> = new Map();
+  private static queues: Map<QueueId, Queue<QueueItem<unknown>>> = new Map()
 
   constructor() {
-    QueueManager.addQueue(new FetchMissingScoresQueue());
-    QueueManager.addQueue(new LeaderboardScoreSeedQueue());
-    QueueManager.addQueue(new PlayerBeatLeaderScoreSeedQueue());
+    QueueManager.addQueue(new FetchMissingScoresQueue())
+    QueueManager.addQueue(new LeaderboardScoreSeedQueue())
+    QueueManager.addQueue(new PlayerBeatLeaderScoreSeedQueue())
 
     // Start all queues
     for (const queue of QueueManager.queues.values()) {
-      queue.processQueue();
+      queue.processQueue()
     }
   }
 
@@ -31,7 +31,7 @@ export class QueueManager implements EventListener {
    */
   public static async addQueue(queue: Queue<QueueItem<unknown>>) {
     // Register the queue
-    QueueManager.queues.set(queue.id, queue);
+    QueueManager.queues.set(queue.id, queue)
   }
 
   /**
@@ -41,7 +41,7 @@ export class QueueManager implements EventListener {
    * @returns the queue
    */
   public static getQueue<T>(name: QueueId): Queue<T> {
-    return QueueManager.queues.get(name) as Queue<T>;
+    return QueueManager.queues.get(name) as Queue<T>
   }
 
   /**
@@ -50,12 +50,12 @@ export class QueueManager implements EventListener {
    * @returns all queues
    */
   public static getQueues(): Queue<QueueItem<unknown>>[] {
-    return Array.from(QueueManager.queues.values());
+    return Array.from(QueueManager.queues.values())
   }
 
   async onStop() {
     for (const queue of QueueManager.queues.values()) {
-      queue.stop();
+      queue.stop()
     }
   }
 }

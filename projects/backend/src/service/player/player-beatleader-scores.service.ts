@@ -1,18 +1,18 @@
-import Logger, { type ScopedLogger } from "@ssr/common/logger";
-import type { BeatLeaderPlayerScoresPageToken } from "@ssr/common/schemas/beatleader/tokens/score/page";
-import { BeatLeaderScoreToken } from "@ssr/common/schemas/beatleader/tokens/score/score";
-import { ScoreSaberAccount } from "@ssr/common/schemas/scoresaber/account";
-import { formatNumberWithCommas } from "@ssr/common/utils/number-utils";
-import { formatDuration } from "@ssr/common/utils/time-utils";
-import { BeatLeaderScoresRepository } from "../../repositories/beatleader-scores.repository";
-import BeatLeaderService from "../beatleader/beatleader.service";
-import { BeatLeaderApiService } from "../external/beatleader-api.service";
-import { PlayerCoreService } from "./player-core.service";
+import Logger, { type ScopedLogger } from '@ssr/common/logger'
+import type { BeatLeaderPlayerScoresPageToken } from '@ssr/common/schemas/beatleader/tokens/score/page'
+import { BeatLeaderScoreToken } from '@ssr/common/schemas/beatleader/tokens/score/score'
+import { ScoreSaberAccount } from '@ssr/common/schemas/scoresaber/account'
+import { formatNumberWithCommas } from '@ssr/common/utils/number-utils'
+import { formatDuration } from '@ssr/common/utils/time-utils'
+import { BeatLeaderScoresRepository } from '../../repositories/beatleader-scores.repository'
+import BeatLeaderService from '../beatleader/beatleader.service'
+import { BeatLeaderApiService } from '../external/beatleader-api.service'
+import { PlayerCoreService } from './player-core.service'
 
-type SeedMode = "backfill" | "requested";
+type SeedMode = 'backfill' | 'requested'
 
 export class PlayerBeatLeaderScoresService {
-  private static readonly logger: ScopedLogger = Logger.withTopic("BeatLeader Player Scores");
+  private static readonly logger: ScopedLogger = Logger.withTopic('BeatLeader Player Scores')
 
   /**
    * Fetches missing BeatLeader scores for a player.
@@ -23,7 +23,7 @@ export class PlayerBeatLeaderScoresService {
    */
   public static async fetchMissingBeatLeaderScores(
     account: ScoreSaberAccount,
-    options: { mode: SeedMode }
+    options: { mode: SeedMode },
   ): Promise<{
     totalPagesFetched: number;
     newScoresTracked: number;
@@ -40,23 +40,23 @@ export class PlayerBeatLeaderScoresService {
       newScoresTracked: 0,
       stoppedBecauseAllTrackedPage: false,
       timeTaken: 0,
-    });
+    })
 
-    const playerId = account.id;
+    const playerId = account.id
     if (account.banned) {
       if (!account.seededBeatLeaderScores) {
-        await PlayerCoreService.updatePlayer(account.id, { seededBeatLeaderScores: true });
+        await PlayerCoreService.updatePlayer(account.id, { seededBeatLeaderScores: true })
       }
-      return empty();
+      return empty()
     }
-    const startTime = performance.now();
+    const startTime = performance.now()
 
     const result = {
       totalPagesFetched: 0,
       newScoresTracked: 0,
       stoppedBecauseAllTrackedPage: false,
       timeTaken: 0,
-    };
+    }
 
     /**
      * Gets a page of BeatLeader scores for the player.
@@ -67,17 +67,17 @@ export class PlayerBeatLeaderScoresService {
     async function getScoresPage(page: number): Promise<BeatLeaderPlayerScoresPageToken | undefined> {
       const scoresPage = await BeatLeaderApiService.lookupPlayerScores(playerId, page, {
         count: 100,
-        sortBy: "date",
-        order: "desc",
-        leaderboardContext: "general",
-      });
-      return scoresPage;
+        sortBy: 'date',
+        order: 'desc',
+        leaderboardContext: 'general',
+      })
+      return scoresPage
     }
 
     function maxPageFromMetadata(scoresPage: BeatLeaderPlayerScoresPageToken): number {
-      const { total, itemsPerPage } = scoresPage.metadata;
-      const ipp = Math.max(1, itemsPerPage);
-      return Math.ceil(total / ipp);
+      const { total, itemsPerPage } = scoresPage.metadata
+      const ipp = Math.max(1, itemsPerPage)
+      return Math.ceil(total / ipp)
     }
 
     /**
@@ -89,7 +89,7 @@ export class PlayerBeatLeaderScoresService {
      * @param scoresPage the page token
      */
     function hasMorePages(currentPage: number, scoresPage: BeatLeaderPlayerScoresPageToken): boolean {
-      return currentPage < maxPageFromMetadata(scoresPage);
+      return currentPage < maxPageFromMetadata(scoresPage)
     }
 
     /**
@@ -99,83 +99,95 @@ export class PlayerBeatLeaderScoresService {
      * @returns counts and whether the page was already fully tracked
      */
     async function processPageScores(
-      scoresPage: BeatLeaderPlayerScoresPageToken
-    ): Promise<{ newTracked: number; fullPageAlreadyTracked: boolean }> {
-      const scores = scoresPage.data ?? [];
+      scoresPage: BeatLeaderPlayerScoresPageToken,
+    ): Promise<{
+      newTracked: number;
+      fullPageAlreadyTracked: boolean
+    }> {
+      const scores = scoresPage.data ?? []
       if (scores.length === 0) {
-        return { newTracked: 0, fullPageAlreadyTracked: true };
+        return {
+          newTracked: 0,
+          fullPageAlreadyTracked: true,
+        }
       }
 
-      const scoreIds = scores.map(score => score.id);
-      const existing = await BeatLeaderScoresRepository.findExistingIds(Array.from(new Set(scoreIds)));
-      const uniqueIdsCount = new Set(scoreIds).size;
-      const fullPageAlreadyTracked = existing.size >= uniqueIdsCount;
+      const scoreIds = scores.map(score => score.id)
+      const existing = await BeatLeaderScoresRepository.findExistingIds(Array.from(new Set(scoreIds)))
+      const uniqueIdsCount = new Set(scoreIds).size
+      const fullPageAlreadyTracked = existing.size >= uniqueIdsCount
 
       if (fullPageAlreadyTracked) {
-        return { newTracked: 0, fullPageAlreadyTracked: true };
+        return {
+          newTracked: 0,
+          fullPageAlreadyTracked: true,
+        }
       }
 
-      let newTracked = 0;
+      let newTracked = 0
       for (const scoreToken of scores) {
         if (existing.has(scoreToken.id)) {
-          continue;
+          continue
         }
         const tracked = await BeatLeaderService.trackBeatLeaderScore(
           scoreToken as BeatLeaderScoreToken,
           false,
-          false
-        );
+          false,
+        )
         if (tracked) {
-          newTracked++;
+          newTracked++
         }
       }
 
-      return { newTracked, fullPageAlreadyTracked: false };
+      return {
+        newTracked,
+        fullPageAlreadyTracked: false,
+      }
     }
 
-    let currentPage = 1;
+    let currentPage = 1
     while (true) {
-      const scoresPage = await getScoresPage(currentPage);
+      const scoresPage = await getScoresPage(currentPage)
       if (!scoresPage) {
-        break;
+        break
       }
 
-      const scores = scoresPage.data ?? [];
+      const scores = scoresPage.data ?? []
       if (scores.length === 0) {
-        break;
+        break
       }
 
-      const { newTracked, fullPageAlreadyTracked } = await processPageScores(scoresPage);
-      result.newScoresTracked += newTracked;
+      const { newTracked, fullPageAlreadyTracked } = await processPageScores(scoresPage)
+      result.newScoresTracked += newTracked
 
-      if (options.mode === "requested" && fullPageAlreadyTracked) {
-        result.stoppedBecauseAllTrackedPage = true;
-        break;
+      if (options.mode === 'requested' && fullPageAlreadyTracked) {
+        result.stoppedBecauseAllTrackedPage = true
+        break
       }
 
-      const hasMore = hasMorePages(currentPage, scoresPage);
+      const hasMore = hasMorePages(currentPage, scoresPage)
       if (!hasMore) {
-        break;
+        break
       }
 
-      currentPage++;
+      currentPage++
     }
 
-    result.timeTaken = performance.now() - startTime;
-    result.totalPagesFetched = currentPage - 1;
+    result.timeTaken = performance.now() - startTime
+    result.totalPagesFetched = currentPage - 1
 
-    await PlayerCoreService.updatePlayer(playerId, { seededBeatLeaderScores: true });
+    await PlayerCoreService.updatePlayer(playerId, { seededBeatLeaderScores: true })
 
     if (currentPage !== 1) {
       PlayerBeatLeaderScoresService.logger.info(
-        `Player %s fetched %s page(s), tracked %s new score(s), in %s`,
+        'Player %s fetched %s page(s), tracked %s new score(s), in %s',
         playerId,
         formatNumberWithCommas(result.totalPagesFetched),
         formatNumberWithCommas(result.newScoresTracked),
-        formatDuration(result.timeTaken)
-      );
+        formatDuration(result.timeTaken),
+      )
     }
 
-    return result;
+    return result
   }
 }

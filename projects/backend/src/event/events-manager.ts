@@ -1,16 +1,16 @@
-import Logger, { type ScopedLogger } from "@ssr/common/logger";
-import { EventListener } from "./event-listener";
-import { TrackScoreListener } from "./impl/track-score-listener";
+import Logger, { type ScopedLogger } from '@ssr/common/logger'
+import { EventListener } from './event-listener'
+import { TrackScoreListener } from './impl/track-score-listener'
 
 export class EventsManager {
-  private static readonly logger: ScopedLogger = Logger.withTopic("Events");
+  private static readonly logger: ScopedLogger = Logger.withTopic('Events')
   /**
    * The registered event listeners.
    */
-  private static events: EventListener[] = [];
+  private static events: EventListener[] = []
 
   constructor() {
-    EventsManager.registerListener(new TrackScoreListener());
+    EventsManager.registerListener(new TrackScoreListener())
   }
 
   /**
@@ -20,10 +20,10 @@ export class EventsManager {
    */
   public static registerListener(eventListener: EventListener) {
     if (EventsManager.events.includes(eventListener)) {
-      EventsManager.logger.warn(`Event listener ${eventListener.constructor.name} already registered`);
-      return;
+      EventsManager.logger.warn(`Event listener ${eventListener.constructor.name} already registered`)
+      return
     }
-    EventsManager.events.push(eventListener);
+    EventsManager.events.push(eventListener)
   }
 
   /**
@@ -32,6 +32,6 @@ export class EventsManager {
    * @returns all event listeners.
    */
   public static getListeners() {
-    return EventsManager.events;
+    return EventsManager.events
   }
 }

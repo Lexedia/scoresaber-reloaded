@@ -1,44 +1,44 @@
-import { Gauge } from "prom-client";
-import { MetricType, prometheusRegistry } from "../../../service/infra/metrics.service";
-import Metric from "../../metric";
+import { Gauge } from 'prom-client'
+import { MetricType, prometheusRegistry } from '../../../service/infra/metrics.service'
+import Metric from '../../metric'
 
 export default class EventLoopLagMetric extends Metric<number> {
-  private lastCheck: number;
-  private lag: number;
-  private measureInterval: NodeJS.Timeout | null = null;
+  private lastCheck: number
+  private lag: number
+  private measureInterval: NodeJS.Timeout | null = null
 
   constructor() {
-    super(MetricType.EVENT_LOOP_LAG, 0, { persist: false });
+    super(MetricType.EVENT_LOOP_LAG, 0, { persist: false })
 
-    this.lastCheck = performance.now();
-    this.lag = 0;
+    this.lastCheck = performance.now()
+    this.lag = 0
 
     const gauge = new Gauge({
-      name: "event_loop_lag_ms",
-      help: "Event loop lag in milliseconds",
-      registers: [prometheusRegistry],
+      name: 'event_loop_lag_ms',
+      help: 'Event loop lag in milliseconds',
+      registers: [ prometheusRegistry ],
       collect: () => {
-        gauge.set(this.lag);
+        gauge.set(this.lag)
       },
-    });
+    })
 
-    this.startMeasuring();
+    this.startMeasuring()
   }
 
   private startMeasuring() {
     this.measureInterval = setInterval(() => {
-      const now = performance.now();
-      const expected = this.lastCheck + 1000; // We expect 1 second between measurements
-      this.lag = Math.max(0, now - expected);
-      this.lastCheck = now;
-      this.value = this.lag;
-    }, 1000);
+      const now = performance.now()
+      const expected = this.lastCheck + 1000 // We expect 1 second between measurements
+      this.lag = Math.max(0, now - expected)
+      this.lastCheck = now
+      this.value = this.lag
+    }, 1000)
   }
 
   public cleanup() {
     if (this.measureInterval) {
-      clearInterval(this.measureInterval);
-      this.measureInterval = null;
+      clearInterval(this.measureInterval)
+      this.measureInterval = null
     }
   }
 }

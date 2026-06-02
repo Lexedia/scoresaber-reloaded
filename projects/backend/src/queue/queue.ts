@@ -1,57 +1,57 @@
-import { env } from "@ssr/common/env";
-import Logger from "@ssr/common/logger";
-import { parse, stringify } from "devalue";
-import { redisClient } from "../common/redis";
-import { QueueId } from "./queue-manager";
+import { env } from '@ssr/common/env'
+import Logger from '@ssr/common/logger'
+import { parse, stringify } from 'devalue'
+import { redisClient } from '../common/redis'
+import { QueueId } from './queue-manager'
 
-const queueLogger = Logger.withTopic("Queue");
+const queueLogger = Logger.withTopic('Queue')
 
 export type QueueItem<T> = {
   id: string;
   data: T;
-};
-type QueueMode = "fifo" | "lifo";
+}
+type QueueMode = 'fifo' | 'lifo'
 export type QueueProcessEvent = {
   queueId: string;
   durationMs: number;
   success: boolean;
-};
+}
 
 export abstract class Queue<T> {
-  private static processObserver: ((event: QueueProcessEvent) => void) | undefined;
+  private static processObserver: ((event: QueueProcessEvent) => void) | undefined
   /**
    * The name of the queue
    */
-  public readonly id: QueueId;
+  public readonly id: QueueId
 
   /**
    * The mode of the queue
    */
-  public queueMode: QueueMode = "lifo";
+  public queueMode: QueueMode = 'lifo'
 
   /**
    * Max concurrent workers processing items from this queue
    */
-  public readonly concurrency: number;
+  public readonly concurrency: number
 
   /**
    * Number of in-flight item processors
    */
-  private activeWorkers = 0;
+  private activeWorkers = 0
 
   /**
    * Whether the queue is stopped
    */
-  private isStopped = false;
+  private isStopped = false
 
-  constructor(id: QueueId, queueMode: QueueMode = "lifo", concurrency: number = 1) {
-    this.id = id;
-    this.queueMode = queueMode;
-    this.concurrency = Math.max(1, Math.floor(concurrency));
+  constructor(id: QueueId, queueMode: QueueMode = 'lifo', concurrency: number = 1) {
+    this.id = id
+    this.queueMode = queueMode
+    this.concurrency = Math.max(1, Math.floor(concurrency))
   }
 
   public static setProcessObserver(observer: ((event: QueueProcessEvent) => void) | undefined): void {
-    Queue.processObserver = observer;
+    Queue.processObserver = observer
   }
 
   /**
@@ -61,12 +61,12 @@ export abstract class Queue<T> {
    */
   public async add(item: T) {
     if (this.isStopped) {
-      return;
+      return
     }
 
-    await redisClient.lpush(`queue::${this.id}`, stringify(item));
+    await redisClient.lpush(`queue::${this.id}`, stringify(item))
     // Use setImmediate to ensure the item is committed before processing
-    setImmediate(() => this.processQueue());
+    setImmediate(() => this.processQueue())
   }
 
   /**
@@ -76,12 +76,12 @@ export abstract class Queue<T> {
    */
   public async addAll(items: T[]) {
     if (this.isStopped) {
-      return;
+      return
     }
 
-    await redisClient.lpush(`queue::${this.id}`, stringify(items));
+    await redisClient.lpush(`queue::${this.id}`, stringify(items))
     // Use setImmediate to ensure the items are committed before processing
-    setImmediate(() => this.processQueue());
+    setImmediate(() => this.processQueue())
   }
 
   /**
@@ -89,50 +89,50 @@ export abstract class Queue<T> {
    */
   public async processQueue() {
     if (!env.ENABLE_QUEUES || this.isStopped) {
-      return;
+      return
     }
 
     while (this.activeWorkers < this.concurrency && !this.isStopped) {
       const rawItem =
-        this.queueMode === "fifo"
+        this.queueMode === 'fifo'
           ? await redisClient.rpop(`queue::${this.id}`)
-          : await redisClient.lpop(`queue::${this.id}`);
+          : await redisClient.lpop(`queue::${this.id}`)
 
       if (!rawItem) {
-        break;
+        break
       }
 
-      this.activeWorkers++;
-      void this.runOneItem(rawItem);
+      this.activeWorkers++
+      void this.runOneItem(rawItem)
     }
   }
 
   private async runOneItem(rawItem: string): Promise<void> {
     try {
-      const item = parse(rawItem) as T;
+      const item = parse(rawItem) as T
       if (!item) {
-        queueLogger.info(`Invalid queue item found in the queue ${this.id}: ${rawItem}`);
-        return;
+        queueLogger.info(`Invalid queue item found in the queue ${this.id}: ${rawItem}`)
+        return
       }
 
-      const startedAt = performance.now();
-      let success = false;
+      const startedAt = performance.now()
+      let success = false
       try {
-        await this.processItem(item);
-        success = true;
+        await this.processItem(item)
+        success = true
       } finally {
         Queue.processObserver?.({
           queueId: this.id,
           durationMs: Math.max(0, performance.now() - startedAt),
           success,
-        });
+        })
       }
     } catch (error) {
-      queueLogger.error(`Error processing queue ${this.id}:`, error);
+      queueLogger.error(`Error processing queue ${this.id}:`, error)
     } finally {
-      this.activeWorkers--;
+      this.activeWorkers--
       if (!this.isStopped) {
-        void this.processQueue();
+        void this.processQueue()
       }
     }
   }
@@ -143,22 +143,22 @@ export abstract class Queue<T> {
    * @returns the size of the queue
    */
   public async getSize(): Promise<number> {
-    return await redisClient.llen(`queue::${this.id}`);
+    return await redisClient.llen(`queue::${this.id}`)
   }
 
   public getActiveWorkers(): number {
-    return this.activeWorkers;
+    return this.activeWorkers
   }
 
   public async hasItem(item: T): Promise<boolean> {
-    return (await redisClient.lindex(`queue::${this.id}`, 0)) === stringify(item);
+    return (await redisClient.lindex(`queue::${this.id}`, 0)) === stringify(item)
   }
 
   /**
    * Stops the queue
    */
   public stop() {
-    this.isStopped = true;
+    this.isStopped = true
   }
 
   /**
@@ -166,5 +166,5 @@ export abstract class Queue<T> {
    *
    * @param item the item to process
    */
-  protected abstract processItem(item: T): Promise<void>;
+  protected abstract processItem(item: T): Promise<void>
 }

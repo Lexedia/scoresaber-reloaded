@@ -1,6 +1,6 @@
-import { NotFoundError } from "@ssr/common/error/not-found-error";
-import { getBeatLeaderReplayCdnUrl } from "@ssr/common/utils/beatleader-utils";
-import BeatLeaderService from "../beatleader/beatleader.service";
+import { NotFoundError } from '@ssr/common/error/not-found-error'
+import { getBeatLeaderReplayCdnUrl } from '@ssr/common/utils/beatleader-utils'
+import BeatLeaderService from '../beatleader/beatleader.service'
 
 export class PlayerReplayService {
   /**
@@ -11,11 +11,11 @@ export class PlayerReplayService {
    */
   public static async getPlayerReplayUrl(scoreId: string): Promise<string> {
     const beatleaderScore = await BeatLeaderService.getBeatLeaderScore(
-      parseInt(scoreId.replace(".bsor", ""))
-    );
+      parseInt(scoreId.replace('.bsor', '')),
+    )
     if (!beatleaderScore) {
-      throw new NotFoundError(`BeatLeader score "${scoreId}" not found`);
+      throw new NotFoundError(`BeatLeader score "${scoreId}" not found`)
     }
-    return getBeatLeaderReplayCdnUrl(beatleaderScore);
+    return getBeatLeaderReplayCdnUrl(beatleaderScore)
   }
 }

@@ -1,42 +1,42 @@
-import { NotFoundError } from "@ssr/common/error/not-found-error";
-import Logger, { type ScopedLogger } from "@ssr/common/logger";
-import { StorageBucket } from "@ssr/common/minio-buckets";
-import { Pagination } from "@ssr/common/pagination";
-import { LeaderboardStarChange } from "@ssr/common/schemas/leaderboard/leaderboard-star-change";
-import { MapCharacteristic } from "@ssr/common/schemas/map/map-characteristic";
-import { MapDifficulty } from "@ssr/common/schemas/map/map-difficulty";
-import type { LeaderboardsPageResponse } from "@ssr/common/schemas/response/leaderboard/leaderboards-page";
+import { NotFoundError } from '@ssr/common/error/not-found-error'
+import Logger, { type ScopedLogger } from '@ssr/common/logger'
+import { StorageBucket } from '@ssr/common/minio-buckets'
+import { Pagination } from '@ssr/common/pagination'
+import { LeaderboardStarChange } from '@ssr/common/schemas/leaderboard/leaderboard-star-change'
+import { MapCharacteristic } from '@ssr/common/schemas/map/map-characteristic'
+import { MapDifficulty } from '@ssr/common/schemas/map/map-difficulty'
+import type { LeaderboardsPageResponse } from '@ssr/common/schemas/response/leaderboard/leaderboards-page'
 import {
   RankingQueueLeaderboard,
   RankingQueueLeaderboardsResponse,
-} from "@ssr/common/schemas/response/leaderboard/ranking-queue-leaderboards";
-import { ScoreSaberLeaderboard } from "@ssr/common/schemas/scoresaber/leaderboard/leaderboard";
-import type { ScoreSaberLeaderboardQueryFilters } from "@ssr/common/schemas/scoresaber/leaderboard/query-filters";
-import { getScoreSaberLeaderboardFromToken } from "@ssr/common/token-creators";
-import ScoreSaberLeaderboardToken from "@ssr/common/types/token/scoresaber/leaderboard";
-import RankingRequestToken from "@ssr/common/types/token/scoresaber/ranking-request-token";
-import Request from "@ssr/common/utils/request";
-import { getScoreSaberDifficultyFromDifficulty } from "@ssr/common/utils/scoresaber.util";
-import { formatDuration } from "@ssr/common/utils/time-utils";
-import { count } from "drizzle-orm";
-import { normalizeSongHash, rankingQueueLeaderboardsCacheKey } from "../../common/cache-keys";
-import { db } from "../../db";
-import { leaderboardRowToType } from "../../db/converter/scoresaber-leaderboard";
-import { scoreSaberLeaderboardsTable } from "../../db/schema";
-import { LeaderboardScoreSeedQueue } from "../../queue/impl/leaderboard-score-seed-queue";
-import { QueueId, QueueManager } from "../../queue/queue-manager";
-import { ScoreSaberLeaderboardStarChangeRepository } from "../../repositories/scoresaber-leaderboard-star-change.repository";
+} from '@ssr/common/schemas/response/leaderboard/ranking-queue-leaderboards'
+import { ScoreSaberLeaderboard } from '@ssr/common/schemas/scoresaber/leaderboard/leaderboard'
+import type { ScoreSaberLeaderboardQueryFilters } from '@ssr/common/schemas/scoresaber/leaderboard/query-filters'
+import { getScoreSaberLeaderboardFromToken } from '@ssr/common/token-creators'
+import ScoreSaberLeaderboardToken from '@ssr/common/types/token/scoresaber/leaderboard'
+import RankingRequestToken from '@ssr/common/types/token/scoresaber/ranking-request-token'
+import Request from '@ssr/common/utils/request'
+import { getScoreSaberDifficultyFromDifficulty } from '@ssr/common/utils/scoresaber.util'
+import { formatDuration } from '@ssr/common/utils/time-utils'
+import { count } from 'drizzle-orm'
+import { normalizeSongHash, rankingQueueLeaderboardsCacheKey } from '../../common/cache-keys'
+import { db } from '../../db'
+import { leaderboardRowToType } from '../../db/converter/scoresaber-leaderboard'
+import { scoreSaberLeaderboardsTable } from '../../db/schema'
+import { LeaderboardScoreSeedQueue } from '../../queue/impl/leaderboard-score-seed-queue'
+import { QueueId, QueueManager } from '../../queue/queue-manager'
+import { ScoreSaberLeaderboardStarChangeRepository } from '../../repositories/scoresaber-leaderboard-star-change.repository'
 import {
   LEADERBOARD_SEARCH_PAGE_SIZE,
   ScoreSaberLeaderboardsRepository,
   buildLeaderboardQuery,
-} from "../../repositories/scoresaber-leaderboards.repository";
-import { ScoreSaberApiService } from "../external/scoresaber-api.service";
-import CacheService, { CacheId } from "../infra/cache.service";
-import StorageService from "../infra/storage.service";
+} from '../../repositories/scoresaber-leaderboards.repository'
+import { ScoreSaberApiService } from '../external/scoresaber-api.service'
+import CacheService, { CacheId } from '../infra/cache.service'
+import StorageService from '../infra/storage.service'
 
 export class ScoreSaberLeaderboardsService {
-  private static readonly logger: ScopedLogger = Logger.withTopic("ScoreSaber Leaderboards");
+  private static readonly logger: ScopedLogger = Logger.withTopic('ScoreSaber Leaderboards')
 
   /**
    * Gets a leaderboard by its ID.
@@ -45,11 +45,11 @@ export class ScoreSaberLeaderboardsService {
    * @returns the leaderboard
    */
   public static async getLeaderboard(id: number): Promise<ScoreSaberLeaderboard> {
-    const leaderboard = await ScoreSaberLeaderboardsRepository.getLeaderboardById(id);
+    const leaderboard = await ScoreSaberLeaderboardsRepository.getLeaderboardById(id)
     if (leaderboard !== undefined) {
-      return leaderboard;
+      return leaderboard
     }
-    return await ScoreSaberLeaderboardsService.createLeaderboard(id);
+    return await ScoreSaberLeaderboardsService.createLeaderboard(id)
   }
 
   /**
@@ -63,42 +63,42 @@ export class ScoreSaberLeaderboardsService {
   public static async getLeaderboardByHash(
     hash: string,
     difficulty: MapDifficulty,
-    characteristic: MapCharacteristic
+    characteristic: MapCharacteristic,
   ): Promise<ScoreSaberLeaderboard> {
-    const hashNorm = normalizeSongHash(hash);
+    const hashNorm = normalizeSongHash(hash)
     const leaderboard = await ScoreSaberLeaderboardsRepository.getLeaderboardByHash(
       hashNorm,
       difficulty,
-      characteristic
-    );
+      characteristic,
+    )
 
     if (leaderboard !== undefined) {
-      return leaderboard;
+      return leaderboard
     }
 
-    const before = performance.now();
+    const before = performance.now()
     const leaderboardToken = await ScoreSaberApiService.lookupLeaderboardByHash(
       hashNorm,
       getScoreSaberDifficultyFromDifficulty(difficulty),
-      characteristic
-    );
+      characteristic,
+    )
     if (leaderboardToken == undefined) {
       throw new NotFoundError(
-        `Leaderboard not found for hash "${hash}", difficulty "${difficulty}", characteristic "${characteristic}"`
-      );
+        `Leaderboard not found for hash "${hash}", difficulty "${difficulty}", characteristic "${characteristic}"`,
+      )
     }
-    const foundLeaderboard = getScoreSaberLeaderboardFromToken(leaderboardToken);
+    const foundLeaderboard = getScoreSaberLeaderboardFromToken(leaderboardToken)
 
     await ScoreSaberLeaderboardsService.saveLeaderboard(foundLeaderboard.id, foundLeaderboard);
     (QueueManager.getQueue(QueueId.LeaderboardScoreSeedQueue) as LeaderboardScoreSeedQueue).add({
       id: foundLeaderboard.id.toString(),
       data: foundLeaderboard.id,
-    });
+    })
 
     ScoreSaberLeaderboardsService.logger.info(
-      `Created leaderboard "${foundLeaderboard.id}" in ${formatDuration(performance.now() - before)}`
-    );
-    return foundLeaderboard;
+      `Created leaderboard "${foundLeaderboard.id}" in ${formatDuration(performance.now() - before)}`,
+    )
+    return foundLeaderboard
   }
 
   /**
@@ -110,19 +110,19 @@ export class ScoreSaberLeaderboardsService {
    */
   public static async getLeaderboardsPaginated(
     page: number,
-    filters?: ScoreSaberLeaderboardQueryFilters
+    filters?: ScoreSaberLeaderboardQueryFilters,
   ): Promise<LeaderboardsPageResponse> {
-    const { whereClause, orderParts } = buildLeaderboardQuery(filters);
+    const { whereClause, orderParts } = buildLeaderboardQuery(filters)
 
-    const [countRow] = await db
+    const [ countRow ] = await db
       .select({ total: count() })
       .from(scoreSaberLeaderboardsTable)
-      .where(whereClause);
-    const total = Number(countRow?.total ?? 0);
+      .where(whereClause)
+    const total = Number(countRow?.total ?? 0)
 
     const pagination = new Pagination<ScoreSaberLeaderboard>()
       .setItemsPerPage(LEADERBOARD_SEARCH_PAGE_SIZE)
-      .setTotalItems(total);
+      .setTotalItems(total)
 
     return await pagination.getPage(page, async fetchItems => {
       const rows = await db
@@ -131,10 +131,10 @@ export class ScoreSaberLeaderboardsService {
         .where(whereClause)
         .orderBy(...orderParts)
         .limit(fetchItems.end - fetchItems.start)
-        .offset(fetchItems.start);
+        .offset(fetchItems.start)
 
-      return rows.map(row => leaderboardRowToType(row));
-    });
+      return rows.map(row => leaderboardRowToType(row))
+    })
   }
 
   /**
@@ -148,27 +148,27 @@ export class ScoreSaberLeaderboardsService {
   public static async createLeaderboard(
     id: number,
     token?: ScoreSaberLeaderboardToken,
-    options?: { skipScoreSeedQueue?: boolean }
+    options?: { skipScoreSeedQueue?: boolean },
   ): Promise<ScoreSaberLeaderboard> {
-    const before = performance.now();
-    const leaderboardToken = token ?? (await ScoreSaberApiService.lookupLeaderboard(id));
+    const before = performance.now()
+    const leaderboardToken = token ?? (await ScoreSaberApiService.lookupLeaderboard(id))
     if (leaderboardToken == undefined) {
-      throw new NotFoundError(`Leaderboard not found for "${id}"`);
+      throw new NotFoundError(`Leaderboard not found for "${id}"`)
     }
-    const leaderboard = getScoreSaberLeaderboardFromToken(leaderboardToken);
+    const leaderboard = getScoreSaberLeaderboardFromToken(leaderboardToken)
 
-    await ScoreSaberLeaderboardsService.saveLeaderboard(id, leaderboard);
+    await ScoreSaberLeaderboardsService.saveLeaderboard(id, leaderboard)
     if (!options?.skipScoreSeedQueue) {
       (QueueManager.getQueue(QueueId.LeaderboardScoreSeedQueue) as LeaderboardScoreSeedQueue).add({
         id: leaderboard.id.toString(),
         data: leaderboard.id,
-      });
+      })
     }
 
     ScoreSaberLeaderboardsService.logger.info(
-      `Created leaderboard "${id}" in ${formatDuration(performance.now() - before)}`
-    );
-    return leaderboard;
+      `Created leaderboard "${id}" in ${formatDuration(performance.now() - before)}`,
+    )
+    return leaderboard
   }
 
   /**
@@ -178,17 +178,17 @@ export class ScoreSaberLeaderboardsService {
    * @returns the star change history
    */
   public static async getStarChangeHistory(
-    leaderboard: ScoreSaberLeaderboard
+    leaderboard: ScoreSaberLeaderboard,
   ): Promise<LeaderboardStarChange[]> {
     const rows = await ScoreSaberLeaderboardStarChangeRepository.listByLeaderboardIdOrderedByTimestampDesc(
-      leaderboard.id
-    );
+      leaderboard.id,
+    )
 
     return rows.map(starChange => ({
       previousStars: starChange.previousStars,
       newStars: starChange.newStars,
       timestamp: starChange.timestamp,
-    }));
+    }))
   }
 
   /**
@@ -198,8 +198,8 @@ export class ScoreSaberLeaderboardsService {
    * @param leaderboard the leaderboard to save
    */
   public static async saveLeaderboard(id: number, leaderboard: ScoreSaberLeaderboard) {
-    const cachedSongArt = await ScoreSaberLeaderboardsService.cacheLeaderboardSongArt(leaderboard);
-    await ScoreSaberLeaderboardsRepository.insert(id, leaderboard, cachedSongArt);
+    const cachedSongArt = await ScoreSaberLeaderboardsService.cacheLeaderboardSongArt(leaderboard)
+    await ScoreSaberLeaderboardsRepository.insert(id, leaderboard, cachedSongArt)
   }
 
   /**
@@ -212,30 +212,30 @@ export class ScoreSaberLeaderboardsService {
       CacheId.SCORESABER_RANKING_QUEUE_LEADERBOARDS,
       rankingQueueLeaderboardsCacheKey,
       async () => {
-        const rankingQueueTokens = await ScoreSaberApiService.lookupRankingRequests();
+        const rankingQueueTokens = await ScoreSaberApiService.lookupRankingRequests()
         if (!rankingQueueTokens) {
           return {
             nextInQueue: [],
             openRankUnrank: [],
             all: [],
-          };
+          }
         }
 
         function parseLeaderboard(token: RankingRequestToken): RankingQueueLeaderboard {
-          const leaderboard = getScoreSaberLeaderboardFromToken(token.leaderboardInfo);
+          const leaderboard = getScoreSaberLeaderboardFromToken(token.leaderboardInfo)
           return {
             ...leaderboard,
             difficultyCount: token.difficultyCount,
-          };
+          }
         }
 
         return {
           nextInQueue: rankingQueueTokens.nextInQueue.map(parseLeaderboard),
           openRankUnrank: rankingQueueTokens.openRankUnrank.map(parseLeaderboard),
           all: rankingQueueTokens.all.map(parseLeaderboard),
-        };
-      }
-    );
+        }
+      },
+    )
   }
 
   /**
@@ -245,37 +245,37 @@ export class ScoreSaberLeaderboardsService {
    * @returns whether the song art was cached successfully
    */
   public static async cacheLeaderboardSongArt(leaderboard: ScoreSaberLeaderboard): Promise<boolean> {
-    const objectKey = `${leaderboard.songHash}.png`;
+    const objectKey = `${leaderboard.songHash}.png`
 
-    const exists = await StorageService.fileExists(StorageBucket.LeaderboardSongArt, objectKey);
+    const exists = await StorageService.fileExists(StorageBucket.LeaderboardSongArt, objectKey)
     if (exists) {
       await ScoreSaberLeaderboardsRepository.updateLeaderboard(leaderboard.id, {
         cachedSongArt: true,
-      });
-      return true;
+      })
+      return true
     }
 
     const request = await Request.get<ArrayBuffer>(
       `https://cdn.scoresaber.com/covers/${leaderboard.songHash}.png`,
       {
-        returns: "arraybuffer",
-      }
-    );
+        returns: 'arraybuffer',
+      },
+    )
     if (request) {
-      await StorageService.saveFile(StorageBucket.LeaderboardSongArt, objectKey, Buffer.from(request));
+      await StorageService.saveFile(StorageBucket.LeaderboardSongArt, objectKey, Buffer.from(request))
       await ScoreSaberLeaderboardsRepository.updateLeaderboard(leaderboard.id, {
         cachedSongArt: true,
-      });
+      })
 
       ScoreSaberLeaderboardsService.logger.info(
-        `Cached song art for leaderboard ${leaderboard.id}: ${leaderboard.songHash}`
-      );
-      return true;
+        `Cached song art for leaderboard ${leaderboard.id}: ${leaderboard.songHash}`,
+      )
+      return true
     }
 
     ScoreSaberLeaderboardsService.logger.warn(
-      `Failed to cache song art for leaderboard ${leaderboard.id}: ${leaderboard.songHash}`
-    );
-    return false;
+      `Failed to cache song art for leaderboard ${leaderboard.id}: ${leaderboard.songHash}`,
+    )
+    return false
   }
 }

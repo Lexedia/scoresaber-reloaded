@@ -35,3 +35,20 @@ export function format(template: string, ...args: unknown[]) {
   let argIndex = 0
   return template.replace(/%s/g, () => args[argIndex++]?.toString() || '%s')
 }
+
+/**
+ * Strips indentation from a template literal.
+ *
+ * @param strings the template strings array
+ * @param values the values to interpolate
+ * @returns the stripped string
+ */
+export function stripIndent(strings: TemplateStringsArray, ...values: unknown[]) {
+  const endResult = String.raw({ raw: strings }, ...values)
+  const match = endResult.match(/^[ \t]*(?=\S)/gm)
+  if (!match)
+    return endResult.trim()
+  const indent = Math.min(...match.map(el => el.length))
+  const regexp = new RegExp('^[ \\t]{' + indent + '}', 'gm')
+  return endResult.replace(regexp, '').trim()
+}

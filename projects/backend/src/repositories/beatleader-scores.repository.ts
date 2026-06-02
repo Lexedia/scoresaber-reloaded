@@ -1,23 +1,25 @@
-import type { MapCharacteristic } from "@ssr/common/schemas/map/map-characteristic";
-import type { MapDifficulty } from "@ssr/common/schemas/map/map-difficulty";
-import { and, count, desc, eq, inArray, lt, sql } from "drizzle-orm";
-import { db } from "../db";
-import { beatLeaderScoresTable, type BeatLeaderScoreRow } from "../db/schema";
+import type { MapCharacteristic } from '@ssr/common/schemas/map/map-characteristic'
+import type { MapDifficulty } from '@ssr/common/schemas/map/map-difficulty'
+import {
+  and, count, desc, eq, inArray, lt, sql,
+} from 'drizzle-orm'
+import { db } from '../db'
+import { beatLeaderScoresTable, type BeatLeaderScoreRow } from '../db/schema'
 
-export type BeatLeaderScoreInsert = typeof beatLeaderScoresTable.$inferInsert;
+export type BeatLeaderScoreInsert = typeof beatLeaderScoresTable.$inferInsert
 
 export class BeatLeaderScoresRepository {
   public static async findRowById(scoreId: number): Promise<BeatLeaderScoreRow | undefined> {
-    const [row] = await db.select().from(beatLeaderScoresTable).where(eq(beatLeaderScoresTable.id, scoreId));
-    return row;
+    const [ row ] = await db.select().from(beatLeaderScoresTable).where(eq(beatLeaderScoresTable.id, scoreId))
+    return row
   }
 
   public static async insertReturning(row: BeatLeaderScoreInsert): Promise<BeatLeaderScoreRow> {
-    const [inserted] = await db.insert(beatLeaderScoresTable).values(row).returning();
+    const [ inserted ] = await db.insert(beatLeaderScoresTable).values(row).returning()
     if (!inserted) {
-      throw new Error("BeatLeader score insert returned no row");
+      throw new Error('BeatLeader score insert returned no row')
     }
-    return inserted;
+    return inserted
   }
 
   public static async findLatestBySong(
@@ -25,7 +27,7 @@ export class BeatLeaderScoresRepository {
     songHashUpper: string,
     songDifficulty: MapDifficulty,
     songCharacteristic: MapCharacteristic,
-    songScore: number
+    songScore: number,
   ): Promise<BeatLeaderScoreRow | undefined> {
     const rows = await db
       .select()
@@ -36,39 +38,39 @@ export class BeatLeaderScoresRepository {
           eq(beatLeaderScoresTable.songHash, songHashUpper),
           eq(beatLeaderScoresTable.songDifficulty, songDifficulty),
           eq(beatLeaderScoresTable.songCharacteristic, songCharacteristic),
-          eq(beatLeaderScoresTable.songScore, songScore)
-        )
+          eq(beatLeaderScoresTable.songScore, songScore),
+        ),
       )
       .orderBy(desc(beatLeaderScoresTable.timestamp))
-      .limit(1);
-    return rows[0];
+      .limit(1)
+    return rows[0]
   }
 
   public static async rowExistsById(scoreId: number): Promise<boolean> {
     const rows = await db
       .select({ exists: sql`1` })
       .from(beatLeaderScoresTable)
-      .where(eq(beatLeaderScoresTable.id, scoreId));
-    return rows.length > 0;
+      .where(eq(beatLeaderScoresTable.id, scoreId))
+    return rows.length > 0
   }
 
   public static async findExistingIds(scoreIds: number[]): Promise<Set<number>> {
     if (scoreIds.length === 0) {
-      return new Set();
+      return new Set()
     }
-    const unique = Array.from(new Set(scoreIds));
+    const unique = Array.from(new Set(scoreIds))
     const rows = await db
       .select({ id: beatLeaderScoresTable.id })
       .from(beatLeaderScoresTable)
-      .where(inArray(beatLeaderScoresTable.id, unique));
-    return new Set(rows.map(r => r.id));
+      .where(inArray(beatLeaderScoresTable.id, unique))
+    return new Set(rows.map(r => r.id))
   }
 
   public static async findPreviousIdBeforeTimestamp(
     playerId: string,
     songHashUpper: string,
     leaderboardId: string,
-    timestamp: Date
+    timestamp: Date,
   ): Promise<number | undefined> {
     const rows = await db
       .select({ id: beatLeaderScoresTable.id })
@@ -78,19 +80,19 @@ export class BeatLeaderScoresRepository {
           eq(beatLeaderScoresTable.playerId, playerId),
           eq(beatLeaderScoresTable.songHash, songHashUpper),
           eq(beatLeaderScoresTable.leaderboardId, leaderboardId),
-          lt(beatLeaderScoresTable.timestamp, timestamp)
-        )
+          lt(beatLeaderScoresTable.timestamp, timestamp),
+        ),
       )
       .orderBy(desc(beatLeaderScoresTable.timestamp))
-      .limit(1);
-    return rows[0]?.id;
+      .limit(1)
+    return rows[0]?.id
   }
 
   public static async countSavedReplays(): Promise<number> {
-    const [row] = await db
+    const [ row ] = await db
       .select({ c: count() })
       .from(beatLeaderScoresTable)
-      .where(eq(beatLeaderScoresTable.savedReplay, true));
-    return row?.c ?? 0;
+      .where(eq(beatLeaderScoresTable.savedReplay, true))
+    return row?.c ?? 0
   }
 }

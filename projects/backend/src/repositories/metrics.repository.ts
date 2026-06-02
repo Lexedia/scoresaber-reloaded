@@ -1,15 +1,18 @@
-import { sql } from "drizzle-orm";
-import { db } from "../db";
-import { metricsTable, type MetricRow } from "../db/schema";
+import { sql } from 'drizzle-orm'
+import { db } from '../db'
+import { metricsTable, type MetricRow } from '../db/schema'
 
 export class MetricsRepository {
   public static async loadAll(): Promise<MetricRow[]> {
-    return db.select().from(metricsTable);
+    return db.select().from(metricsTable)
   }
 
-  public static async upsertMany(rows: { id: string; value: unknown }[]): Promise<void> {
+  public static async upsertMany(rows: {
+    id: string;
+    value: unknown
+  }[]): Promise<void> {
     if (rows.length === 0) {
-      return;
+      return
     }
     await db
       .insert(metricsTable)
@@ -20,6 +23,6 @@ export class MetricsRepository {
           value: sql`excluded.value`,
           updatedAt: sql`now()`,
         },
-      });
+      })
   }
 }

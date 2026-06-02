@@ -1,5 +1,5 @@
-import { env } from "@ssr/common/env";
-import Logger from "@ssr/common/logger";
+import { env } from '@ssr/common/env'
+import Logger from '@ssr/common/logger'
 import {
   ActionRowData,
   ActivityType,
@@ -8,21 +8,21 @@ import {
   GatewayIntentBits,
   MessageActionRowComponentBuilder,
   MessageFlags,
-} from "discord.js";
-import { Client } from "discordx";
+} from 'discord.js'
+import { Client } from 'discordx'
 
-import { formatNumberWithCommas } from "@ssr/common/utils/number-utils";
-import { TimeUnit } from "@ssr/common/utils/time-utils";
-import { ScoreSaberScoresRepository } from "../repositories/scoresaber-scores.repository";
-import "./command/fetch-missing-player-scores";
-import "./command/fetch-missing-song-art";
-import "./command/force-track-player-statistics";
-import "./command/refresh-medal-scores";
-import "./command/refresh-ranked-leaderboards";
-import "./command/refresh-trending-maps";
-import "./command/update-player-medals";
+import { formatNumberWithCommas } from '@ssr/common/utils/number-utils'
+import { TimeUnit, toMillis } from '@ssr/common/utils/time-utils'
+import { ScoreSaberScoresRepository } from '../repositories/scoresaber-scores.repository'
+import './command/fetch-missing-player-scores'
+import './command/fetch-missing-song-art'
+import './command/force-track-player-statistics'
+import './command/refresh-medal-scores'
+import './command/refresh-ranked-leaderboards'
+import './command/refresh-trending-maps'
+import './command/update-player-medals'
 
-const discordBotLog = Logger.withTopic("Discord Bot");
+const discordBotLog = Logger.withTopic('Discord Bot')
 
 export const DiscordChannels = {
   TRACKED_PLAYER_LOGS: env.DISCORD_CHANNEL_TRACKED_PLAYER_LOGS,
@@ -34,7 +34,7 @@ export const DiscordChannels = {
   MEDAL_SCORES_FEED: env.DISCORD_CHANNEL_MEDAL_SCORES_FEED,
   BACKEND_LOGS: env.DISCORD_CHANNEL_BACKEND_LOGS,
   BEATSAVER_LOGS: env.DISCORD_CHANNEL_BEATSAVER_LOGS,
-};
+}
 
 const client = new Client({
   intents: [
@@ -44,56 +44,56 @@ const client = new Client({
     GatewayIntentBits.GuildMembers,
   ],
   silent: true,
-});
+})
 
-client.once("clientReady", async () => {
-  await client.initApplicationCommands();
+client.once('clientReady', async () => {
+  await client.initApplicationCommands()
 
-  discordBotLog.info("Discord bot ready!");
-});
+  discordBotLog.info('Discord bot ready!')
+})
 
-client.on("interactionCreate", interaction => {
+client.on('interactionCreate', interaction => {
   try {
-    client.executeInteraction(interaction);
+    client.executeInteraction(interaction)
   } catch (error) {
-    discordBotLog.error("Error executing interaction:", error);
+    discordBotLog.error('Error executing interaction:', error)
     if (interaction.isCommand() || interaction.isContextMenuCommand()) {
       interaction.reply({
-        content: "An error occurred while processing your request. Please try again later.",
+        content: 'An error occurred while processing your request. Please try again later.',
         flags: MessageFlags.Ephemeral,
-      });
+      })
     }
   }
-});
+})
 
 export async function initDiscordBot() {
   if (!env.DISCORD_BOT_TOKEN) {
-    discordBotLog.warn("Discord bot token not found, skipping initialization");
-    return;
+    discordBotLog.warn('Discord bot token not found, skipping initialization')
+    return
   }
 
-  discordBotLog.info("Initializing discord bot...");
+  discordBotLog.info('Initializing discord bot...')
   try {
-    await client.login(env.DISCORD_BOT_TOKEN);
+    await client.login(env.DISCORD_BOT_TOKEN)
 
     async function updatePresence() {
       client.user?.setPresence({
-        status: "online",
+        status: 'online',
         activities: [
           {
             name: `${formatNumberWithCommas(await ScoreSaberScoresRepository.countTotal())} Scores!`,
             type: ActivityType.Watching,
-            url: "https://ssr.fascinated.cc",
+            url: 'https://ssr.fascinated.cc',
           },
         ],
-      });
+      })
     }
 
-    updatePresence();
-    setInterval(updatePresence, TimeUnit.toMillis(TimeUnit.Minute, 1));
+    updatePresence()
+    setInterval(updatePresence, toMillis(TimeUnit.Minute, 1))
   } catch (error) {
-    discordBotLog.error("Failed to login to Discord:", error);
-    throw error; // Re-throw to handle it in the application
+    discordBotLog.error('Failed to login to Discord:', error)
+    throw error // Re-throw to handle it in the application
   }
 }
 
@@ -106,20 +106,23 @@ export async function initDiscordBot() {
 export async function sendEmbedToChannel(
   channelId: (typeof DiscordChannels)[keyof typeof DiscordChannels],
   embed: EmbedBuilder,
-  components: ActionRowData<MessageActionRowComponentBuilder>[] = []
+  components: ActionRowData<MessageActionRowComponentBuilder>[] = [],
 ) {
   if (!channelId || !env.DISCORD_BOT_TOKEN) {
-    return;
+    return
   }
   try {
-    const channel = await client.channels.fetch(channelId);
+    const channel = await client.channels.fetch(channelId)
     if (channel != undefined && channel.isSendable()) {
-      return await channel.send({ embeds: [embed], components });
+      return await channel.send({
+        embeds: [ embed ],
+        components,
+      })
     }
   } catch (error) {
-    discordBotLog.error(`Failed to send message to channel ${channelId}: `, error);
+    discordBotLog.error(`Failed to send message to channel ${channelId}: `, error)
   }
-  return undefined;
+  return undefined
 }
 
 /**
@@ -130,21 +133,21 @@ export async function sendEmbedToChannel(
  */
 export async function sendMessageToChannel(
   channelId: (typeof DiscordChannels)[keyof typeof DiscordChannels],
-  message: string
+  message: string,
 ) {
   if (!channelId || !env.DISCORD_BOT_TOKEN) {
-    return;
+    return
   }
 
   try {
-    const channel = await client.channels.fetch(channelId);
+    const channel = await client.channels.fetch(channelId)
     if (channel != undefined && channel.isSendable()) {
-      return await channel.send(message);
+      return await channel.send(message)
     }
   } catch (error) {
-    discordBotLog.error(`Failed to send message to channel ${channelId}: `, error);
+    discordBotLog.error(`Failed to send message to channel ${channelId}: `, error)
   }
-  return undefined;
+  return undefined
 }
 
 /**
@@ -158,14 +161,14 @@ export async function sendFile(
   channelId: (typeof DiscordChannels)[keyof typeof DiscordChannels],
   filename: string,
   content: string,
-  message?: string
+  message?: string,
 ) {
   if (!channelId) {
-    return;
+    return
   }
 
   try {
-    const channel = await client.channels.fetch(channelId);
+    const channel = await client.channels.fetch(channelId)
     if (channel != undefined && channel.isSendable()) {
       return await channel.send({
         content: message,
@@ -174,9 +177,9 @@ export async function sendFile(
             name: filename,
           }),
         ],
-      });
+      })
     }
   } catch (error) {
-    discordBotLog.error(`Error sending file to channel ${channelId}: `, error);
+    discordBotLog.error(`Error sending file to channel ${channelId}: `, error)
   }
 }

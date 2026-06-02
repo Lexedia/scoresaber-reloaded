@@ -1,15 +1,15 @@
-import BeatSaverMapToken from "@ssr/common/types/token/beatsaver/map";
-import { parseDate } from "@ssr/common/utils/time-utils";
-import { eq, sql } from "drizzle-orm";
-import { db } from "../db";
+import BeatSaverMapToken from '@ssr/common/types/token/beatsaver/map'
+import { parseDate } from '@ssr/common/utils/time-utils'
+import { eq, sql } from 'drizzle-orm'
+import { db } from '../db'
 import {
   beatSaverMapDifficultiesTable,
   beatSaverMapsTable,
   beatSaverMapVersionsTable,
   beatSaverUploadersTable,
-} from "../db/schema";
+} from '../db/schema'
 
-const DIFFICULTY_INSERT_CHUNK = 500;
+const DIFFICULTY_INSERT_CHUNK = 500
 
 const beatSaverVersionConflictSet = {
   mapId: sql`excluded."mapId"`,
@@ -18,7 +18,7 @@ const beatSaverVersionConflictSet = {
   downloadUrl: sql`excluded."downloadUrl"`,
   coverUrl: sql`excluded."coverUrl"`,
   previewUrl: sql`excluded."previewUrl"`,
-} as const;
+} as const
 
 const beatSaverDifficultyConflictSet = {
   njs: sql`excluded."njs"`,
@@ -36,16 +36,16 @@ const beatSaverDifficultyConflictSet = {
   seconds: sql`excluded."seconds"`,
   maxScore: sql`excluded."maxScore"`,
   label: sql`excluded."label"`,
-} as const;
+} as const
 
 export class BeatSaverRepository {
   public static async upsertMap(map: BeatSaverMapToken): Promise<void> {
     map.versions.forEach(version => {
-      version.hash = version.hash.toLowerCase();
-    });
+      version.hash = version.hash.toLowerCase()
+    })
 
     await db.transaction(async tx => {
-      const uploader = map.uploader;
+      const uploader = map.uploader
       if (uploader?.id != null) {
         await tx
           .insert(beatSaverUploadersTable)
@@ -74,7 +74,7 @@ export class BeatSaverRepository {
               verifiedMapper: uploader.verifiedMapper,
               playlistUrl: uploader.playlistUrl,
             },
-          });
+          })
       }
 
       await tx
@@ -118,10 +118,10 @@ export class BeatSaverRepository {
             lastPublishedAt: map.lastPublishedAt ? parseDate(map.lastPublishedAt) : null,
             tags: map.tags,
           },
-        });
+        })
 
       if (map.versions.length === 0) {
-        return;
+        return
       }
 
       const versionRows = await tx
@@ -135,7 +135,7 @@ export class BeatSaverRepository {
             downloadUrl: version.downloadURL,
             coverUrl: version.coverURL,
             previewUrl: version.previewURL,
-          }))
+          })),
         )
         .onConflictDoUpdate({
           target: beatSaverMapVersionsTable.hash,
@@ -144,17 +144,20 @@ export class BeatSaverRepository {
         .returning({
           id: beatSaverMapVersionsTable.id,
           hash: beatSaverMapVersionsTable.hash,
-        });
+        })
 
       const versionIdByHash = new Map(
-        versionRows.map(versionRow => [versionRow.hash.toLowerCase(), versionRow.id])
-      );
+        versionRows.map(versionRow => [
+          versionRow.hash.toLowerCase(),
+          versionRow.id,
+        ]),
+      )
 
-      const difficultyValues: (typeof beatSaverMapDifficultiesTable.$inferInsert)[] = [];
+      const difficultyValues: (typeof beatSaverMapDifficultiesTable.$inferInsert)[] = []
       for (const version of map.versions) {
-        const versionId = versionIdByHash.get(version.hash.toLowerCase());
+        const versionId = versionIdByHash.get(version.hash.toLowerCase())
         if (!versionId) {
-          continue;
+          continue
         }
         for (const diff of version.diffs) {
           difficultyValues.push({
@@ -176,12 +179,12 @@ export class BeatSaverRepository {
             seconds: diff.seconds,
             maxScore: diff.maxScore,
             label: diff.label,
-          });
+          })
         }
       }
 
       for (let i = 0; i < difficultyValues.length; i += DIFFICULTY_INSERT_CHUNK) {
-        const chunk = difficultyValues.slice(i, i + DIFFICULTY_INSERT_CHUNK);
+        const chunk = difficultyValues.slice(i, i + DIFFICULTY_INSERT_CHUNK)
         await tx
           .insert(beatSaverMapDifficultiesTable)
           .values(chunk)
@@ -192,13 +195,13 @@ export class BeatSaverRepository {
               beatSaverMapDifficultiesTable.difficulty,
             ],
             set: beatSaverDifficultyConflictSet,
-          });
+          })
       }
-    });
+    })
   }
 
   public static async findMapBundleByVersionHash(hash: string) {
-    const normalizedHash = hash.toLowerCase();
+    const normalizedHash = hash.toLowerCase()
 
     const rows = await db
       .select({
@@ -212,18 +215,23 @@ export class BeatSaverRepository {
       .leftJoin(beatSaverUploadersTable, eq(beatSaverMapsTable.uploaderId, beatSaverUploadersTable.id))
       .leftJoin(
         beatSaverMapDifficultiesTable,
-        eq(beatSaverMapDifficultiesTable.versionId, beatSaverMapVersionsTable.id)
+        eq(beatSaverMapDifficultiesTable.versionId, beatSaverMapVersionsTable.id),
       )
-      .where(eq(beatSaverMapVersionsTable.hash, normalizedHash));
+      .where(eq(beatSaverMapVersionsTable.hash, normalizedHash))
 
     if (rows.length === 0) {
-      return undefined;
+      return undefined
     }
 
-    const { version, map, uploader } = rows[0];
-    const uploaderRow = map.uploaderId == null ? null : uploader?.id != null ? uploader : null;
-    const difficulties = rows.map(r => r.difficulty).filter(d => d != null);
+    const { version, map, uploader } = rows[0]
+    const uploaderRow = map.uploaderId == null ? null : uploader?.id != null ? uploader : null
+    const difficulties = rows.map(r => r.difficulty).filter(d => d != null)
 
-    return { map, uploader: uploaderRow, version, difficulties };
+    return {
+      map,
+      uploader: uploaderRow,
+      version,
+      difficulties,
+    }
   }
 }

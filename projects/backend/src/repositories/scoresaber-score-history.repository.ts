@@ -1,32 +1,40 @@
-import { and, asc, desc, eq, getTableColumns, lt, sql } from "drizzle-orm";
-import { unionAll } from "drizzle-orm/pg-core";
-import { db } from "../db";
+import {
+  and, asc, desc, eq, getTableColumns, lt, sql,
+} from 'drizzle-orm'
+import { unionAll } from 'drizzle-orm/pg-core'
+import { db } from '../db'
 import {
   ScoreSaberScoreHistoryRow,
   scoreSaberScoreHistoryTable,
   scoreSaberScoresTable,
   type ScoreSaberScoreRow,
-} from "../db/schema";
-import { TableCountsRepository } from "./table-counts.repository";
+} from '../db/schema'
+import { TableCountsRepository } from './table-counts.repository'
 
-const scoreCols = getTableColumns(scoreSaberScoresTable);
-const histCols = getTableColumns(scoreSaberScoreHistoryTable);
+const scoreCols = getTableColumns(scoreSaberScoresTable)
+const histCols = getTableColumns(scoreSaberScoreHistoryTable)
 
 /** History rows projected to match `scoresaber-scores` columns for UNION with current scores. */
 const histAsScoreCols = Object.fromEntries(
-  Object.keys(scoreCols).map(name => [name, histCols[name as keyof typeof histCols]])
-) as unknown as typeof scoreCols;
+  Object.keys(scoreCols).map(name => [
+    name,
+    histCols[name as keyof typeof histCols],
+  ]),
+) as unknown as typeof scoreCols
 
 function playerMapFilters(playerId: string, leaderboardId: number) {
   const onScores = and(
     eq(scoreSaberScoresTable.playerId, playerId),
-    eq(scoreSaberScoresTable.leaderboardId, leaderboardId)
-  );
+    eq(scoreSaberScoresTable.leaderboardId, leaderboardId),
+  )
   const onHistory = and(
     eq(scoreSaberScoreHistoryTable.playerId, playerId),
-    eq(scoreSaberScoreHistoryTable.leaderboardId, leaderboardId)
-  );
-  return { onScores, onHistory };
+    eq(scoreSaberScoreHistoryTable.leaderboardId, leaderboardId),
+  )
+  return {
+    onScores,
+    onHistory,
+  }
 }
 
 export class ScoreSaberScoreHistoryRepository {
@@ -40,7 +48,7 @@ export class ScoreSaberScoreHistoryRepository {
   public static async insertSnapshot(
     previous: ScoreSaberScoreRow,
     playerId: string,
-    leaderboardId: number
+    leaderboardId: number,
   ): Promise<void> {
     await db
       .insert(scoreSaberScoreHistoryTable)
@@ -70,7 +78,7 @@ export class ScoreSaberScoreHistoryRepository {
           scoreSaberScoreHistoryTable.playerId,
           scoreSaberScoreHistoryTable.score,
         ],
-      });
+      })
   }
 
   /**
@@ -84,61 +92,67 @@ export class ScoreSaberScoreHistoryRepository {
   public static async findLatestRowBeforeTimestamp(
     playerId: string,
     leaderboardId: number,
-    beforeTimestamp: Date
+    beforeTimestamp: Date,
   ) {
-    const [previousScore] = await db
+    const [ previousScore ] = await db
       .select()
       .from(scoreSaberScoreHistoryTable)
       .where(
         and(
           eq(scoreSaberScoreHistoryTable.playerId, playerId),
           eq(scoreSaberScoreHistoryTable.leaderboardId, leaderboardId),
-          lt(scoreSaberScoreHistoryTable.timestamp, beforeTimestamp)
-        )
+          lt(scoreSaberScoreHistoryTable.timestamp, beforeTimestamp),
+        ),
       )
       .orderBy(desc(scoreSaberScoreHistoryTable.timestamp))
-      .limit(1);
-    return previousScore;
+      .limit(1)
+    return previousScore
   }
 
   public static async countCombinedScoresForPlayerMap(
     playerId: string,
-    leaderboardId: number
+    leaderboardId: number,
   ): Promise<number> {
-    const { onScores, onHistory } = playerMapFilters(playerId, leaderboardId);
-    const [scoresCount, historyCount] = await Promise.all([
+    const { onScores, onHistory } = playerMapFilters(playerId, leaderboardId)
+    const [
+      scoresCount,
+      historyCount,
+    ] = await Promise.all([
       db.$count(scoreSaberScoresTable, onScores),
       db.$count(scoreSaberScoreHistoryTable, onHistory),
-    ]);
-    return scoresCount + historyCount;
+    ])
+    return scoresCount + historyCount
   }
 
   public static async getCombinedScoresPageForPlayerMap(
     playerId: string,
     leaderboardId: number,
     limit: number,
-    offset: number
+    offset: number,
   ): Promise<ScoreSaberScoreRow[]> {
-    const { onScores, onHistory } = playerMapFilters(playerId, leaderboardId);
+    const { onScores, onHistory } = playerMapFilters(playerId, leaderboardId)
     const fullRowsUnion = unionAll(
       db.select(scoreCols).from(scoreSaberScoresTable).where(onScores),
-      db.select(histAsScoreCols).from(scoreSaberScoreHistoryTable).where(onHistory)
-    );
-    const combined = fullRowsUnion.as("combined");
+      db.select(histAsScoreCols).from(scoreSaberScoreHistoryTable).where(onHistory),
+    )
+    const combined = fullRowsUnion.as('combined')
     const rawScores = await db
       .select()
       .from(combined)
       .orderBy(desc(sql`"timestamp"`))
       .limit(limit)
-      .offset(offset);
-    return rawScores as ScoreSaberScoreRow[];
+      .offset(offset)
+    return rawScores as ScoreSaberScoreRow[]
   }
 
   public static async getAccuracySeriesForPlayerMap(
     playerId: string,
-    leaderboardId: number
-  ): Promise<Array<{ timestamp: Date; accuracy: number }>> {
-    const { onScores, onHistory } = playerMapFilters(playerId, leaderboardId);
+    leaderboardId: number,
+  ): Promise<{
+    timestamp: Date;
+    accuracy: number
+  }[]> {
+    const { onScores, onHistory } = playerMapFilters(playerId, leaderboardId)
     const graph = unionAll(
       db
         .select({
@@ -153,19 +167,23 @@ export class ScoreSaberScoreHistoryRepository {
           accuracy: scoreSaberScoreHistoryTable.accuracy,
         })
         .from(scoreSaberScoreHistoryTable)
-        .where(onHistory)
-    ).as("combined");
+        .where(onHistory),
+    ).as('combined')
 
-    const scores = await db.select().from(graph).orderBy(asc(graph.timestamp));
+    const scores = await db.select().from(graph).orderBy(asc(graph.timestamp))
     return scores.map(row => ({
       timestamp: row.timestamp,
       accuracy: row.accuracy,
-    }));
+    }))
   }
 
   public static async getPpAccuracyByLeaderboardId(
-    leaderboardId: number
-  ): Promise<{ id: number; pp: number; accuracy: number }[]> {
+    leaderboardId: number,
+  ): Promise<{
+    id: number;
+    pp: number;
+    accuracy: number
+  }[]> {
     return db
       .select({
         id: scoreSaberScoreHistoryTable.id,
@@ -173,7 +191,7 @@ export class ScoreSaberScoreHistoryRepository {
         accuracy: scoreSaberScoreHistoryTable.accuracy,
       })
       .from(scoreSaberScoreHistoryTable)
-      .where(eq(scoreSaberScoreHistoryTable.leaderboardId, leaderboardId));
+      .where(eq(scoreSaberScoreHistoryTable.leaderboardId, leaderboardId))
   }
 
   /**
@@ -183,27 +201,27 @@ export class ScoreSaberScoreHistoryRepository {
    */
   public static async bulkUpsetHistoryScores(updates: Partial<ScoreSaberScoreHistoryRow>[]): Promise<void> {
     if (updates.length === 0) {
-      return;
+      return
     }
 
     const validUpdates = updates.filter(
-      (u): u is Partial<ScoreSaberScoreHistoryRow> & { id: number } => u.id !== undefined
-    );
+      (u): u is Partial<ScoreSaberScoreHistoryRow> & { id: number } => u.id !== undefined,
+    )
     if (validUpdates.length === 0) {
-      return;
+      return
     }
 
     await db.transaction(async tx => {
       await Promise.all(
         validUpdates.map(({ id, ...fields }) =>
-          tx.update(scoreSaberScoreHistoryTable).set(fields).where(eq(scoreSaberScoreHistoryTable.id, id))
-        )
-      );
-    });
+          tx.update(scoreSaberScoreHistoryTable).set(fields).where(eq(scoreSaberScoreHistoryTable.id, id)),
+        ),
+      )
+    })
   }
 
   public static async countTotal(): Promise<number> {
-    const counts = await TableCountsRepository.getCounts();
-    return counts.scoresaberScoreHistory;
+    const counts = await TableCountsRepository.getCounts()
+    return counts.scoresaberScoreHistory
   }
 }

@@ -1,35 +1,35 @@
-import { SSRCache } from "@ssr/common/cache";
-import { env } from "@ssr/common/env";
-import Logger, { type ScopedLogger } from "@ssr/common/logger";
-import { getS3BucketName, StorageBucket } from "@ssr/common/minio-buckets";
-import { S3Client } from "bun";
-import CachePerformanceMetric from "../../metrics/impl/backend/cache-performance";
+import { SSRCache } from '@ssr/common/cache'
+import { env } from '@ssr/common/env'
+import Logger, { type ScopedLogger } from '@ssr/common/logger'
+import { getS3BucketName, StorageBucket } from '@ssr/common/minio-buckets'
+import { S3Client } from 'bun'
+import CachePerformanceMetric from '../../metrics/impl/backend/cache-performance'
 
 export default class StorageService {
-  private static readonly logger: ScopedLogger = Logger.withTopic("Storage");
-  private static CACHE: SSRCache;
-  private static readonly STORAGE_FILE_CACHE_ID = "s3_file_content";
+  private static readonly logger: ScopedLogger = Logger.withTopic('Storage')
+  private static CACHE: SSRCache
+  private static readonly STORAGE_FILE_CACHE_ID = 's3_file_content'
 
   private static readonly S3_CLIENT = new S3Client({
     accessKeyId: env.S3_ACCESS_KEY,
     secretAccessKey: env.S3_SECRET_KEY,
     region: env.S3_REGION,
     endpoint: env.S3_ENDPOINT,
-  });
+  })
 
-  private static readonly isS3Configured = Boolean(env.S3_ACCESS_KEY && env.S3_SECRET_KEY);
+  private static readonly isS3Configured = Boolean(env.S3_ACCESS_KEY && env.S3_SECRET_KEY)
 
   private static getFileRef(bucket: StorageBucket, filename: string) {
     return StorageService.S3_CLIENT.file(filename, {
       bucket: getS3BucketName(bucket),
-    });
+    })
   }
 
   constructor() {
     StorageService.CACHE = new SSRCache({
       maxObjects: 5_000,
-    });
-    this.initBuckets();
+    })
+    this.initBuckets()
   }
 
   /**
@@ -40,24 +40,25 @@ export default class StorageService {
    * @returns the file
    */
   public static async getFile(bucket: StorageBucket, filename: string): Promise<Buffer | undefined> {
-    const cacheKey = `${bucket}:${filename}`;
-    const cached = StorageService.CACHE.get<Buffer>(cacheKey);
+    const cacheKey = `${bucket}:${filename}`
+    const cached = StorageService.CACHE.get<Buffer>(cacheKey)
     if (cached !== undefined) {
-      CachePerformanceMetric.recordHit(StorageService.STORAGE_FILE_CACHE_ID, "MEMORY");
-      return cached;
+      CachePerformanceMetric.recordHit(StorageService.STORAGE_FILE_CACHE_ID, 'MEMORY')
+      return cached
     }
-    CachePerformanceMetric.recordMiss(StorageService.STORAGE_FILE_CACHE_ID, "MEMORY");
+    CachePerformanceMetric.recordMiss(StorageService.STORAGE_FILE_CACHE_ID, 'MEMORY')
 
-    if (!StorageService.isS3Configured) return undefined;
+    if (!StorageService.isS3Configured)
+      return undefined
 
     try {
-      const s3file = StorageService.getFileRef(bucket, filename);
-      const bytes = await s3file.arrayBuffer();
-      const file = Buffer.from(bytes);
-      StorageService.CACHE.set(cacheKey, file);
-      return file;
+      const s3file = StorageService.getFileRef(bucket, filename)
+      const bytes = await s3file.arrayBuffer()
+      const file = Buffer.from(bytes)
+      StorageService.CACHE.set(cacheKey, file)
+      return file
     } catch {
-      return undefined;
+      return undefined
     }
   }
 
@@ -71,14 +72,15 @@ export default class StorageService {
    */
   public static async saveFile(bucket: StorageBucket, filename: string, data: Buffer) {
     try {
-      StorageService.CACHE.set(`${bucket}:${filename}`, data);
-      
-      if (!StorageService.isS3Configured) return;
-      
-      const s3file = StorageService.getFileRef(bucket, filename);
-      await s3file.write(data);
+      StorageService.CACHE.set(`${bucket}:${filename}`, data)
+
+      if (!StorageService.isS3Configured)
+        return
+
+      const s3file = StorageService.getFileRef(bucket, filename)
+      await s3file.write(data)
     } catch (error) {
-      StorageService.logger.error(`Failed to save file to S3: ${error}`);
+      StorageService.logger.error(`Failed to save file to S3: ${error}`)
     }
   }
 
@@ -90,14 +92,15 @@ export default class StorageService {
    */
   public static async deleteFile(bucket: StorageBucket, filename: string) {
     try {
-      StorageService.CACHE.remove(`${bucket}:${filename}`);
-      
-      if (!StorageService.isS3Configured) return;
-      
-      const s3file = StorageService.getFileRef(bucket, filename);
-      await s3file.delete();
+      StorageService.CACHE.remove(`${bucket}:${filename}`)
+
+      if (!StorageService.isS3Configured)
+        return
+
+      const s3file = StorageService.getFileRef(bucket, filename)
+      await s3file.delete()
     } catch (error) {
-      StorageService.logger.error(`Failed to delete file from S3: ${error}`);
+      StorageService.logger.error(`Failed to delete file from S3: ${error}`)
     }
   }
 
@@ -109,37 +112,40 @@ export default class StorageService {
    * @returns true if the file exists, false otherwise
    */
   public static async fileExists(bucket: StorageBucket, filename: string): Promise<boolean> {
-    if (!StorageService.isS3Configured) return false;
+    if (!StorageService.isS3Configured)
+      return false
 
     try {
-      const s3file = StorageService.getFileRef(bucket, filename);
-      return await s3file.exists();
+      const s3file = StorageService.getFileRef(bucket, filename)
+      return await s3file.exists()
     } catch {
-      return false;
+      return false
     }
   }
 
   public async initBuckets() {
     if (!StorageService.isS3Configured) {
-      StorageService.logger.warn("S3 credentials not configured. S3 storage will be disabled.");
-      return;
+      StorageService.logger.warn('S3 credentials not configured. S3 storage will be disabled.')
+      return
     }
 
     for (const bucket of Object.values(StorageBucket)) {
       try {
-        // Bun's S3 client currently focuses on object operations (read/write/delete/list) and does not expose
-        // an API for creating buckets. We do a lightweight request as a sanity check so misconfiguration is
-        // surfaced early in dev/prod logs.
+        /*
+         * Bun's S3 client currently focuses on object operations (read/write/delete/list) and does not expose
+         * an API for creating buckets. We do a lightweight request as a sanity check so misconfiguration is
+         * surfaced early in dev/prod logs.
+         */
         await StorageService.S3_CLIENT.list(
           { maxKeys: 1 },
           {
             bucket: getS3BucketName(bucket),
-          }
-        );
+          },
+        )
       } catch (error) {
         StorageService.logger.warn(
-          `S3 bucket not accessible (must exist already): ${getS3BucketName(bucket)} (${error})`
-        );
+          `S3 bucket not accessible (must exist already): ${getS3BucketName(bucket)} (${error})`,
+        )
       }
     }
   }

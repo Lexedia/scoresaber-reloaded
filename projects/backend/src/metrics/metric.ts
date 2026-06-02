@@ -1,4 +1,4 @@
-import { MetricType } from "../service/infra/metrics.service";
+import { MetricType } from '../service/infra/metrics.service'
 
 export type MetricOptions = {
   /**
@@ -8,29 +8,29 @@ export type MetricOptions = {
    * @default true - enabled by default
    */
   persist?: boolean;
-};
+}
 
 export default abstract class Metric<T> {
   /**
    * The id of the metric.
    */
-  public id: MetricType;
+  public id: MetricType
 
   /**
    * The value of the metric.
    */
-  public value: T;
+  public value: T
 
   /**
    * Whether this metric's `value` is loaded from and saved to the metrics table.
    */
-  public readonly persist: boolean;
+  public readonly persist: boolean
 
   protected constructor(id: MetricType, defaultValue: T, options?: MetricOptions) {
-    this.id = id;
-    this.value = defaultValue;
-    this.persist = options?.persist ?? true;
+    this.id = id
+    this.value = defaultValue
+    this.persist = options?.persist ?? true
   }
 
-  public cleanup?(): void;
+  public cleanup?(): void
 }

@@ -1,46 +1,46 @@
-import { Elysia } from "elysia";
-import { getAppVersion } from "../../common/app.util";
-import { AppService } from "../../service/app/app.service";
+import { Elysia } from 'elysia'
+import { getAppVersion } from '../../common/app.util'
+import { AppService } from '../../service/app/app.service'
 
 export default function appController(app: Elysia) {
   return app
     .get(
-      "/",
+      '/',
       async () => {
         return {
-          app: "backend",
+          app: 'backend',
           version: await getAppVersion(),
-        };
+        }
       },
       {
-        tags: ["App"],
+        tags: [ 'App' ],
         detail: {
-          description: "Return backend name and version",
+          description: 'Return backend name and version',
         },
-      }
+      },
     )
     .get(
-      "/health",
+      '/health',
       async () => {
-        return "OK";
+        return 'OK'
       },
       {
-        tags: ["App"],
+        tags: [ 'App' ],
         detail: {
-          description: "Health check (returns OK)",
+          description: 'Health check (returns OK)',
         },
-      }
+      },
     )
     .get(
-      "/statistics",
+      '/statistics',
       async () => {
-        return await AppService.getAppStatistics();
+        return await AppService.getAppStatistics()
       },
       {
-        tags: ["App"],
+        tags: [ 'App' ],
         detail: {
-          description: "Return backend statistics",
+          description: 'Return backend statistics',
         },
-      }
-    );
+      },
+    )
 }

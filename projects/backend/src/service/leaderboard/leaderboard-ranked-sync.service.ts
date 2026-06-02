@@ -1,22 +1,22 @@
-import Logger, { type ScopedLogger } from "@ssr/common/logger";
-import { ScoreSaberLeaderboard } from "@ssr/common/schemas/scoresaber/leaderboard/leaderboard";
-import { formatDuration } from "@ssr/common/utils/time-utils";
-import { chunkArray } from "@ssr/common/utils/utils";
-import { EmbedBuilder } from "discord.js";
-import { DiscordChannels, sendEmbedToChannel } from "../../bot/bot";
-import { ScoreSaberLeaderboardStarChangeRepository } from "../../repositories/scoresaber-leaderboard-star-change.repository";
-import { ScoreSaberLeaderboardsRepository } from "../../repositories/scoresaber-leaderboards.repository";
-import { ScoreSaberApiService } from "../external/scoresaber-api.service";
-import { PlayerMedalsService } from "../medals/player-medals.service";
-import { PlayerScoreHistoryService } from "../player/player-score-history.service";
+import Logger, { type ScopedLogger } from '@ssr/common/logger'
+import { ScoreSaberLeaderboard } from '@ssr/common/schemas/scoresaber/leaderboard/leaderboard'
+import { formatDuration } from '@ssr/common/utils/time-utils'
+import { chunkArray } from '@ssr/common/utils/utils'
+import { EmbedBuilder } from 'discord.js'
+import { DiscordChannels, sendEmbedToChannel } from '../../bot/bot'
+import { ScoreSaberLeaderboardStarChangeRepository } from '../../repositories/scoresaber-leaderboard-star-change.repository'
+import { ScoreSaberLeaderboardsRepository } from '../../repositories/scoresaber-leaderboards.repository'
+import { ScoreSaberApiService } from '../external/scoresaber-api.service'
+import { PlayerMedalsService } from '../medals/player-medals.service'
+import { PlayerScoreHistoryService } from '../player/player-score-history.service'
 
 export type LeaderboardUpdate = {
-  previousLeaderboard?: Pick<ScoreSaberLeaderboard, "ranked" | "qualified" | "stars">;
+  previousLeaderboard?: Pick<ScoreSaberLeaderboard, 'ranked' | 'qualified' | 'stars'>;
   newLeaderboard: ScoreSaberLeaderboard;
-};
+}
 
 export class LeaderboardRankedSyncService {
-  private static readonly logger: ScopedLogger = Logger.withTopic("Ranked Leaderboard Sync");
+  private static readonly logger: ScopedLogger = Logger.withTopic('Ranked Leaderboard Sync')
 
   /**
    * Refreshes the ranked leaderboards.
@@ -24,144 +24,150 @@ export class LeaderboardRankedSyncService {
    * @returns leaderboards whose ranked/qualified/stars status changed.
    */
   public static async refreshRankedLeaderboards(): Promise<LeaderboardUpdate[]> {
-    const before = performance.now();
+    const before = performance.now()
 
-    LeaderboardRankedSyncService.logger.info(`Refreshing ranked leaderboards...`);
-    const { leaderboards } = await ScoreSaberApiService.getAllLeaderboards("ranked", true);
-    LeaderboardRankedSyncService.logger.info(`Found ${leaderboards.length} ranked leaderboards.`);
+    LeaderboardRankedSyncService.logger.info('Refreshing ranked leaderboards...')
+    const { leaderboards } = await ScoreSaberApiService.getAllLeaderboards('ranked', true)
+    LeaderboardRankedSyncService.logger.info(`Found ${leaderboards.length} ranked leaderboards.`)
 
-    const dbRankedRows = await ScoreSaberLeaderboardsRepository.getRankedLeaderboards();
-    const rankedLeaderboards = new Map(dbRankedRows.map(r => [r.id, r]));
+    const dbRankedRows = await ScoreSaberLeaderboardsRepository.getRankedLeaderboards()
+    const rankedLeaderboards = new Map(dbRankedRows.map(r => [
+      r.id,
+      r,
+    ]))
 
-    const leaderboardsToUpsert: ScoreSaberLeaderboard[] = [];
-    const updatedLeaderboards: LeaderboardUpdate[] = [];
+    const leaderboardsToUpsert: ScoreSaberLeaderboard[] = []
+    const updatedLeaderboards: LeaderboardUpdate[] = []
 
-    let checked = 0;
+    let checked = 0
     for (const apiLeaderboard of leaderboards) {
-      checked++;
+      checked++
       if (checked % 1_000 === 0 || checked === 1 || checked === leaderboards.length) {
         LeaderboardRankedSyncService.logger.info(
-          `Checked ${checked} of ${leaderboards.length} leaderboards.`
-        );
+          `Checked ${checked} of ${leaderboards.length} leaderboards.`,
+        )
       }
 
-      const dbLeaderboard = rankedLeaderboards.get(apiLeaderboard.id);
+      const dbLeaderboard = rankedLeaderboards.get(apiLeaderboard.id)
       const statusChanged =
         dbLeaderboard?.ranked !== apiLeaderboard.ranked ||
         dbLeaderboard?.qualified !== apiLeaderboard.qualified ||
-        dbLeaderboard?.stars !== apiLeaderboard.stars;
+        dbLeaderboard?.stars !== apiLeaderboard.stars
 
       if (!dbLeaderboard || statusChanged) {
-        leaderboardsToUpsert.push(apiLeaderboard);
+        leaderboardsToUpsert.push(apiLeaderboard)
       }
 
       if (statusChanged) {
         updatedLeaderboards.push({
           previousLeaderboard: dbLeaderboard
             ? {
-                ranked: dbLeaderboard.ranked,
-                qualified: dbLeaderboard.qualified,
-                stars: dbLeaderboard.stars ?? 0,
-              }
+              ranked: dbLeaderboard.ranked,
+              qualified: dbLeaderboard.qualified,
+              stars: dbLeaderboard.stars ?? 0,
+            }
             : undefined,
           newLeaderboard: apiLeaderboard,
-        });
+        })
 
         // Stars count has changed
         if (dbLeaderboard && dbLeaderboard.stars !== apiLeaderboard.stars) {
-          await PlayerScoreHistoryService.reweightHistoryScoresForLeaderboard(apiLeaderboard);
+          await PlayerScoreHistoryService.reweightHistoryScoresForLeaderboard(apiLeaderboard)
           await ScoreSaberLeaderboardStarChangeRepository.insertRow({
             leaderboardId: apiLeaderboard.id,
             previousStars: dbLeaderboard.stars ?? 0,
             newStars: apiLeaderboard.stars,
             timestamp: new Date(),
-          });
+          })
         }
 
         if (!dbLeaderboard?.ranked && apiLeaderboard.ranked) {
           await ScoreSaberLeaderboardsRepository.updateLeaderboard(apiLeaderboard.id, {
             seededScores: false,
-          });
+          })
         }
       }
     }
 
     LeaderboardRankedSyncService.logger.info(
-      `Found ${updatedLeaderboards.length} leaderboards with changes.`
-    );
+      `Found ${updatedLeaderboards.length} leaderboards with changes.`,
+    )
 
     // There has been ranked leaderboard changes
     if (leaderboardsToUpsert.length > 0) {
-      LeaderboardRankedSyncService.logger.info(`Updating ${leaderboardsToUpsert.length} leaderboards...`);
+      LeaderboardRankedSyncService.logger.info(`Updating ${leaderboardsToUpsert.length} leaderboards...`)
 
       for (const batch of chunkArray(leaderboardsToUpsert, 250)) {
-        await ScoreSaberLeaderboardsRepository.upsertLeaderboards(batch);
-        LeaderboardRankedSyncService.logger.info(`Updated batch of ${batch.length} leaderboards!`);
+        await ScoreSaberLeaderboardsRepository.upsertLeaderboards(batch)
+        LeaderboardRankedSyncService.logger.info(`Updated batch of ${batch.length} leaderboards!`)
       }
 
-      const duration = formatDuration(performance.now() - before);
+      const duration = formatDuration(performance.now() - before)
       LeaderboardRankedSyncService.logger.info(
-        `Updated ${leaderboardsToUpsert.length} leaderboards in ${duration}`
-      );
+        `Updated ${leaderboardsToUpsert.length} leaderboards in ${duration}`,
+      )
       sendEmbedToChannel(
         DiscordChannels.BACKEND_LOGS,
         new EmbedBuilder()
-          .setTitle("Ranked Leaderboards Updated")
+          .setTitle('Ranked Leaderboards Updated')
           .setDescription(`Updated ${leaderboardsToUpsert.length} leaderboards in ${duration}`)
-          .setColor("#00ff00")
-      );
+          .setColor('#00ff00'),
+      )
     }
 
-    const medalRefreshSeen = new Set<number>();
+    const medalRefreshSeen = new Set<number>()
     for (const leaderboard of updatedLeaderboards) {
       if (!leaderboard.newLeaderboard.ranked || medalRefreshSeen.has(leaderboard.newLeaderboard.id)) {
-        continue;
+        continue
       }
-      medalRefreshSeen.add(leaderboard.newLeaderboard.id);
-      await PlayerMedalsService.refreshLeaderboardMedals(leaderboard.newLeaderboard);
+      medalRefreshSeen.add(leaderboard.newLeaderboard.id)
+      await PlayerMedalsService.refreshLeaderboardMedals(leaderboard.newLeaderboard)
     }
 
-    return updatedLeaderboards;
+    return updatedLeaderboards
   }
 
   /**
    * Refreshes the qualified leaderboards.
    */
   public static async refreshQualifiedLeaderboards() {
-    const before = performance.now();
+    const before = performance.now()
 
-    LeaderboardRankedSyncService.logger.info(`Refreshing qualified leaderboards...`);
-    const { leaderboards } = await ScoreSaberApiService.getAllLeaderboards("qualified", true);
-    LeaderboardRankedSyncService.logger.info(`Found ${leaderboards.length} qualified leaderboards.`);
+    LeaderboardRankedSyncService.logger.info('Refreshing qualified leaderboards...')
+    const { leaderboards } = await ScoreSaberApiService.getAllLeaderboards('qualified', true)
+    LeaderboardRankedSyncService.logger.info(`Found ${leaderboards.length} qualified leaderboards.`)
 
-    const dbQualifiedRows = await ScoreSaberLeaderboardsRepository.getQualifiedLeaderboards();
-    const qualifiedLeaderboards = new Map(dbQualifiedRows.map(r => [r.id, r]));
+    const dbQualifiedRows = await ScoreSaberLeaderboardsRepository.getQualifiedLeaderboards()
+    const qualifiedLeaderboards = new Map(dbQualifiedRows.map(r => [
+      r.id,
+      r,
+    ]))
 
     const leaderboardsToUpsert = leaderboards.filter(apiLeaderboard => {
-      const db = qualifiedLeaderboards.get(apiLeaderboard.id);
+      const db = qualifiedLeaderboards.get(apiLeaderboard.id)
       return (
         !db ||
         db.ranked !== apiLeaderboard.ranked ||
         db.qualified !== apiLeaderboard.qualified ||
         db.stars !== apiLeaderboard.stars
-      );
-    });
+      )
+    })
 
     if (leaderboardsToUpsert.length > 0) {
-      LeaderboardRankedSyncService.logger.info(`Updating ${leaderboardsToUpsert.length} leaderboards...`);
-      await ScoreSaberLeaderboardsRepository.upsertLeaderboards(leaderboardsToUpsert);
+      LeaderboardRankedSyncService.logger.info(`Updating ${leaderboardsToUpsert.length} leaderboards...`)
+      await ScoreSaberLeaderboardsRepository.upsertLeaderboards(leaderboardsToUpsert)
 
-      const duration = formatDuration(performance.now() - before);
+      const duration = formatDuration(performance.now() - before)
       LeaderboardRankedSyncService.logger.info(
-        `Updated ${leaderboardsToUpsert.length} leaderboards in ${duration}`
-      );
+        `Updated ${leaderboardsToUpsert.length} leaderboards in ${duration}`,
+      )
       sendEmbedToChannel(
         DiscordChannels.BACKEND_LOGS,
         new EmbedBuilder()
-          .setTitle("Qualified Leaderboards Updated")
+          .setTitle('Qualified Leaderboards Updated')
           .setDescription(`Updated ${leaderboardsToUpsert.length} leaderboards in ${duration}`)
-          .setColor("#00ff00")
-      );
+          .setColor('#00ff00'),
+      )
     }
   }
 }

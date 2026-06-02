@@ -1,9 +1,9 @@
-import { MetricType } from "../service/infra/metrics.service";
-import Metric, { type MetricOptions } from "./metric";
+import { MetricType } from '../service/infra/metrics.service'
+import Metric, { type MetricOptions } from './metric'
 
 export default class NumberMetric extends Metric<number> {
   constructor(id: MetricType, defaultValue: number, options?: MetricOptions) {
-    super(id, defaultValue, options);
+    super(id, defaultValue, options)
   }
 
   /**
@@ -12,20 +12,20 @@ export default class NumberMetric extends Metric<number> {
    * @param value the new value
    */
   public updateValue(value: number) {
-    this.value = value;
+    this.value = value
   }
 
   /**
    * Increments the value of the metric.
    */
   public increment() {
-    this.value++;
+    this.value++
   }
 
   /**
    * Decrements the value of the metric.
    */
   public decrement() {
-    this.value--;
+    this.value--
   }
 }

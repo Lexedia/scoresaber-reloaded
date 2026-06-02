@@ -1,40 +1,41 @@
-import { env } from "@ssr/common/env";
-import Logger, { type ScopedLogger } from "@ssr/common/logger";
-import { Playlist } from "@ssr/common/schemas/ssr/playlist/playlist";
-import { uploadPaste } from "@ssr/common/utils/paste-utils";
-import { getDifficulty, getDifficultyName } from "@ssr/common/utils/song-utils";
-import { formatDate } from "@ssr/common/utils/time-utils";
-import { DiscordChannels, sendFile, sendMessageToChannel } from "../../bot/bot";
-import { LeaderboardUpdate } from "./leaderboard-ranked-sync.service";
+import { env } from '@ssr/common/env'
+import Logger, { type ScopedLogger } from '@ssr/common/logger'
+import { Playlist } from '@ssr/common/schemas/ssr/playlist/playlist'
+import { uploadPaste } from '@ssr/common/utils/paste-utils'
+import { getDifficulty, getDifficultyName } from '@ssr/common/utils/song-utils'
+import { stripIndent } from '@ssr/common/utils/string.util'
+import { formatDate } from '@ssr/common/utils/time-utils'
+import { DiscordChannels, sendFile, sendMessageToChannel } from '../../bot/bot'
+import { LeaderboardUpdate } from './leaderboard-ranked-sync.service'
 
 export class LeaderboardRankedSyncNotificationsService {
-  private static readonly logger: ScopedLogger = Logger.withTopic("Ranked Batch Notifications");
+  private static readonly logger: ScopedLogger = Logger.withTopic('Ranked Batch Notifications')
 
   /**
    * Logs the ranked batch to Discord.
    */
   public static async handleRankedBatch(updates: LeaderboardUpdate[]): Promise<void> {
     if (updates.length === 0) {
-      return;
+      return
     }
 
     LeaderboardRankedSyncNotificationsService.logger.info(
-      `Handling ranked batch with ${updates.length} updates...`
-    );
+      `Handling ranked batch with ${updates.length} updates...`,
+    )
 
     const newlyRankedMaps = updates.filter(
-      update => update.newLeaderboard.ranked && !update.previousLeaderboard?.ranked
-    );
+      update => update.newLeaderboard.ranked && !update.previousLeaderboard?.ranked,
+    )
     const buffedMaps = updates.filter(
       update =>
         update.previousLeaderboard?.ranked &&
-        update.newLeaderboard.stars > (update.previousLeaderboard?.stars ?? 0)
-    );
+        update.newLeaderboard.stars > (update.previousLeaderboard?.stars ?? 0),
+    )
     const nerfedMaps = updates.filter(
       update =>
         update.previousLeaderboard?.ranked &&
-        update.newLeaderboard.stars < (update.previousLeaderboard?.stars ?? 0)
-    );
+        update.newLeaderboard.stars < (update.previousLeaderboard?.stars ?? 0),
+    )
 
     /**
      * Adds the changes to the changelog.
@@ -42,54 +43,69 @@ export class LeaderboardRankedSyncNotificationsService {
     function addChanges(
       changelog: string,
       updates: LeaderboardUpdate[],
-      addChange: (update: LeaderboardUpdate) => string
+      addChange: (update: LeaderboardUpdate) => string,
     ): string {
       if (updates.length === 0) {
-        return changelog;
+        return changelog
       }
 
       for (const update of updates) {
-        changelog += addChange(update);
+        changelog += addChange(update)
       }
-      return changelog;
+      return changelog
     }
 
     /**
      * Formats previous stars for changelog entries.
      */
     function formatPreviousStars(update: LeaderboardUpdate): string {
-      return update.previousLeaderboard?.stars?.toString() ?? "unranked";
+      return update.previousLeaderboard?.stars?.toString() ?? 'unranked'
     }
 
-    let changelog = "";
+    let changelog = ''
 
     // Newly ranked maps
     changelog = addChanges(changelog, newlyRankedMaps, update => {
-      const difficulty = getDifficultyName(getDifficulty(update.newLeaderboard.difficulty.difficulty));
-      return `now ranked ${update.newLeaderboard.fullName} (${difficulty}) mapped by ${update.newLeaderboard.levelAuthorName} at ${update.newLeaderboard.stars} stars\n`;
-    });
+      const difficulty = getDifficultyName(getDifficulty(update.newLeaderboard.difficulty.difficulty))
+      return (
+        stripIndent`
+          now ranked ${update.newLeaderboard.fullName} (${difficulty})
+          mapped by ${update.newLeaderboard.levelAuthorName} at ${update.newLeaderboard.stars} stars
+        ` + '\n\n'
+      )
+    })
 
     // Buffed maps
     changelog = addChanges(changelog, buffedMaps, update => {
-      const difficulty = getDifficultyName(getDifficulty(update.newLeaderboard.difficulty.difficulty));
-      return `changed (buffed) ${update.newLeaderboard.fullName} (${difficulty}) mapped by ${update.newLeaderboard.levelAuthorName} from ${formatPreviousStars(update)} to ${update.newLeaderboard.stars} stars\n`;
-    });
+      const difficulty = getDifficultyName(getDifficulty(update.newLeaderboard.difficulty.difficulty))
+      return (
+        stripIndent`
+          changed (buffed) ${update.newLeaderboard.fullName} (${difficulty})
+          mapped by ${update.newLeaderboard.levelAuthorName} from ${formatPreviousStars(update)} to ${update.newLeaderboard.stars} stars
+        ` + '\n\n'
+      )
+    })
 
     // Nerfed maps
     changelog = addChanges(changelog, nerfedMaps, update => {
-      const difficulty = getDifficultyName(getDifficulty(update.newLeaderboard.difficulty.difficulty));
-      return `nerfed (nerf) ${update.newLeaderboard.fullName} (${difficulty}) mapped by ${update.newLeaderboard.levelAuthorName} from ${formatPreviousStars(update)} to ${update.newLeaderboard.stars} stars\n`;
-    });
+      const difficulty = getDifficultyName(getDifficulty(update.newLeaderboard.difficulty.difficulty))
+      return (
+        stripIndent`
+          nerfed (nerf) ${update.newLeaderboard.fullName} (${difficulty})
+          mapped by ${update.newLeaderboard.levelAuthorName} from ${formatPreviousStars(update)} to ${update.newLeaderboard.stars} stars
+        ` + '\n\n'
+      )
+    })
 
-    const pasteUrl = await uploadPaste(changelog);
+    const pasteUrl = await uploadPaste(changelog)
     await sendMessageToChannel(
       DiscordChannels.RANKED_BATCH_LOGS,
-      `<@&1338261690952978442> New Ranked Batch: ${pasteUrl}`
-    );
+      `<@&1338261690952978442> New Ranked Batch: ${pasteUrl}`,
+    )
 
     // Create a playlist of the changes
     const playlist: Playlist = {
-      playlistTitle: `Ranked Batch (${formatDate(new Date(), "MMM D, YYYY")})`,
+      playlistTitle: `Ranked Batch (${formatDate(new Date(), 'MMM D, YYYY')})`,
       playlistAuthor: env.NEXT_PUBLIC_WEBSITE_NAME,
       songs: newlyRankedMaps.map(update => ({
         songName: update.newLeaderboard.songName,
@@ -100,13 +116,13 @@ export class LeaderboardRankedSyncNotificationsService {
           characteristic: difficulty.characteristic,
         })),
       })),
-    };
+    }
 
-    const date = formatDate(new Date(), "DD-MM-YYYY");
+    const date = formatDate(new Date(), 'DD-MM-YYYY')
     await sendFile(
       DiscordChannels.RANKED_BATCH_LOGS,
       `scoresaber-ranked-batch-${date}.bplist`,
-      JSON.stringify(playlist, null, 2)
-    );
+      JSON.stringify(playlist, null, 2),
+    )
   }
 }

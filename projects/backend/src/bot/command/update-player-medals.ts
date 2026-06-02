@@ -1,25 +1,28 @@
-import { IsGuildUser } from "@discordx/utilities";
-import { CommandInteraction } from "discord.js";
-import { Discord, Guard, Slash } from "discordx";
-import { PlayerMedalsService } from "../../service/medals/player-medals.service";
-import { OwnerOnly } from "../lib/guards";
+import { IsGuildUser } from '@discordx/utilities'
+import { CommandInteraction } from 'discord.js'
+import { Discord, Guard, Slash } from 'discordx'
+import { PlayerMedalsService } from '../../service/medals/player-medals.service'
+import { OwnerOnly } from '../lib/guards'
 
 @Discord()
 @Guard(IsGuildUser(OwnerOnly))
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class ForceRefreshPlayerScores {
-  @Slash({ description: "Updates every players medal count", name: "update-player-medals" })
+  @Slash({
+    description: 'Updates every players medal count',
+    name: 'update-player-medals',
+  })
   async updatePlayerMedals(interaction: CommandInteraction) {
     await interaction.reply({
-      content: "Updating players' medal counts...",
-    });
+      content: 'Updating players\' medal counts...',
+    })
 
     try {
-      await PlayerMedalsService.resyncAccountMedalTotalsAndRefreshRanks();
+      await PlayerMedalsService.resyncAccountMedalTotalsAndRefreshRanks()
     } catch (error) {
       await interaction.editReply({
-        content: error instanceof Error ? error.message : "An unknown error occurred",
-      });
+        content: error instanceof Error ? error.message : 'An unknown error occurred',
+      })
     }
   }
 }

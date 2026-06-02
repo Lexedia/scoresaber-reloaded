@@ -1,50 +1,50 @@
-import { NotFoundError } from "@ssr/common/error/not-found-error";
-import Logger from "@ssr/common/logger";
-import { ScoreStatsResponse } from "@ssr/common/schemas/response/beatleader/score-stats";
-import { Elysia, redirect } from "elysia";
-import { z } from "zod";
-import BeatLeaderService from "../../service/beatleader/beatleader.service";
-import { PlayerReplayService } from "../../service/player/player-replay.service";
+import { NotFoundError } from '@ssr/common/error/not-found-error'
+import Logger from '@ssr/common/logger'
+import { ScoreStatsResponse } from '@ssr/common/schemas/response/beatleader/score-stats'
+import { Elysia, redirect } from 'elysia'
+import { z } from 'zod'
+import BeatLeaderService from '../../service/beatleader/beatleader.service'
+import { PlayerReplayService } from '../../service/player/player-replay.service'
 
-const beatLeaderControllerLog = Logger.withTopic("BeatLeader Controller");
+const beatLeaderControllerLog = Logger.withTopic('BeatLeader Controller')
 
 export default function beatleaderController(app: Elysia) {
-  return app.group("/beatleader", app =>
+  return app.group('/beatleader', app =>
     app
       .get(
-        "/scorestats/:scoreId",
+        '/scorestats/:scoreId',
         async ({ params: { scoreId } }): Promise<ScoreStatsResponse> => {
-          return BeatLeaderService.getScoresFullScoreStats(scoreId);
+          return BeatLeaderService.getScoresFullScoreStats(scoreId)
         },
         {
-          tags: ["BeatLeader"],
+          tags: [ 'BeatLeader' ],
           params: z.object({
             scoreId: z.coerce.number(),
           }),
           detail: {
-            description: "Fetch BeatLeader score stats",
+            description: 'Fetch BeatLeader score stats',
           },
-        }
+        },
       )
       .get(
-        "/replay/:scoreId",
+        '/replay/:scoreId',
         async ({ params: { scoreId } }) => {
-          const replayUrl = await PlayerReplayService.getPlayerReplayUrl(scoreId);
+          const replayUrl = await PlayerReplayService.getPlayerReplayUrl(scoreId)
           if (!replayUrl) {
-            throw new NotFoundError(`Replay not found for score "${scoreId}"`);
+            throw new NotFoundError(`Replay not found for score "${scoreId}"`)
           }
-          beatLeaderControllerLog.info(`Redirecting to replay URL "${replayUrl}" for score "${scoreId}"`);
-          return redirect(replayUrl);
+          beatLeaderControllerLog.info(`Redirecting to replay URL "${replayUrl}" for score "${scoreId}"`)
+          return redirect(replayUrl)
         },
         {
-          tags: ["BeatLeader"],
+          tags: [ 'BeatLeader' ],
           params: z.object({
             scoreId: z.string().regex(/^\d+\.bsor$/),
           }),
           detail: {
-            description: "Redirect to the raw BeatLeader replay file",
+            description: 'Redirect to the raw BeatLeader replay file',
           },
-        }
-      )
-  );
+        },
+      ),
+  )
 }

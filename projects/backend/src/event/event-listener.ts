@@ -1,7 +1,7 @@
-import { BeatLeaderScoreToken } from "@ssr/common/schemas/beatleader/tokens/score/score";
-import { ScoreSaberLeaderboard } from "@ssr/common/schemas/scoresaber/leaderboard/leaderboard";
-import { ScoreSaberLeaderboardPlayerInfo } from "@ssr/common/schemas/scoresaber/leaderboard/player-info";
-import { ScoreSaberScore } from "@ssr/common/schemas/scoresaber/score/score";
+import { BeatLeaderScoreToken } from '@ssr/common/schemas/beatleader/tokens/score/score'
+import { ScoreSaberLeaderboard } from '@ssr/common/schemas/scoresaber/leaderboard/leaderboard'
+import { ScoreSaberLeaderboardPlayerInfo } from '@ssr/common/schemas/scoresaber/leaderboard/player-info'
+import { ScoreSaberScore } from '@ssr/common/schemas/scoresaber/score/score'
 
 export interface EventListener {
   /**
@@ -28,6 +28,6 @@ export interface EventListener {
     leaderboard: ScoreSaberLeaderboard,
     player: ScoreSaberLeaderboardPlayerInfo,
     beatLeaderScore: BeatLeaderScoreToken | undefined,
-    isTop50GlobalScore: boolean
+    isTop50GlobalScore: boolean,
   ) => void | Promise<void>;
 }

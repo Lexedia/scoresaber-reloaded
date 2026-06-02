@@ -1,7 +1,7 @@
-import { ScoreSaberMedalScore } from "@ssr/common/schemas/scoresaber/score/medal-score";
-import { ScoreSaberScore } from "@ssr/common/schemas/scoresaber/score/score";
-import { normalizeModifiers } from "@ssr/common/score/modifier";
-import { ScoreSaberScoreRow } from "../schema";
+import { ScoreSaberMedalScore } from '@ssr/common/schemas/scoresaber/score/medal-score'
+import { ScoreSaberScore } from '@ssr/common/schemas/scoresaber/score/score'
+import { normalizeModifiers } from '@ssr/common/score/modifier'
+import { ScoreSaberScoreRow } from '../schema'
 
 /**
  * Converts a ScoreSaberScoreRow to a ScoreSaberMedalScore.
@@ -34,7 +34,7 @@ export function scoreSaberMedalScoreRowToType(row: ScoreSaberScoreRow): ScoreSab
     rightController: row.rightController ?? null,
     leftController: row.leftController ?? null,
     timestamp: row.timestamp,
-  };
+  }
 }
 
 /**
@@ -65,5 +65,5 @@ export function scoreSaberScoreToMedalScore(score: ScoreSaberScore): ScoreSaberM
     beatLeaderScore: score.beatLeaderScore,
     previousScore: score.previousScore,
     timestamp: score.timestamp,
-  };
+  }
 }

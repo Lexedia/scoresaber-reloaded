@@ -1,11 +1,11 @@
-import { NotFoundError } from "@ssr/common/error/not-found-error";
-import LeaderboardScoresResponse from "@ssr/common/schemas/response/leaderboard/leaderboard-scores";
-import { ScoreSaberScore } from "@ssr/common/schemas/scoresaber/score/score";
-import { getScoreSaberScoreFromToken } from "@ssr/common/token-creators";
-import BeatSaverService from "../external/beatsaver.service";
-import { ScoreSaberApiService } from "../external/scoresaber-api.service";
-import { ScoreCoreService } from "../score/score-core.service";
-import { ScoreSaberLeaderboardsService } from "./scoresaber-leaderboards.service";
+import { NotFoundError } from '@ssr/common/error/not-found-error'
+import LeaderboardScoresResponse from '@ssr/common/schemas/response/leaderboard/leaderboard-scores'
+import { ScoreSaberScore } from '@ssr/common/schemas/scoresaber/score/score'
+import { getScoreSaberScoreFromToken } from '@ssr/common/token-creators'
+import BeatSaverService from '../external/beatsaver.service'
+import { ScoreSaberApiService } from '../external/scoresaber-api.service'
+import { ScoreCoreService } from '../score/score-core.service'
+import { ScoreSaberLeaderboardsService } from './scoresaber-leaderboards.service'
 
 export class ScoreSaberLeaderboardScoresService {
   /**
@@ -19,40 +19,40 @@ export class ScoreSaberLeaderboardScoresService {
   public static async getLeaderboardScores(
     leaderboardId: number,
     page: number,
-    country?: string
+    country?: string,
   ): Promise<LeaderboardScoresResponse | undefined> {
-    const leaderboard = await ScoreSaberLeaderboardsService.getLeaderboard(leaderboardId);
+    const leaderboard = await ScoreSaberLeaderboardsService.getLeaderboard(leaderboardId)
     if (leaderboard == undefined) {
-      throw new NotFoundError(`Leaderboard "${leaderboardId}" not found`);
+      throw new NotFoundError(`Leaderboard "${leaderboardId}" not found`)
     }
 
     const leaderboardScores = await ScoreSaberApiService.lookupLeaderboardScores(leaderboardId, page, {
       country: country,
-    });
+    })
     if (!leaderboardScores) {
-      throw new NotFoundError(`Leaderboard scores for leaderboard "${leaderboardId}" not found`);
+      throw new NotFoundError(`Leaderboard scores for leaderboard "${leaderboardId}" not found`)
     }
 
     const parsedScores = leaderboardScores.scores.map(token =>
-      getScoreSaberScoreFromToken(token, leaderboard, token.leaderboardPlayerInfo.id)
-    );
+      getScoreSaberScoreFromToken(token, leaderboard, token.leaderboardPlayerInfo.id),
+    )
 
     const scores = (
       await Promise.all(
         parsedScores.map(score => {
           if (score === undefined) {
-            return undefined;
+            return undefined
           }
           return ScoreCoreService.insertScoreData(score, leaderboard, {
             insertBeatLeaderScore: true,
             insertPlayerInfo: true,
             insertPreviousScore: false,
-          });
-        })
+          })
+        }),
       )
-    ).filter(score => score !== undefined) as ScoreSaberScore[];
+    ).filter(score => score !== undefined) as ScoreSaberScore[]
 
-    const totalPages = Math.ceil(leaderboardScores.metadata.total / leaderboardScores.metadata.itemsPerPage);
+    const totalPages = Math.ceil(leaderboardScores.metadata.total / leaderboardScores.metadata.itemsPerPage)
 
     return {
       scores,
@@ -60,7 +60,7 @@ export class ScoreSaberLeaderboardScoresService {
       beatSaver: await BeatSaverService.getMap(
         leaderboard.songHash,
         leaderboard.difficulty.difficulty,
-        leaderboard.difficulty.characteristic
+        leaderboard.difficulty.characteristic,
       ),
       metadata: {
         totalPages,
@@ -68,6 +68,6 @@ export class ScoreSaberLeaderboardScoresService {
         page: leaderboardScores.metadata.page,
         itemsPerPage: leaderboardScores.metadata.itemsPerPage,
       },
-    };
+    }
   }
 }

@@ -1,33 +1,33 @@
-import { NotFoundError } from "@ssr/common/error/not-found-error";
-import Logger, { type ScopedLogger } from "@ssr/common/logger";
-import { StorageBucket } from "@ssr/common/minio-buckets";
-import { BeatLeaderScore } from "@ssr/common/schemas/beatleader/score/score";
-import { ScoreStatsToken } from "@ssr/common/schemas/beatleader/tokens/score-stats/score-stats";
-import { BeatLeaderScoreToken } from "@ssr/common/schemas/beatleader/tokens/score/score";
-import { BeatLeaderScoreImprovementToken } from "@ssr/common/schemas/beatleader/tokens/score/score-improvement";
-import { MapCharacteristic } from "@ssr/common/schemas/map/map-characteristic";
-import { MapDifficulty } from "@ssr/common/schemas/map/map-difficulty";
-import { ScoreStatsResponse } from "@ssr/common/schemas/response/beatleader/score-stats";
-import { ScoreSaberAccount } from "@ssr/common/schemas/scoresaber/account";
-import { getBeatLeaderReplayId } from "@ssr/common/utils/beatleader-utils";
-import Request from "@ssr/common/utils/request";
-import { formatDuration } from "@ssr/common/utils/time-utils";
-import { isProduction } from "@ssr/common/utils/utils";
-import { DiscordChannels, sendEmbedToChannel } from "../../bot/bot";
-import { beatLeaderScoreByIdCacheKey, beatLeaderScoreBySongCacheKey } from "../../common/cache-keys";
-import { createGenericEmbed } from "../../common/discord/embed";
-import { beatLeaderScoreRowToType } from "../../db/converter/beatleader-score";
+import { NotFoundError } from '@ssr/common/error/not-found-error'
+import Logger, { type ScopedLogger } from '@ssr/common/logger'
+import { StorageBucket } from '@ssr/common/minio-buckets'
+import { BeatLeaderScore } from '@ssr/common/schemas/beatleader/score/score'
+import { ScoreStatsToken } from '@ssr/common/schemas/beatleader/tokens/score-stats/score-stats'
+import { BeatLeaderScoreToken } from '@ssr/common/schemas/beatleader/tokens/score/score'
+import { BeatLeaderScoreImprovementToken } from '@ssr/common/schemas/beatleader/tokens/score/score-improvement'
+import { MapCharacteristic } from '@ssr/common/schemas/map/map-characteristic'
+import { MapDifficulty } from '@ssr/common/schemas/map/map-difficulty'
+import { ScoreStatsResponse } from '@ssr/common/schemas/response/beatleader/score-stats'
+import { ScoreSaberAccount } from '@ssr/common/schemas/scoresaber/account'
+import { getBeatLeaderReplayId } from '@ssr/common/utils/beatleader-utils'
+import Request from '@ssr/common/utils/request'
+import { formatDuration } from '@ssr/common/utils/time-utils'
+import { isProduction } from '@ssr/common/utils/utils'
+import { DiscordChannels, sendEmbedToChannel } from '../../bot/bot'
+import { beatLeaderScoreByIdCacheKey, beatLeaderScoreBySongCacheKey } from '../../common/cache-keys'
+import { createGenericEmbed } from '../../common/discord/embed'
+import { beatLeaderScoreRowToType } from '../../db/converter/beatleader-score'
 import {
   type BeatLeaderScoreInsert,
   BeatLeaderScoresRepository,
-} from "../../repositories/beatleader-scores.repository";
-import { BeatLeaderApiService } from "../external/beatleader-api.service";
-import CacheService, { CacheId } from "../infra/cache.service";
-import StorageService from "../infra/storage.service";
-import { PlayerCoreService } from "../player/player-core.service";
+} from '../../repositories/beatleader-scores.repository'
+import { BeatLeaderApiService } from '../external/beatleader-api.service'
+import CacheService, { CacheId } from '../infra/cache.service'
+import StorageService from '../infra/storage.service'
+import { PlayerCoreService } from '../player/player-core.service'
 
 export default class BeatLeaderService {
-  private static readonly logger: ScopedLogger = Logger.withTopic("BeatLeader");
+  private static readonly logger: ScopedLogger = Logger.withTopic('BeatLeader')
 
   /**
    * Tracks BeatLeader score.
@@ -39,34 +39,34 @@ export default class BeatLeaderService {
   public static async trackBeatLeaderScore(
     scoreToken: BeatLeaderScoreToken,
     isTop50GlobalScore: boolean = false,
-    log: boolean = true
+    log: boolean = true,
   ): Promise<BeatLeaderScore | undefined> {
-    const before = performance.now();
-    const { playerId } = scoreToken;
-    const account = await PlayerCoreService.getAccount(playerId);
+    const before = performance.now()
+    const { playerId } = scoreToken
+    const account = await PlayerCoreService.getAccount(playerId)
 
     // Only track for players that are being tracked
     if (account == null) {
-      return undefined;
+      return undefined
     }
 
-    const existing = await BeatLeaderScoresRepository.findRowById(scoreToken.id);
+    const existing = await BeatLeaderScoresRepository.findRowById(scoreToken.id)
     if (existing) {
-      return beatLeaderScoreRowToType(existing);
+      return beatLeaderScoreRowToType(existing)
     }
 
     const getMisses = (score: BeatLeaderScoreToken | BeatLeaderScoreImprovementToken) =>
-      score.missedNotes + score.badCuts + score.bombCuts;
+      score.missedNotes + score.badCuts + score.bombCuts
 
-    const leaderboard = scoreToken.leaderboard;
-    const difficulty = leaderboard.difficulty;
-    const rawScoreImprovement = scoreToken.scoreImprovement;
-    const improvement = BeatLeaderService.improvementRowFromToken(rawScoreImprovement, getMisses);
+    const leaderboard = scoreToken.leaderboard
+    const difficulty = leaderboard.difficulty
+    const rawScoreImprovement = scoreToken.scoreImprovement
+    const improvement = BeatLeaderService.improvementRowFromToken(rawScoreImprovement, getMisses)
 
-    const pendingBl = BeatLeaderService.beatLeaderScoreFromToken(scoreToken, false, getMisses);
-    const savedReplay = await this.saveReplay(pendingBl, account, isTop50GlobalScore);
+    const pendingBl = BeatLeaderService.beatLeaderScoreFromToken(scoreToken, false, getMisses)
+    const savedReplay = await this.saveReplay(pendingBl, account, isTop50GlobalScore)
 
-    const timestamp = new Date(Number(scoreToken.timeset) * 1000);
+    const timestamp = new Date(Number(scoreToken.timeset) * 1000)
     const insertRow: BeatLeaderScoreInsert = {
       id: scoreToken.id,
       playerId: scoreToken.playerId,
@@ -88,16 +88,16 @@ export default class BeatLeaderService {
       badCuts: scoreToken.badCuts,
       ...improvement,
       timestamp,
-    };
-    const row = await BeatLeaderScoresRepository.insertReturning(insertRow);
+    }
+    const row = await BeatLeaderScoresRepository.insertReturning(insertRow)
 
-    const timeTaken = performance.now() - before;
+    const timeTaken = performance.now() - before
     if (log) {
       BeatLeaderService.logger.info(
-        `Tracked BeatLeader score "${scoreToken.id}" for "${account.name}"(${playerId}) in ${formatDuration(timeTaken)}`
-      );
+        `Tracked BeatLeader score "${scoreToken.id}" for "${account.name}"(${playerId}) in ${formatDuration(timeTaken)}`,
+      )
     }
-    return beatLeaderScoreRowToType(row);
+    return beatLeaderScoreRowToType(row)
   }
 
   /**
@@ -115,7 +115,7 @@ export default class BeatLeaderService {
     songHash: string,
     songDifficulty: string,
     songCharacteristic: string,
-    songScore: number
+    songScore: number,
   ): Promise<BeatLeaderScore | undefined> {
     return CacheService.fetch(
       CacheId.BEATLEADER_SCORE,
@@ -126,14 +126,14 @@ export default class BeatLeaderService {
           songHash.toUpperCase(),
           songDifficulty as MapDifficulty,
           songCharacteristic as MapCharacteristic,
-          songScore
-        );
+          songScore,
+        )
         if (!beatLeaderScore) {
-          return undefined;
+          return undefined
         }
-        return beatLeaderScoreRowToType(beatLeaderScore);
-      }
-    );
+        return beatLeaderScoreRowToType(beatLeaderScore)
+      },
+    )
   }
 
   /**
@@ -144,12 +144,12 @@ export default class BeatLeaderService {
    */
   public static async getBeatLeaderScore(scoreId: number): Promise<BeatLeaderScore | undefined> {
     return CacheService.fetch(CacheId.BEATLEADER_SCORE, beatLeaderScoreByIdCacheKey(scoreId), async () => {
-      const beatLeaderScore = await BeatLeaderScoresRepository.findRowById(scoreId);
+      const beatLeaderScore = await BeatLeaderScoresRepository.findRowById(scoreId)
       if (!beatLeaderScore) {
-        return undefined;
+        return undefined
       }
-      return beatLeaderScoreRowToType(beatLeaderScore);
-    });
+      return beatLeaderScoreRowToType(beatLeaderScore)
+    })
   }
 
   /**
@@ -160,12 +160,12 @@ export default class BeatLeaderService {
   public static async getScoreStats(scoreId: number): Promise<ScoreStatsToken | undefined> {
     const scoreStatsFile = await StorageService.getFile(
       StorageBucket.BeatLeaderScoreStats,
-      `${scoreId}.json`
-    );
+      `${scoreId}.json`,
+    )
     if (scoreStatsFile != undefined) {
-      return JSON.parse(scoreStatsFile.toString()) as ScoreStatsToken;
+      return JSON.parse(scoreStatsFile.toString()) as ScoreStatsToken
     }
-    return this.saveScoreStats(scoreId);
+    return this.saveScoreStats(scoreId)
   }
 
   /**
@@ -175,16 +175,16 @@ export default class BeatLeaderService {
    * @returns the score stats, or undefined if nothing was found
    */
   public static async saveScoreStats(scoreId: number) {
-    const scoreStats = await BeatLeaderApiService.lookupScoreStats(scoreId);
+    const scoreStats = await BeatLeaderApiService.lookupScoreStats(scoreId)
     if (scoreStats == undefined) {
-      return undefined;
+      return undefined
     }
     await StorageService.saveFile(
       StorageBucket.BeatLeaderScoreStats,
       `${scoreId}.json`,
-      Buffer.from(JSON.stringify(scoreStats))
-    );
-    return scoreStats;
+      Buffer.from(JSON.stringify(scoreStats)),
+    )
+    return scoreStats
   }
 
   /**
@@ -195,37 +195,40 @@ export default class BeatLeaderService {
    * @throws NotFoundError if the score stats are not found
    */
   public static async getScoresFullScoreStats(scoreId: number): Promise<ScoreStatsResponse> {
-    const current = await this.getBeatLeaderScore(scoreId);
+    const current = await this.getBeatLeaderScore(scoreId)
     if (current == undefined) {
-      const currentStats = await this.getScoreStats(scoreId);
+      const currentStats = await this.getScoreStats(scoreId)
       if (!currentStats) {
-        throw new NotFoundError(`Score stats not found for score ${scoreId}`);
+        throw new NotFoundError(`Score stats not found for score ${scoreId}`)
       }
       return {
         current: currentStats,
         previous: undefined,
-      };
+      }
     }
 
     const previousScoreId = await BeatLeaderScoresRepository.findPreviousIdBeforeTimestamp(
       current.playerId,
       current.songHash.toUpperCase(),
       current.leaderboardId,
-      current.timestamp
-    );
+      current.timestamp,
+    )
 
-    const [currentStats, previousStats] = await Promise.all([
+    const [
+      currentStats,
+      previousStats,
+    ] = await Promise.all([
       this.getScoreStats(current.scoreId),
       previousScoreId ? this.getScoreStats(previousScoreId) : undefined,
-    ]);
+    ])
     if (!currentStats) {
-      throw new NotFoundError(`Score stats not found for score ${scoreId}`);
+      throw new NotFoundError(`Score stats not found for score ${scoreId}`)
     }
 
     return {
       current: currentStats,
       previous: previousStats,
-    };
+    }
   }
 
   /**
@@ -239,36 +242,36 @@ export default class BeatLeaderService {
   public static async saveReplay(
     beatLeaderScore: BeatLeaderScore,
     account: ScoreSaberAccount,
-    isTop50GlobalScore: boolean
+    isTop50GlobalScore: boolean,
   ) {
     if (isProduction() && account && (account.trackReplays || isTop50GlobalScore)) {
       try {
-        const replayId = getBeatLeaderReplayId(beatLeaderScore);
+        const replayId = getBeatLeaderReplayId(beatLeaderScore)
         const replay = await Request.get<ArrayBuffer>(`https://cdn.replays.beatleader.xyz/${replayId}`, {
-          returns: "arraybuffer",
-        });
+          returns: 'arraybuffer',
+        })
 
         if (replay !== undefined) {
-          await StorageService.saveFile(StorageBucket.BeatLeaderReplays, `${replayId}`, Buffer.from(replay));
-          return true;
+          await StorageService.saveFile(StorageBucket.BeatLeaderReplays, `${replayId}`, Buffer.from(replay))
+          return true
         }
       } catch (error) {
         sendEmbedToChannel(
           DiscordChannels.BACKEND_LOGS,
           createGenericEmbed(
-            "BeatLeader Replays",
-            `Failed to save replay for ${beatLeaderScore.scoreId}: ${error}`
-          )
-        );
-        BeatLeaderService.logger.error(`Failed to save replay for ${beatLeaderScore.scoreId}: ${error}`);
+            'BeatLeader Replays',
+            `Failed to save replay for ${beatLeaderScore.scoreId}: ${error}`,
+          ),
+        )
+        BeatLeaderService.logger.error(`Failed to save replay for ${beatLeaderScore.scoreId}: ${error}`)
       }
     }
-    return false;
+    return false
   }
 
   private static improvementRowFromToken(
     raw: BeatLeaderScoreImprovementToken | null | undefined,
-    getMisses: (score: BeatLeaderScoreImprovementToken) => number
+    getMisses: (score: BeatLeaderScoreImprovementToken) => number,
   ) {
     if (raw == null || raw.score <= 0) {
       return {
@@ -281,7 +284,7 @@ export default class BeatLeaderService {
         improvementBadCuts: 0,
         improvementLeftHandAccuracy: 0,
         improvementRightHandAccuracy: 0,
-      };
+      }
     }
     return {
       improvementScore: raw.score,
@@ -293,44 +296,47 @@ export default class BeatLeaderService {
       improvementBadCuts: raw.badCuts,
       improvementLeftHandAccuracy: raw.accLeft,
       improvementRightHandAccuracy: raw.accRight,
-    };
+    }
   }
 
   private static beatLeaderScoreFromToken(
     scoreToken: BeatLeaderScoreToken,
     savedReplay: boolean,
-    getMisses: (score: BeatLeaderScoreToken | BeatLeaderScoreImprovementToken) => number
+    getMisses: (score: BeatLeaderScoreToken | BeatLeaderScoreImprovementToken) => number,
   ): BeatLeaderScore {
-    const rawScoreImprovement = scoreToken.scoreImprovement;
+    const rawScoreImprovement = scoreToken.scoreImprovement
     const scoreImprovement =
       rawScoreImprovement && rawScoreImprovement.score > 0
         ? {
-            score: rawScoreImprovement.score,
-            pauses: rawScoreImprovement.pauses,
-            misses: {
-              misses: getMisses(rawScoreImprovement),
-              missedNotes: rawScoreImprovement.missedNotes,
-              bombCuts: rawScoreImprovement.bombCuts,
-              badCuts: rawScoreImprovement.badCuts,
-              wallsHit: rawScoreImprovement.wallsHit,
-            },
-            handAccuracy: {
-              left: rawScoreImprovement.accLeft,
-              right: rawScoreImprovement.accRight,
-            },
-          }
+          score: rawScoreImprovement.score,
+          pauses: rawScoreImprovement.pauses,
+          misses: {
+            misses: getMisses(rawScoreImprovement),
+            missedNotes: rawScoreImprovement.missedNotes,
+            bombCuts: rawScoreImprovement.bombCuts,
+            badCuts: rawScoreImprovement.badCuts,
+            wallsHit: rawScoreImprovement.wallsHit,
+          },
+          handAccuracy: {
+            left: rawScoreImprovement.accLeft,
+            right: rawScoreImprovement.accRight,
+          },
+        }
         : {
-            score: 0,
-            pauses: 0,
-            misses: {
-              misses: 0,
-              missedNotes: 0,
-              bombCuts: 0,
-              wallsHit: 0,
-              badCuts: 0,
-            },
-            handAccuracy: { left: 0, right: 0 },
-          };
+          score: 0,
+          pauses: 0,
+          misses: {
+            misses: 0,
+            missedNotes: 0,
+            bombCuts: 0,
+            wallsHit: 0,
+            badCuts: 0,
+          },
+          handAccuracy: {
+            left: 0,
+            right: 0,
+          },
+        }
 
     return {
       playerId: scoreToken.playerId,
@@ -356,6 +362,6 @@ export default class BeatLeaderService {
       scoreImprovement,
       savedReplay,
       timestamp: new Date(Number(scoreToken.timeset) * 1000),
-    };
+    }
   }
 }

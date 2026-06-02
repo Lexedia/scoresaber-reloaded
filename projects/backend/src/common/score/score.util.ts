@@ -1,22 +1,24 @@
-import { env } from "@ssr/common/env";
-import { ReplayViewers } from "@ssr/common/replay-viewer";
-import { BeatLeaderScore } from "@ssr/common/schemas/beatleader/score/score";
-import { BeatSaverMap } from "@ssr/common/schemas/beatsaver/map/map";
-import { MedalChange } from "@ssr/common/schemas/medals/medal-changes";
-import { ScoreSaberLeaderboard } from "@ssr/common/schemas/scoresaber/leaderboard/leaderboard";
-import { ScoreSaberScore } from "@ssr/common/schemas/scoresaber/score/score";
-import { getModifierLabel } from "@ssr/common/score/modifier";
-import { getBeatLeaderReplayRedirectUrl } from "@ssr/common/utils/beatleader-utils";
-import { formatNumberWithCommas, formatPp } from "@ssr/common/utils/number-utils";
-import { formatScoreAccuracy } from "@ssr/common/utils/score.util";
-import { getDifficultyName } from "@ssr/common/utils/song-utils";
-import { format, pluralize } from "@ssr/common/utils/string.util";
-import { formatChange } from "@ssr/common/utils/utils";
-import { ButtonBuilder, ButtonStyle, Colors, EmbedBuilder } from "discord.js";
-import { DiscordChannels, sendEmbedToChannel } from "../../bot/bot";
-import BeatSaverService from "../../service/external/beatsaver.service";
-import { PlayerCoreService } from "../../service/player/player-core.service";
-import { PlayerScoreHistoryService } from "../../service/player/player-score-history.service";
+import { env } from '@ssr/common/env'
+import { ReplayViewers } from '@ssr/common/replay-viewer'
+import { BeatLeaderScore } from '@ssr/common/schemas/beatleader/score/score'
+import { BeatSaverMap } from '@ssr/common/schemas/beatsaver/map/map'
+import { MedalChange } from '@ssr/common/schemas/medals/medal-changes'
+import { ScoreSaberLeaderboard } from '@ssr/common/schemas/scoresaber/leaderboard/leaderboard'
+import { ScoreSaberScore } from '@ssr/common/schemas/scoresaber/score/score'
+import { getModifierLabel } from '@ssr/common/score/modifier'
+import { getBeatLeaderReplayRedirectUrl } from '@ssr/common/utils/beatleader-utils'
+import { formatNumberWithCommas, formatPp } from '@ssr/common/utils/number-utils'
+import { formatScoreAccuracy } from '@ssr/common/utils/score.util'
+import { getDifficultyName } from '@ssr/common/utils/song-utils'
+import { format, pluralize } from '@ssr/common/utils/string.util'
+import { formatChange } from '@ssr/common/utils/utils'
+import {
+  ButtonBuilder, ButtonStyle, Colors, EmbedBuilder,
+} from 'discord.js'
+import { DiscordChannels, sendEmbedToChannel } from '../../bot/bot'
+import BeatSaverService from '../../service/external/beatsaver.service'
+import { PlayerCoreService } from '../../service/player/player-core.service'
+import { PlayerScoreHistoryService } from '../../service/player/player-score-history.service'
 
 /**
  * Sends a score notification to the number one feed.
@@ -30,29 +32,33 @@ export async function sendScoreNotification(
   score: ScoreSaberScore,
   leaderboard: ScoreSaberLeaderboard,
   beatLeaderScore: BeatLeaderScore | undefined,
-  title: string
+  title: string,
 ) {
-  const [beatSaver, previousScore] = await Promise.all([
+  const [
+    beatSaver,
+    previousScore,
+  ] = await Promise.all([
     BeatSaverService.getMap(
       leaderboard.songHash,
       leaderboard.difficulty.difficulty,
-      leaderboard.difficulty.characteristic
+      leaderboard.difficulty.characteristic,
     ),
     PlayerScoreHistoryService.getPlayerPreviousScore(score, leaderboard),
-  ]);
+  ])
   const change = previousScore &&
     previousScore.change && {
-      accuracy: `${formatChange(previousScore.change.accuracy, value => value.toFixed(2) + "%") || ""}`,
-      pp: `${formatChange(previousScore.change.pp, undefined, true) || ""}`,
-      misses: previousScore.misses == score.misses ? "" : ` vs ${previousScore.misses}`,
-      badCuts: previousScore.badCuts == score.badCuts ? "" : ` vs ${previousScore.badCuts}`,
-      maxCombo: previousScore.maxCombo == score.maxCombo ? "" : ` vs ${previousScore.maxCombo}`,
-    };
+    accuracy: `${formatChange(previousScore.change.accuracy, value => value.toFixed(2) + '%') || ''}`,
+    pp: `${formatChange(previousScore.change.pp, undefined, true) || ''}`,
+    misses: previousScore.misses == score.misses ? '' : ` vs ${previousScore.misses}`,
+    badCuts: previousScore.badCuts == score.badCuts ? '' : ` vs ${previousScore.badCuts}`,
+    maxCombo: previousScore.maxCombo == score.maxCombo ? '' : ` vs ${previousScore.maxCombo}`,
+  }
 
   const accuracy =
     leaderboard.maxScore > 0
-      ? `${formatScoreAccuracy(score.accuracy)} ${change ? change.accuracy : ""}${beatLeaderScore && !score.fullCombo ? ` (FC: ${formatScoreAccuracy(beatLeaderScore.fcAccuracy)})` : ""}`
-      : "N/A%";
+      ? `${formatScoreAccuracy(score.accuracy)} ${change ? change.accuracy : ''}
+${beatLeaderScore && !score.fullCombo ? ` (FC: ${formatScoreAccuracy(beatLeaderScore.fcAccuracy)})` : ''}`
+      : 'N/A%'
 
   const message = await sendEmbedToChannel(
     channel,
@@ -61,38 +67,39 @@ export async function sendScoreNotification(
       .setDescription(
         [
           `**${leaderboard.fullName}**`,
-          `${getDifficultyName(leaderboard.difficulty.difficulty)} / ${leaderboard.difficulty.characteristic}${leaderboard.stars > 0 ? ` • ${leaderboard.stars.toFixed(2)}★` : ""}`,
+          `${getDifficultyName(leaderboard.difficulty.difficulty)} / 
+${leaderboard.difficulty.characteristic}${leaderboard.stars > 0 ? ` • ${leaderboard.stars.toFixed(2)}★` : ''}`,
         ]
-          .join("\n")
-          .trim()
+          .join('\n')
+          .trim(),
       )
       .addFields([
         {
-          name: "**__Performance__**",
+          name: '**__Performance__**',
           value: [
             `**Accuracy:** ${accuracy}`,
             ...(score.pp && score.pp > 0
-              ? [`**PP:** ${formatPp(score.pp)}pp ${change ? change.pp : ""}`]
+              ? [ `**PP:** ${formatPp(score.pp)}pp ${change ? change.pp : ''}` ]
               : []),
             `**Modifiers:** ${
-              score.modifiers.length > 0 ? score.modifiers.map(getModifierLabel).join(", ") : "None"
+              score.modifiers.length > 0 ? score.modifiers.map(getModifierLabel).join(', ') : 'None'
             }`,
-          ].join("\n"),
+          ].join('\n'),
           inline: false,
         },
         {
-          name: "**__Statistics__**",
+          name: '**__Statistics__**',
           value: [
-            `**Misses:** ${formatNumberWithCommas(score.missedNotes)} ${change ? change.misses : ""}`,
-            `**Bad Cuts:** ${formatNumberWithCommas(score.badCuts)} ${change ? change.badCuts : ""}`,
-            `**Max Combo:** ${formatNumberWithCommas(score.maxCombo)} ${score.fullCombo ? " (FC)" : ""} ${change ? change.maxCombo : ""}`,
+            `**Misses:** ${formatNumberWithCommas(score.missedNotes)} ${change ? change.misses : ''}`,
+            `**Bad Cuts:** ${formatNumberWithCommas(score.badCuts)} ${change ? change.badCuts : ''}`,
+            `**Max Combo:** ${formatNumberWithCommas(score.maxCombo)} ${score.fullCombo ? ' (FC)' : ''} ${change ? change.maxCombo : ''}`,
             ...(beatLeaderScore
               ? [
-                  `**Bomb Cuts**: ${beatLeaderScore.misses.bombCuts}`,
-                  `**Wall Hits**: ${beatLeaderScore.misses.wallsHit}`,
-                ]
+                `**Bomb Cuts**: ${beatLeaderScore.misses.bombCuts}`,
+                `**Wall Hits**: ${beatLeaderScore.misses.wallsHit}`,
+              ]
               : []),
-          ].join("\n"),
+          ].join('\n'),
           inline: false,
         },
       ])
@@ -101,11 +108,11 @@ export async function sendScoreNotification(
       .setFooter({
         text: `Powered by ${env.NEXT_PUBLIC_WEBSITE_URL}`,
       })
-      .setColor(score.pp && score.pp > 0 ? "#d4af37" : "#808080"),
-    getScoreButtons(score, leaderboard, beatSaver, beatLeaderScore)
-  );
+      .setColor(score.pp && score.pp > 0 ? '#d4af37' : '#808080'),
+    getScoreButtons(score, leaderboard, beatSaver, beatLeaderScore),
+  )
 
-  return message;
+  return message
 }
 
 /**
@@ -119,93 +126,103 @@ export async function sendMedalScoreNotification(
   score: ScoreSaberScore,
   leaderboard: ScoreSaberLeaderboard,
   beatLeaderScore: BeatLeaderScore | undefined,
-  changes: Map<string, MedalChange>
+  changes: Map<string, MedalChange>,
 ) {
   const beatSaver = await BeatSaverService.getMap(
     leaderboard.songHash,
     leaderboard.difficulty.difficulty,
-    leaderboard.difficulty.characteristic
-  );
+    leaderboard.difficulty.characteristic,
+  )
   const description = [
     `**${leaderboard.fullName}**`,
-    `${getDifficultyName(leaderboard.difficulty.difficulty)} / ${leaderboard.difficulty.characteristic}${leaderboard.stars > 0 ? ` • ${leaderboard.stars.toFixed(2)}★` : ""}`,
-    "",
-    "**__Changes__**",
-  ];
+    `${getDifficultyName(leaderboard.difficulty.difficulty)} / 
+${leaderboard.difficulty.characteristic}${leaderboard.stars > 0 ? ` • ${leaderboard.stars.toFixed(2)}★` : ''}`,
+    '',
+    '**__Changes__**',
+  ]
   // Sort the changes by the number of medals gained -> most lost -> least lost
   const sortedChanges = Array.from(changes.entries()).sort((a, b) => {
-    const changeA = a[1].after - a[1].before;
-    const changeB = b[1].after - b[1].before;
+    const changeA = a[1].after - a[1].before
+    const changeB = b[1].after - b[1].before
     // Positive changes come first
     if (changeA > 0 && changeB < 0) {
-      return -1;
+      return -1
     }
     if (changeA < 0 && changeB > 0) {
-      return 1;
+      return 1
     }
     // Both positive: sort descending (most gained first)
     if (changeA > 0 && changeB > 0) {
-      return changeB - changeA;
+      return changeB - changeA
     }
     // Both negative: sort ascending (most lost first, since -10 < -5)
-    return changeA - changeB;
-  });
+    return changeA - changeB
+  })
 
   // Find the player with the highest positive change for the title
   const topChangePlayerId = Array.from(changes.entries()).find(
-    ([, change]) => change.after - change.before > 0
-  )?.[0];
+    ([ , change ]) => change.after - change.before > 0,
+  )?.[0]
   if (!topChangePlayerId) {
-    return;
+    return
   }
 
-  const uniquePlayerIds = new Set([...sortedChanges.map(([playerId]) => playerId), topChangePlayerId]);
+  const uniquePlayerIds = new Set([
+    ...sortedChanges.map(([ playerId ]) => playerId),
+    topChangePlayerId,
+  ])
   const playerById = new Map(
     await Promise.all(
-      [...uniquePlayerIds].map(async playerId => {
-        const player = await PlayerCoreService.getOrCreateAccount(playerId);
-        return [playerId, player] as const;
-      })
-    )
-  );
+      [ ...uniquePlayerIds ].map(async playerId => {
+        const player = await PlayerCoreService.getOrCreateAccount(playerId)
+        return [
+          playerId,
+          player,
+        ] as const
+      }),
+    ),
+  )
 
-  for (const [playerId, change] of sortedChanges) {
-    const changePlayer = playerById.get(playerId);
+  for (const [
+    playerId,
+    change,
+  ] of sortedChanges) {
+    const changePlayer = playerById.get(playerId)
     if (!changePlayer) {
-      continue;
+      continue
     }
     description.push(
       format(
-        `**[%s](%s)** %s %s %s (%s -> %s)`,
+        '**[%s](%s)** %s %s %s (%s -> %s)',
         changePlayer.name,
-        env.NEXT_PUBLIC_WEBSITE_URL + "/player/" + playerId,
-        change.after - change.before < 0 ? "lost" : "gained",
+        env.NEXT_PUBLIC_WEBSITE_URL + '/player/' + playerId,
+        change.after - change.before < 0 ? 'lost' : 'gained',
         Math.abs(change.after - change.before),
-        pluralize(Math.abs(change.after - change.before), "medal"),
+        pluralize(Math.abs(change.after - change.before), 'medal'),
         formatNumberWithCommas(change.before),
-        formatNumberWithCommas(change.after)
-      )
-    );
+        formatNumberWithCommas(change.after),
+      ),
+    )
   }
 
-  const topChangePlayer = playerById.get(topChangePlayerId);
+  const topChangePlayer = playerById.get(topChangePlayerId)
   if (!topChangePlayer) {
-    return;
+    return
   }
 
   await sendEmbedToChannel(
     DiscordChannels.MEDAL_SCORES_FEED,
     new EmbedBuilder()
       .setTitle(`${topChangePlayer.name} set a #${score.rank}!`)
-      .setDescription(description.join("\n").trim())
+      .setDescription(description.join('\n').trim())
       .setThumbnail(leaderboard.songArt)
       .setColor(Colors.Green)
       .setTimestamp(score.timestamp)
       .setFooter({
         text: `Powered by ${env.NEXT_PUBLIC_WEBSITE_URL}`,
       }),
-    getScoreButtons(score, leaderboard, beatSaver, beatLeaderScore)
-  );
+    getScoreButtons(score, leaderboard, beatSaver, beatLeaderScore),
+  )
 }
 
 /**
@@ -221,46 +238,46 @@ function getScoreButtons(
   score: ScoreSaberScore,
   leaderboard: ScoreSaberLeaderboard,
   beatSaver: BeatSaverMap | undefined,
-  beatLeaderScore: BeatLeaderScore | undefined
+  beatLeaderScore: BeatLeaderScore | undefined,
 ) {
   return [
     {
       type: 1,
       components: [
         new ButtonBuilder()
-          .setLabel("Player")
-          .setEmoji("👤")
+          .setLabel('Player')
+          .setEmoji('👤')
           .setStyle(ButtonStyle.Link)
           .setURL(`${env.NEXT_PUBLIC_WEBSITE_URL}/player/${score.playerId}`),
         new ButtonBuilder()
-          .setLabel("Leaderboard")
-          .setEmoji("🏆")
+          .setLabel('Leaderboard')
+          .setEmoji('🏆')
           .setStyle(ButtonStyle.Link)
           .setURL(`${env.NEXT_PUBLIC_WEBSITE_URL}/leaderboard/${leaderboard.id}`),
         ...(beatSaver
           ? [
-              new ButtonBuilder()
-                .setLabel("Map")
-                .setEmoji("🗺️")
-                .setStyle(ButtonStyle.Link)
-                .setURL(`https://beatsaver.com/maps/${beatSaver.bsr}`),
-            ]
+            new ButtonBuilder()
+              .setLabel('Map')
+              .setEmoji('🗺️')
+              .setStyle(ButtonStyle.Link)
+              .setURL(`https://beatsaver.com/maps/${beatSaver.bsr}`),
+          ]
           : []),
         ...(beatLeaderScore
           ? [
-              new ButtonBuilder()
-                .setLabel("Replay")
-                .setEmoji("🎥")
-                .setStyle(ButtonStyle.Link)
-                .setURL(
-                  ReplayViewers.beatleader.generateUrl(
-                    beatLeaderScore.scoreId,
-                    getBeatLeaderReplayRedirectUrl(beatLeaderScore)
-                  )
+            new ButtonBuilder()
+              .setLabel('Replay')
+              .setEmoji('🎥')
+              .setStyle(ButtonStyle.Link)
+              .setURL(
+                ReplayViewers.beatleader.generateUrl(
+                  beatLeaderScore.scoreId,
+                  getBeatLeaderReplayRedirectUrl(beatLeaderScore),
                 ),
-            ]
+              ),
+          ]
           : []),
       ],
     },
-  ];
+  ]
 }

@@ -1,30 +1,30 @@
-import { TimeUnit } from "@ssr/common/utils/time-utils";
-import { Gauge } from "prom-client";
-import { ScoreSaberApiService } from "../../../service/external/scoresaber-api.service";
-import { MetricType, prometheusRegistry } from "../../../service/infra/metrics.service";
-import NumberMetric from "../../number-metric";
+import { TimeUnit, toMillis } from '@ssr/common/utils/time-utils'
+import { Gauge } from 'prom-client'
+import { ScoreSaberApiService } from '../../../service/external/scoresaber-api.service'
+import { MetricType, prometheusRegistry } from '../../../service/infra/metrics.service'
+import NumberMetric from '../../number-metric'
 
 export default class ActiveAccountsMetric extends NumberMetric {
   constructor() {
-    super(MetricType.ACTIVE_ACCOUNTS, 0);
+    super(MetricType.ACTIVE_ACCOUNTS, 0)
 
     setInterval(
       async () => {
-        const count = await ScoreSaberApiService.lookupActivePlayerCount();
+        const count = await ScoreSaberApiService.lookupActivePlayerCount()
         if (count !== undefined) {
-          this.value = count;
+          this.value = count
         }
       },
-      TimeUnit.toMillis(TimeUnit.Minute, 1)
-    );
+      toMillis(TimeUnit.Minute, 1),
+    )
 
     const gauge = new Gauge({
-      name: "active_accounts",
-      help: "Number of active accounts",
-      registers: [prometheusRegistry],
+      name: 'active_accounts',
+      help: 'Number of active accounts',
+      registers: [ prometheusRegistry ],
       collect: async () => {
-        gauge.set(this.value ?? 0);
+        gauge.set(this.value ?? 0)
       },
-    });
+    })
   }
 }

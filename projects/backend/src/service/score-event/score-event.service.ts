@@ -1,10 +1,10 @@
-import Logger from "@ssr/common/logger";
-import { ScoreSaberScore } from "@ssr/common/schemas/scoresaber/score/score";
-import { formatDuration, TimeUnit } from "@ssr/common/utils/time-utils";
-import { isProduction } from "@ssr/common/utils/utils";
-import { sql } from "drizzle-orm";
-import { db } from "../../db";
-import { scoreSaberScoreEventTable } from "../../db/schema";
+import Logger from '@ssr/common/logger'
+import { ScoreSaberScore } from '@ssr/common/schemas/scoresaber/score/score'
+import { formatDuration, TimeUnit, toMillis } from '@ssr/common/utils/time-utils'
+import { isProduction } from '@ssr/common/utils/utils'
+import { sql } from 'drizzle-orm'
+import { db } from '../../db'
+import { scoreSaberScoreEventTable } from '../../db/schema'
 
 export class ScoreEventService {
   /**
@@ -14,14 +14,14 @@ export class ScoreEventService {
    */
   public static async insertScoreEvent(score: ScoreSaberScore): Promise<void> {
     if (!isProduction()) {
-      return;
+      return
     }
 
     await db.insert(scoreSaberScoreEventTable).values({
       playerId: score.playerId,
       leaderboardId: score.leaderboardId,
       timestamp: score.timestamp,
-    });
+    })
   }
 
   /**
@@ -30,8 +30,8 @@ export class ScoreEventService {
    * last week and gives them a score based on the amount of plays.
    */
   public static async updateTrendingLeaderboards(): Promise<void> {
-    const before = performance.now();
-    const oneWeekAgo = new Date(Date.now() - TimeUnit.toMillis(TimeUnit.Week, 1));
+    const before = performance.now()
+    const oneWeekAgo = new Date(Date.now() - toMillis(TimeUnit.Week, 1))
 
     await db.execute(sql`
       WITH agg AS (
@@ -48,7 +48,7 @@ export class ScoreEventService {
         (agg.unique_players_7d * 1000 + agg.plays_7d)::double precision
       FROM agg
       WHERE leaderboards."id" = agg.leaderboard_id
-    `);
+    `)
 
     await db.execute(sql`
       UPDATE "scoresaber-leaderboards" AS leaderboards
@@ -60,17 +60,17 @@ export class ScoreEventService {
           WHERE events."leaderboardId" = leaderboards."id"
             AND events."timestamp" >= ${oneWeekAgo}
         )
-    `);
+    `)
 
-    Logger.info(`Updated leaderboard trending scores in ${formatDuration(performance.now() - before)}`);
+    Logger.info(`Updated leaderboard trending scores in ${formatDuration(performance.now() - before)}`)
   }
 
   /**
    * Recomputes and updates daily plays for all leaderboards using events from the last 24 hours.
    */
   public static async updateLeaderboardDailyPlays(): Promise<void> {
-    const before = performance.now();
-    const oneDayAgo = new Date(Date.now() - TimeUnit.toMillis(TimeUnit.Day, 1));
+    const before = performance.now()
+    const oneDayAgo = new Date(Date.now() - toMillis(TimeUnit.Day, 1))
 
     await db.execute(sql`
       WITH agg AS (
@@ -85,7 +85,7 @@ export class ScoreEventService {
       SET "dailyPlays" = agg.plays_24h
       FROM agg
       WHERE leaderboards."id" = agg.leaderboard_id
-    `);
+    `)
 
     await db.execute(sql`
       UPDATE "scoresaber-leaderboards" AS leaderboards
@@ -97,8 +97,8 @@ export class ScoreEventService {
           WHERE events."leaderboardId" = leaderboards."id"
             AND events."timestamp" >= ${oneDayAgo}
         )
-    `);
+    `)
 
-    Logger.info(`Updated leaderboard daily plays in ${formatDuration(performance.now() - before)}`);
+    Logger.info(`Updated leaderboard daily plays in ${formatDuration(performance.now() - before)}`)
   }
 }

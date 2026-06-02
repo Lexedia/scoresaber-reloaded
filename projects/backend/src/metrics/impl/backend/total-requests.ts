@@ -1,22 +1,22 @@
-import { Counter } from "prom-client";
-import { MetricType, prometheusRegistry } from "../../../service/infra/metrics.service";
-import NumberMetric from "../../number-metric";
+import { Counter } from 'prom-client'
+import { MetricType, prometheusRegistry } from '../../../service/infra/metrics.service'
+import NumberMetric from '../../number-metric'
 
 export default class TotalRequestsMetric extends NumberMetric {
-  private counter: Counter;
+  private counter: Counter
 
   constructor() {
-    super(MetricType.TOTAL_REQUESTS, 0);
+    super(MetricType.TOTAL_REQUESTS, 0)
 
     this.counter = new Counter({
-      name: "total_requests",
-      help: "Total number of requests",
-      registers: [prometheusRegistry],
-    });
+      name: 'total_requests',
+      help: 'Total number of requests',
+      registers: [ prometheusRegistry ],
+    })
   }
 
   public increment() {
-    super.increment();
-    this.counter.inc();
+    super.increment()
+    this.counter.inc()
   }
 }

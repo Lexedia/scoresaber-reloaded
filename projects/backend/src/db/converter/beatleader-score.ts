@@ -1,5 +1,5 @@
-import { BeatLeaderScore } from "../../../../common/src/schemas/beatleader/score/score";
-import { BeatLeaderScoreRow } from "../schema";
+import { BeatLeaderScore } from '../../../../common/src/schemas/beatleader/score/score'
+import { BeatLeaderScoreRow } from '../schema'
 
 /**
  * Converts a BeatLeader score row to a BeatLeader score.
@@ -46,5 +46,5 @@ export function beatLeaderScoreRowToType(row: BeatLeaderScoreRow): BeatLeaderSco
     },
     savedReplay: row.savedReplay ?? false,
     timestamp: row.timestamp,
-  };
+  }
 }

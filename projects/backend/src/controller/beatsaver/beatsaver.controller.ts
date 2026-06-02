@@ -1,24 +1,24 @@
-import { NotFoundError } from "@ssr/common/error/not-found-error";
-import { BeatSaverMapSchema } from "@ssr/common/schemas/beatsaver/map/map";
-import { MapCharacteristicSchema } from "@ssr/common/schemas/map/map-characteristic";
-import { MapDifficultySchema } from "@ssr/common/schemas/map/map-difficulty";
-import { Elysia } from "elysia";
-import { z } from "zod";
-import BeatSaverService from "../../service/external/beatsaver.service";
+import { NotFoundError } from '@ssr/common/error/not-found-error'
+import { BeatSaverMapSchema } from '@ssr/common/schemas/beatsaver/map/map'
+import { MapCharacteristicSchema } from '@ssr/common/schemas/map/map-characteristic'
+import { MapDifficultySchema } from '@ssr/common/schemas/map/map-difficulty'
+import { Elysia } from 'elysia'
+import { z } from 'zod'
+import BeatSaverService from '../../service/external/beatsaver.service'
 
 export default function beatsaverController(app: Elysia) {
-  return app.group("/beatsaver", app =>
+  return app.group('/beatsaver', app =>
     app.get(
-      "/map/:hash/:difficulty/:characteristic",
+      '/map/:hash/:difficulty/:characteristic',
       async ({ params: { hash, difficulty, characteristic } }) => {
-        const map = await BeatSaverService.getMap(hash, difficulty, characteristic);
+        const map = await BeatSaverService.getMap(hash, difficulty, characteristic)
         if (!map) {
-          throw new NotFoundError(`BeatSaver map ${hash} not found`);
+          throw new NotFoundError(`BeatSaver map ${hash} not found`)
         }
-        return map;
+        return map
       },
       {
-        tags: ["BeatSaver"],
+        tags: [ 'BeatSaver' ],
         params: z.object({
           hash: z.string(),
           difficulty: MapDifficultySchema,
@@ -26,9 +26,9 @@ export default function beatsaverController(app: Elysia) {
         }),
         response: BeatSaverMapSchema,
         detail: {
-          description: "Fetch BeatSaver map details",
+          description: 'Fetch BeatSaver map details',
         },
-      }
-    )
-  );
+      },
+    ),
+  )
 }

@@ -1,43 +1,43 @@
-import { PlayerRankingsResponseSchema } from "@ssr/common/schemas/response/player/player-rankings";
-import { PlayerMedalRankingsResponseSchema } from "@ssr/common/schemas/response/ranking/medal-rankings";
-import { Elysia } from "elysia";
-import { z } from "zod";
-import { PlayerMedalsService } from "../../service/medals/player-medals.service";
-import { PlayerSearchService } from "../../service/player/player-search.service";
+import { PlayerRankingsResponseSchema } from '@ssr/common/schemas/response/player/player-rankings'
+import { PlayerMedalRankingsResponseSchema } from '@ssr/common/schemas/response/ranking/medal-rankings'
+import { Elysia } from 'elysia'
+import { z } from 'zod'
+import { PlayerMedalsService } from '../../service/medals/player-medals.service'
+import { PlayerSearchService } from '../../service/player/player-search.service'
 
 export default function playerRankingController(app: Elysia) {
-  return app.group("/ranking", app =>
+  return app.group('/ranking', app =>
     app
       .get(
-        "/:page",
+        '/:page',
         async ({ params: { page }, query: { country, search } }) => {
           return await PlayerSearchService.getPlayerRanking(page, {
             country: country,
             search: search,
-          });
+          })
         },
         {
-          tags: ["Ranking"],
+          tags: [ 'Ranking' ],
           params: z.object({
             page: z.coerce.number().default(1),
           }),
           query: z.object({
-            country: z.string().default("").optional(),
-            search: z.string().default("").optional(),
+            country: z.string().default('').optional(),
+            search: z.string().default('').optional(),
           }),
           response: PlayerRankingsResponseSchema,
           detail: {
-            description: "Fetch player ranking",
+            description: 'Fetch player ranking',
           },
-        }
+        },
       )
       .get(
-        "/medals/:page",
+        '/medals/:page',
         async ({ params: { page }, query: { country } }) => {
-          return await PlayerMedalsService.getPlayerMedalRanking(page, country);
+          return await PlayerMedalsService.getPlayerMedalRanking(page, country)
         },
         {
-          tags: ["Ranking"],
+          tags: [ 'Ranking' ],
           params: z.object({
             page: z.coerce.number().default(1),
           }),
@@ -46,9 +46,9 @@ export default function playerRankingController(app: Elysia) {
           }),
           response: PlayerMedalRankingsResponseSchema,
           detail: {
-            description: "Fetch medal ranking",
+            description: 'Fetch medal ranking',
           },
-        }
-      )
-  );
+        },
+      ),
+  )
 }

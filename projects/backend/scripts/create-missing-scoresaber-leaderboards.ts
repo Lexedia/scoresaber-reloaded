@@ -12,142 +12,142 @@
  *   bun run scripts/create-missing-scoresaber-leaderboards.ts --search=Camellia
  *   bun run scripts/create-missing-scoresaber-leaderboards.ts --limit=500 --max-pages=20
  */
-import { CooldownPriority } from "@ssr/common/cooldown";
-import Logger from "@ssr/common/logger";
-import "dotenv/config";
-import { db } from "../src/db";
-import { scoreSaberLeaderboardsTable } from "../src/db/schema";
-import { ScoreSaberApiService } from "../src/service/external/scoresaber-api.service";
-import { ScoreSaberLeaderboardsService } from "../src/service/leaderboard/scoresaber-leaderboards.service";
+import { CooldownPriority } from '@ssr/common/cooldown'
+import Logger from '@ssr/common/logger'
+import 'dotenv/config'
+import { db } from '../src/db'
+import { scoreSaberLeaderboardsTable } from '../src/db/schema'
+import { ScoreSaberApiService } from '../src/service/external/scoresaber-api.service'
+import { ScoreSaberLeaderboardsService } from '../src/service/leaderboard/scoresaber-leaderboards.service'
 
-const scriptLog = Logger.withTopic("Script: Create Missing Leaderboards");
+const scriptLog = Logger.withTopic('Script: Create Missing Leaderboards')
 
 async function loadExistingLeaderboardIds(): Promise<Set<number>> {
-  const rows = await db.select({ id: scoreSaberLeaderboardsTable.id }).from(scoreSaberLeaderboardsTable);
-  return new Set(rows.map(r => r.id));
+  const rows = await db.select({ id: scoreSaberLeaderboardsTable.id }).from(scoreSaberLeaderboardsTable)
+  return new Set(rows.map(r => r.id))
 }
 
 function parseDryRun(argv: string[]): boolean {
-  return argv.includes("--dry-run");
+  return argv.includes('--dry-run')
 }
 
 function parseSearch(argv: string[]): string | undefined {
-  const raw = argv.find(a => a.startsWith("--search="));
+  const raw = argv.find(a => a.startsWith('--search='))
   if (!raw) {
-    return undefined;
+    return undefined
   }
-  const q = raw.slice("--search=".length).trim();
-  return q.length > 0 ? q : undefined;
+  const q = raw.slice('--search='.length).trim()
+  return q.length > 0 ? q : undefined
 }
 
 function parseLimit(argv: string[]): number | undefined {
-  const raw = argv.find(a => a.startsWith("--limit="));
+  const raw = argv.find(a => a.startsWith('--limit='))
   if (!raw) {
-    return undefined;
+    return undefined
   }
-  const n = Number.parseInt(raw.slice("--limit=".length), 10);
-  return Number.isFinite(n) && n > 0 ? n : undefined;
+  const n = Number.parseInt(raw.slice('--limit='.length), 10)
+  return Number.isFinite(n) && n > 0 ? n : undefined
 }
 
 function parseMaxPages(argv: string[]): number | undefined {
-  const raw = argv.find(a => a.startsWith("--max-pages="));
+  const raw = argv.find(a => a.startsWith('--max-pages='))
   if (!raw) {
-    return undefined;
+    return undefined
   }
-  const n = Number.parseInt(raw.slice("--max-pages=".length), 10);
-  return Number.isFinite(n) && n > 0 ? n : undefined;
+  const n = Number.parseInt(raw.slice('--max-pages='.length), 10)
+  return Number.isFinite(n) && n > 0 ? n : undefined
 }
 
 async function main(): Promise<void> {
-  const dryRun = parseDryRun(process.argv);
-  const search = parseSearch(process.argv);
-  const createLimit = parseLimit(process.argv);
-  const maxPages = parseMaxPages(process.argv);
+  const dryRun = parseDryRun(process.argv)
+  const search = parseSearch(process.argv)
+  const createLimit = parseLimit(process.argv)
+  const maxPages = parseMaxPages(process.argv)
 
-  const existingIds = await loadExistingLeaderboardIds();
-  scriptLog.info(`Loaded ${existingIds.size} leaderboard id(s) from DB`);
+  const existingIds = await loadExistingLeaderboardIds()
+  scriptLog.info(`Loaded ${existingIds.size} leaderboard id(s) from DB`)
 
-  let page = 1;
-  let totalPages = 1;
-  let created = 0;
-  let skippedExisting = 0;
-  let failed = 0;
-  let seen = 0;
+  let page = 1
+  let totalPages
+  let created = 0
+  let skippedExisting = 0
+  let failed = 0
+  let seen = 0
 
   do {
     const response = await ScoreSaberApiService.lookupLeaderboards(page, {
       search,
       priority: CooldownPriority.LOW,
-    });
+    })
 
     if (response == null || response.leaderboards.length === 0) {
       if (page === 1) {
-        scriptLog.warn(`No leaderboards on page 1 (search=${search ?? "(none)"})`);
+        scriptLog.warn(`No leaderboards on page 1 (search=${search ?? '(none)'})`)
       }
-      break;
+      break
     }
 
     totalPages = Math.max(
       1,
-      Math.ceil(response.metadata.total / Math.max(1, response.metadata.itemsPerPage))
-    );
+      Math.ceil(response.metadata.total / Math.max(1, response.metadata.itemsPerPage)),
+    )
 
     if (maxPages != null && page > maxPages) {
-      scriptLog.info(`Stopping at --max-pages=${maxPages}`);
-      break;
+      scriptLog.info(`Stopping at --max-pages=${maxPages}`)
+      break
     }
 
     scriptLog.info(
-      `Page ${page}/${totalPages} (items=${response.leaderboards.length}, total=${response.metadata.total})`
-    );
+      `Page ${page}/${totalPages} (items=${response.leaderboards.length}, total=${response.metadata.total})`,
+    )
 
     for (const token of response.leaderboards) {
       if (createLimit != null && created >= createLimit) {
-        scriptLog.info(`Stopping at --limit=${createLimit} created`);
+        scriptLog.info(`Stopping at --limit=${createLimit} created`)
         scriptLog.info(
-          `Done created=${created} skippedExisting=${skippedExisting} failed=${failed} seen=${seen}`
-        );
-        return;
+          `Done created=${created} skippedExisting=${skippedExisting} failed=${failed} seen=${seen}`,
+        )
+        return
       }
 
-      seen++;
-      const id = token.id;
+      seen++
+      const id = token.id
 
       if (existingIds.has(id)) {
-        skippedExisting++;
-        continue;
+        skippedExisting++
+        continue
       }
 
       if (dryRun) {
-        created++;
-        continue;
+        created++
+        continue
       }
 
       try {
-        await ScoreSaberLeaderboardsService.createLeaderboard(id, token, { skipScoreSeedQueue: true });
-        existingIds.add(id);
-        created++;
+        await ScoreSaberLeaderboardsService.createLeaderboard(id, token, { skipScoreSeedQueue: true })
+        existingIds.add(id)
+        created++
       } catch (e) {
-        const code = e && typeof e === "object" && "code" in e ? String((e as { code: unknown }).code) : "";
-        if (code === "23505") {
-          existingIds.add(id);
-          skippedExisting++;
-          continue;
+        const code = e && typeof e === 'object' && 'code' in e ? String((e as { code: unknown }).code) : ''
+        if (code === '23505') {
+          existingIds.add(id)
+          skippedExisting++
+          continue
         }
-        failed++;
-        scriptLog.error(`id=${id}: ${e}`);
+        failed++
+        scriptLog.error(`id=${id}: ${e}`)
       }
     }
 
-    page++;
-  } while (page <= totalPages);
+    page++
+  } while (page <= totalPages)
 
   scriptLog.info(
-    `Done created=${created} skippedExisting=${skippedExisting} failed=${failed} seen=${seen}${dryRun ? " (dry-run)" : ""}`
-  );
+    `Done created=${created} skippedExisting=${skippedExisting} failed=${failed} seen=${seen}${dryRun ? ' (dry-run)' : ''}`,
+  )
 }
 
 main().catch(e => {
-  console.error(e);
-  process.exit(1);
-});
+  console.error(e)
+  process.exit(1)
+})

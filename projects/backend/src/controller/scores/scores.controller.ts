@@ -1,57 +1,57 @@
 import {
   accSaberScoreSortSchema,
   accSaberScoreTypeSchema,
-} from "@ssr/common/schemas/accsaber/tokens/query/query";
-import { AccSaberScoresPageResponseSchema } from "@ssr/common/schemas/response/score/accsaber-scores-page";
+} from '@ssr/common/schemas/accsaber/tokens/query/query'
+import { AccSaberScoresPageResponseSchema } from '@ssr/common/schemas/response/score/accsaber-scores-page'
 import {
   MedalPlayerScoresPageResponseSchema,
   PlayerScoreSchema,
   PlayerScoresPageResponseSchema,
-} from "@ssr/common/schemas/response/score/player-scores";
-import { ScoreHistoryGraphSchema } from "@ssr/common/schemas/response/score/score-history-graph";
-import { ScoreSaberScoresPageResponseSchema } from "@ssr/common/schemas/response/score/scoresaber-scores-page";
-import { TopScoresPageResponseSchema } from "@ssr/common/schemas/response/score/top-scores";
-import { PlayerScoresQuerySchema } from "@ssr/common/schemas/score/query/player-scores-query";
-import { ScoreSaberMedalScoreSortFieldSchema } from "@ssr/common/schemas/score/query/sort/scoresaber-medal-scores-sort";
-import { ScoreSaberScoreSortFieldSchema } from "@ssr/common/schemas/score/query/sort/scoresaber-scores-sort";
-import { SortDirectionSchema } from "@ssr/common/schemas/score/query/sort/sort-direction";
-import { ScoreSaberScoreSortSchema } from "@ssr/common/score/score-sort";
-import { SHARED_CONSTS } from "@ssr/common/shared-consts";
-import { Elysia } from "elysia";
-import { z } from "zod";
-import { ScoreSaberLeaderboardScoresService } from "../../service/leaderboard/scoresaber-leaderboard-scores.service";
-import { PlayerFriendScoresService } from "../../service/player/player-friend-scores.service";
-import { PlayerScoreHistoryService } from "../../service/player/player-score-history.service";
-import { PlayerScoresService } from "../../service/player/player-scores.service";
-import { TopScoresService } from "../../service/score/top-scores.service";
+} from '@ssr/common/schemas/response/score/player-scores'
+import { ScoreHistoryGraphSchema } from '@ssr/common/schemas/response/score/score-history-graph'
+import { ScoreSaberScoresPageResponseSchema } from '@ssr/common/schemas/response/score/scoresaber-scores-page'
+import { TopScoresPageResponseSchema } from '@ssr/common/schemas/response/score/top-scores'
+import { PlayerScoresQuerySchema } from '@ssr/common/schemas/score/query/player-scores-query'
+import { ScoreSaberMedalScoreSortFieldSchema } from '@ssr/common/schemas/score/query/sort/scoresaber-medal-scores-sort'
+import { ScoreSaberScoreSortFieldSchema } from '@ssr/common/schemas/score/query/sort/scoresaber-scores-sort'
+import { SortDirectionSchema } from '@ssr/common/schemas/score/query/sort/sort-direction'
+import { ScoreSaberScoreSortSchema } from '@ssr/common/score/score-sort'
+import { SHARED_CONSTS } from '@ssr/common/shared-consts'
+import { Elysia } from 'elysia'
+import { z } from 'zod'
+import { ScoreSaberLeaderboardScoresService } from '../../service/leaderboard/scoresaber-leaderboard-scores.service'
+import { PlayerFriendScoresService } from '../../service/player/player-friend-scores.service'
+import { PlayerScoreHistoryService } from '../../service/player/player-score-history.service'
+import { PlayerScoresService } from '../../service/player/player-scores.service'
+import { TopScoresService } from '../../service/score/top-scores.service'
 
 export default function scoresController(app: Elysia) {
-  return app.group("/scores", app =>
+  return app.group('/scores', app =>
     app
       .get(
-        "/:scoreId",
+        '/:scoreId',
         async ({ params: { scoreId } }) => {
-          return PlayerScoresService.getScore(scoreId);
+          return PlayerScoresService.getScore(scoreId)
         },
         {
-          tags: ["Scores"],
+          tags: [ 'Scores' ],
           params: z.object({
             scoreId: z.coerce.number(),
           }),
           response: PlayerScoreSchema,
 
           detail: {
-            description: "Fetch a score",
+            description: 'Fetch a score',
           },
-        }
+        },
       )
       .get(
-        "/player/scoresaber/:playerId/:sort/:page",
+        '/player/scoresaber/:playerId/:sort/:page',
         async ({ params: { playerId, page, sort }, query: { search } }) => {
-          return await PlayerScoresService.getScoreSaberLivePlayerScores(playerId, page, sort, search);
+          return await PlayerScoresService.getScoreSaberLivePlayerScores(playerId, page, sort, search)
         },
         {
-          tags: ["Scores"],
+          tags: [ 'Scores' ],
           params: z.object({
             playerId: z.string(),
             page: z.coerce.number().default(1),
@@ -62,39 +62,43 @@ export default function scoresController(app: Elysia) {
           }),
           response: PlayerScoresPageResponseSchema,
           detail: {
-            description: "Fetch player scores from ScoreSaber",
+            description: 'Fetch player scores from ScoreSaber',
           },
-        }
+        },
       )
       .get(
-        "/player/accsaber/:playerId/:page",
+        '/player/accsaber/:playerId/:page',
         async ({ params: { playerId, page }, query: { sort, direction, type } }) => {
-          return await PlayerScoresService.getPlayerAccSaberScores(playerId, page, sort, direction, type);
+          return await PlayerScoresService.getPlayerAccSaberScores(playerId, page, sort, direction, type)
         },
         {
-          tags: ["Scores"],
+          tags: [ 'Scores' ],
           params: z.object({
             playerId: z.string(),
             page: z.coerce.number().default(1),
           }),
           query: z.object({
-            sort: accSaberScoreSortSchema.default("date"),
-            direction: SortDirectionSchema.default("desc"),
-            type: accSaberScoreTypeSchema.default("overall"),
+            sort: accSaberScoreSortSchema.default('date'),
+            direction: SortDirectionSchema.default('desc'),
+            type: accSaberScoreTypeSchema.default('overall'),
           }),
           response: AccSaberScoresPageResponseSchema,
           detail: {
-            description: "Fetch AccSaber player scores with optional BeatLeader replay URLs",
+            description: 'Fetch AccSaber player scores with optional BeatLeader replay URLs',
           },
-        }
+        },
       )
       .get(
-        "/player/ssr/:playerId/:field/:direction/:page",
-        async ({ params: { playerId, page, field, direction }, query }) => {
-          return await PlayerScoresService.getScoreSaberPlayerScores(playerId, page, field, direction, query);
+        '/player/ssr/:playerId/:field/:direction/:page',
+        async ({
+          params: {
+            playerId, page, field, direction,
+          }, query,
+        }) => {
+          return await PlayerScoresService.getScoreSaberPlayerScores(playerId, page, field, direction, query)
         },
         {
-          tags: ["Scores"],
+          tags: [ 'Scores' ],
           params: z.object({
             playerId: z.string(),
             field: ScoreSaberScoreSortFieldSchema,
@@ -104,23 +108,27 @@ export default function scoresController(app: Elysia) {
           query: PlayerScoresQuerySchema,
           response: PlayerScoresPageResponseSchema,
           detail: {
-            description: "Fetch player scores",
+            description: 'Fetch player scores',
           },
-        }
+        },
       )
       .get(
-        "/player/medals/:playerId/:field/:direction/:page",
-        async ({ params: { playerId, page, field, direction }, query }) => {
+        '/player/medals/:playerId/:field/:direction/:page',
+        async ({
+          params: {
+            playerId, page, field, direction,
+          }, query,
+        }) => {
           return await PlayerScoresService.getScoreSaberPlayerMedalScores(
             playerId,
             page,
             field,
             direction,
-            query
-          );
+            query,
+          )
         },
         {
-          tags: ["Scores"],
+          tags: [ 'Scores' ],
           params: z.object({
             playerId: z.string(),
             field: ScoreSaberMedalScoreSortFieldSchema,
@@ -130,34 +138,34 @@ export default function scoresController(app: Elysia) {
           query: PlayerScoresQuerySchema,
           response: MedalPlayerScoresPageResponseSchema,
           detail: {
-            description: "Fetch player medal scores",
+            description: 'Fetch player medal scores',
           },
-        }
+        },
       )
       .get(
-        "/history-graph/:playerId/:leaderboardId",
+        '/history-graph/:playerId/:leaderboardId',
         async ({ params: { playerId, leaderboardId } }) => {
-          return await PlayerScoreHistoryService.getPlayerScoreHistoryGraph(playerId, leaderboardId);
+          return await PlayerScoreHistoryService.getPlayerScoreHistoryGraph(playerId, leaderboardId)
         },
         {
-          tags: ["Scores"],
+          tags: [ 'Scores' ],
           params: z.object({
             playerId: z.string(),
             leaderboardId: z.coerce.number(),
           }),
           response: ScoreHistoryGraphSchema,
           detail: {
-            description: "Fetch player score history graph",
+            description: 'Fetch player score history graph',
           },
-        }
+        },
       )
       .get(
-        "/leaderboard/:leaderboardId/:page",
+        '/leaderboard/:leaderboardId/:page',
         async ({ params: { leaderboardId, page }, query: { country } }) => {
-          return await ScoreSaberLeaderboardScoresService.getLeaderboardScores(leaderboardId, page, country);
+          return await ScoreSaberLeaderboardScoresService.getLeaderboardScores(leaderboardId, page, country)
         },
         {
-          tags: ["Scores"],
+          tags: [ 'Scores' ],
           params: z.object({
             leaderboardId: z.coerce.number(),
             page: z.coerce.number(),
@@ -166,17 +174,17 @@ export default function scoresController(app: Elysia) {
             country: z.string().optional(),
           }),
           detail: {
-            description: "Fetch leaderboard scores",
+            description: 'Fetch leaderboard scores',
           },
-        }
+        },
       )
       .post(
-        "/friend/leaderboard/:leaderboardId/:page",
+        '/friend/leaderboard/:leaderboardId/:page',
         async ({ params: { leaderboardId, page }, body: { friendIds } }) => {
-          return await PlayerFriendScoresService.getFriendLeaderboardScores(friendIds, leaderboardId, page);
+          return await PlayerFriendScoresService.getFriendLeaderboardScores(friendIds, leaderboardId, page)
         },
         {
-          tags: ["Scores"],
+          tags: [ 'Scores' ],
           params: z.object({
             leaderboardId: z.coerce.number(),
             page: z.coerce.number(),
@@ -189,26 +197,26 @@ export default function scoresController(app: Elysia) {
           }),
           response: ScoreSaberScoresPageResponseSchema,
           detail: {
-            description: "Fetch friends' scores for a leaderboard",
+            description: 'Fetch friends\' scores for a leaderboard',
           },
-        }
+        },
       )
       .get(
-        "/top/:page",
+        '/top/:page',
         async ({ params: { page, limit } }) => {
-          return await TopScoresService.getTopScores(page, limit);
+          return await TopScoresService.getTopScores(page, limit)
         },
         {
-          tags: ["Scores"],
+          tags: [ 'Scores' ],
           params: z.object({
             page: z.coerce.number().default(1),
             limit: z.coerce.number().min(1).max(50).default(25),
           }),
           response: TopScoresPageResponseSchema,
           detail: {
-            description: "Fetch top scores",
+            description: 'Fetch top scores',
           },
-        }
-      )
-  );
+        },
+      ),
+  )
 }

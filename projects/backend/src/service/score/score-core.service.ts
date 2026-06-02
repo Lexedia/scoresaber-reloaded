@@ -1,29 +1,29 @@
-import Logger, { type ScopedLogger } from "@ssr/common/logger";
-import type { BeatLeaderScore } from "@ssr/common/schemas/beatleader/score/score";
-import { ScoreSaberLeaderboard } from "@ssr/common/schemas/scoresaber/leaderboard/leaderboard";
-import { ScoreSaberMedalScore } from "@ssr/common/schemas/scoresaber/score/medal-score";
-import { ScoreSaberScore } from "@ssr/common/schemas/scoresaber/score/score";
-import { formatDuration } from "@ssr/common/utils/time-utils";
-import { eq } from "drizzle-orm";
-import { sendMedalScoreNotification } from "../../common/score/score.util";
-import { db } from "../../db";
-import { ScoreSaberAccountRow, scoreSaberAccountsTable } from "../../db/schema";
-import { ScoreSaberScoreHistoryRepository } from "../../repositories/scoresaber-score-history.repository";
-import { ScoreSaberScoresRepository } from "../../repositories/scoresaber-scores.repository";
-import BeatLeaderService from "../beatleader/beatleader.service";
-import { ScoreSaberLeaderboardsService } from "../leaderboard/scoresaber-leaderboards.service";
-import { PlayerMedalsService } from "../medals/player-medals.service";
-import { PlayerCoreService } from "../player/player-core.service";
-import { PlayerScoreHistoryService } from "../player/player-score-history.service";
+import Logger, { type ScopedLogger } from '@ssr/common/logger'
+import type { BeatLeaderScore } from '@ssr/common/schemas/beatleader/score/score'
+import { ScoreSaberLeaderboard } from '@ssr/common/schemas/scoresaber/leaderboard/leaderboard'
+import { ScoreSaberMedalScore } from '@ssr/common/schemas/scoresaber/score/medal-score'
+import { ScoreSaberScore } from '@ssr/common/schemas/scoresaber/score/score'
+import { formatDuration } from '@ssr/common/utils/time-utils'
+import { eq } from 'drizzle-orm'
+import { sendMedalScoreNotification } from '../../common/score/score.util'
+import { db } from '../../db'
+import { ScoreSaberAccountRow, scoreSaberAccountsTable } from '../../db/schema'
+import { ScoreSaberScoreHistoryRepository } from '../../repositories/scoresaber-score-history.repository'
+import { ScoreSaberScoresRepository } from '../../repositories/scoresaber-scores.repository'
+import BeatLeaderService from '../beatleader/beatleader.service'
+import { ScoreSaberLeaderboardsService } from '../leaderboard/scoresaber-leaderboards.service'
+import { PlayerMedalsService } from '../medals/player-medals.service'
+import { PlayerCoreService } from '../player/player-core.service'
+import { PlayerScoreHistoryService } from '../player/player-score-history.service'
 
 type InsertScoreDataOptions = {
   insertBeatLeaderScore?: boolean;
   insertPreviousScore?: boolean;
   insertPlayerInfo?: boolean;
-};
+}
 
 export class ScoreCoreService {
-  private static readonly logger: ScopedLogger = Logger.withTopic("Score Core");
+  private static readonly logger: ScopedLogger = Logger.withTopic('Score Core')
 
   /**
    * Tracks ScoreSaber score.
@@ -41,69 +41,77 @@ export class ScoreCoreService {
     beatLeaderScore?: BeatLeaderScore,
     options?: {
       skipDuplicateCheck?: boolean;
-    }
+    },
   ): Promise<{
     score: ScoreSaberScore | undefined;
     hasPreviousScore: boolean;
     tracked: boolean;
   }> {
-    const before = performance.now();
+    const before = performance.now()
 
     if (
       !options?.skipDuplicateCheck &&
       (await ScoreSaberScoresRepository.existsByScoreIdAndScore(score.scoreId, score.score))
     ) {
-      return { score: undefined, hasPreviousScore: false, tracked: false };
-    }
-
-    const playerId = score.playerId;
-    let isImprovement = false;
-    if (newScore) {
-      const previousRow = await ScoreSaberScoresRepository.findByPlayerAndLeaderboard(
-        playerId,
-        leaderboard.id
-      );
-
-      isImprovement = previousRow !== undefined;
-      if (isImprovement && previousRow) {
-        const previous = previousRow;
-
-        // Move old score to history (snapshot the row being replaced, not the incoming score)
-        await ScoreSaberScoreHistoryRepository.insertSnapshot(previous, playerId, leaderboard.id);
-
-        await ScoreSaberScoresRepository.deleteByScoreId(previous.scoreId);
+      return {
+        score: undefined,
+        hasPreviousScore: false,
+        tracked: false,
       }
     }
 
-    const playerUpdates: Partial<ScoreSaberAccountRow> = {};
+    const playerId = score.playerId
+    let isImprovement = false
+    if (newScore) {
+      const previousRow = await ScoreSaberScoresRepository.findByPlayerAndLeaderboard(
+        playerId,
+        leaderboard.id,
+      )
+
+      isImprovement = previousRow !== undefined
+      if (isImprovement && previousRow) {
+        const previous = previousRow
+
+        // Move old score to history (snapshot the row being replaced, not the incoming score)
+        await ScoreSaberScoreHistoryRepository.insertSnapshot(previous, playerId, leaderboard.id)
+
+        await ScoreSaberScoresRepository.deleteByScoreId(previous.scoreId)
+      }
+    }
+
+    const playerUpdates: Partial<ScoreSaberAccountRow> = {}
     // We only want to update the player's HMD if the score is new
     if (newScore) {
-      playerUpdates.hmd = score.hmd;
+      playerUpdates.hmd = score.hmd
     }
-    await PlayerCoreService.updatePlayer(playerId, playerUpdates);
+    await PlayerCoreService.updatePlayer(playerId, playerUpdates)
 
-    await ScoreCoreService.upsertScore(score);
+    await ScoreCoreService.upsertScore(score)
 
     if (newScore && leaderboard.ranked && score.rank <= 10) {
-      const medalChanges = await PlayerMedalsService.refreshLeaderboardMedals(leaderboard);
+      const medalChanges = await PlayerMedalsService.refreshLeaderboardMedals(leaderboard)
       if (medalChanges.size > 0) {
-        await sendMedalScoreNotification(score, leaderboard, beatLeaderScore, medalChanges);
+        await sendMedalScoreNotification(score, leaderboard, beatLeaderScore, medalChanges)
       }
     }
 
     if (newScore) {
       ScoreCoreService.logger.info(
-        `Tracked ScoreSaber score "%s" for "%s" on "%s" [%s / %s]%s in %s`,
+        'Tracked ScoreSaber score "%s" for "%s" on "%s" [%s / %s]%s in %s',
         score.scoreId,
         score.playerInfo?.name ?? playerId,
         leaderboard.songName,
         leaderboard.difficulty.difficulty,
         leaderboard.difficulty.characteristic,
-        isImprovement ? ` (improvement)` : "",
-        formatDuration(performance.now() - before)
-      );
+        isImprovement ? ' (improvement)' : '',
+        formatDuration(performance.now() - before),
+      )
     }
-    return { score: score, hasPreviousScore: isImprovement, tracked: true };
+    return {
+      score: score,
+      hasPreviousScore: isImprovement,
+      tracked: true,
+    }
   }
 
   /**
@@ -112,7 +120,7 @@ export class ScoreCoreService {
    * @param score the score to upsert
    */
   public static async upsertScore(score: ScoreSaberScore): Promise<void> {
-    const modifiers = score.modifiers.map(modifier => modifier.toString());
+    const modifiers = score.modifiers.map(modifier => modifier.toString())
     await ScoreSaberScoresRepository.upsertScore({
       scoreId: score.scoreId,
       playerId: score.playerId,
@@ -132,7 +140,7 @@ export class ScoreCoreService {
       rightController: score.rightController,
       leftController: score.leftController,
       timestamp: score.timestamp,
-    });
+    })
   }
 
   /**
@@ -146,56 +154,56 @@ export class ScoreCoreService {
     score: ScoreSaberScore,
     leaderboard: ScoreSaberLeaderboard,
     options?: InsertScoreDataOptions
-  ): Promise<ScoreSaberScore>;
+  ): Promise<ScoreSaberScore>
   public static async insertScoreData(
     score: ScoreSaberMedalScore,
     leaderboard: ScoreSaberLeaderboard,
     options?: InsertScoreDataOptions
-  ): Promise<ScoreSaberMedalScore>;
+  ): Promise<ScoreSaberMedalScore>
   public static async insertScoreData(
     score: ScoreSaberScore | ScoreSaberMedalScore,
     leaderboard: ScoreSaberLeaderboard,
-    options?: InsertScoreDataOptions
+    options?: InsertScoreDataOptions,
   ): Promise<ScoreSaberScore | ScoreSaberMedalScore> {
     options = {
       insertBeatLeaderScore: true,
       insertPreviousScore: true,
       insertPlayerInfo: true,
       ...options,
-    };
+    }
 
     leaderboard = !leaderboard
       ? await ScoreSaberLeaderboardsService.getLeaderboard(score.leaderboardId)
-      : leaderboard;
+      : leaderboard
 
     // If the leaderboard is not found, return the plain score
     if (!leaderboard) {
-      return score;
+      return score
     }
 
     async function getBeatLeaderScore() {
       if (options?.insertBeatLeaderScore === false) {
-        return undefined;
+        return undefined
       }
       return BeatLeaderService.getBeatLeaderScoreFromSong(
         score.playerId,
         leaderboard.songHash,
         leaderboard.difficulty.difficulty,
         leaderboard.difficulty.characteristic,
-        score.score
-      );
+        score.score,
+      )
     }
 
     async function getPreviousScore() {
       if (options?.insertPreviousScore && leaderboard) {
-        return PlayerScoreHistoryService.getPlayerPreviousScore(score, leaderboard);
+        return PlayerScoreHistoryService.getPlayerPreviousScore(score, leaderboard)
       }
-      return undefined;
+      return undefined
     }
 
     async function getPlayerInfo() {
       if (options?.insertPlayerInfo) {
-        const [row] = await db
+        const [ row ] = await db
           .select({
             id: scoreSaberAccountsTable.id,
             name: scoreSaberAccountsTable.name,
@@ -203,25 +211,29 @@ export class ScoreCoreService {
             avatar: scoreSaberAccountsTable.avatar,
           })
           .from(scoreSaberAccountsTable)
-          .where(eq(scoreSaberAccountsTable.id, score.playerId));
+          .where(eq(scoreSaberAccountsTable.id, score.playerId))
 
-        return row;
+        return row
       }
-      return undefined;
+      return undefined
     }
 
-    const [beatLeaderScore, previousScore, playerInfo] = await Promise.all([
+    const [
+      beatLeaderScore,
+      previousScore,
+      playerInfo,
+    ] = await Promise.all([
       getBeatLeaderScore(),
       getPreviousScore(),
       getPlayerInfo(),
-    ]);
+    ])
 
     if (beatLeaderScore !== undefined) {
-      score.beatLeaderScore = beatLeaderScore;
+      score.beatLeaderScore = beatLeaderScore
     }
 
     if (previousScore !== undefined) {
-      score.previousScore = previousScore;
+      score.previousScore = previousScore
     }
 
     if (playerInfo !== undefined) {
@@ -230,9 +242,9 @@ export class ScoreCoreService {
         name: playerInfo.name,
         avatar: playerInfo.avatar,
         country: playerInfo.country ?? undefined,
-      };
+      }
     }
 
-    return score;
+    return score
   }
 }

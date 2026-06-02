@@ -1,25 +1,38 @@
-import { Histogram } from "prom-client";
-import { MetricType, prometheusRegistry } from "../../../service/infra/metrics.service";
-import Metric from "../../metric";
+import { Histogram } from 'prom-client'
+import { MetricType, prometheusRegistry } from '../../../service/infra/metrics.service'
+import Metric from '../../metric'
 
 export default class ResponseTimeHistogramMetric extends Metric<number> {
-  private histogram: Histogram;
+  private histogram: Histogram
 
   constructor() {
-    super(MetricType.RESPONSE_TIME_MS, 0, { persist: false });
+    super(MetricType.RESPONSE_TIME_MS, 0, { persist: false })
 
     this.histogram = new Histogram({
-      name: "response_time_ms",
-      help: "Per-route response time in milliseconds",
-      labelNames: ["route"],
+      name: 'response_time_ms',
+      help: 'Per-route response time in milliseconds',
+      labelNames: [ 'route' ],
       // Buckets in milliseconds.
-      buckets: [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2000, 5000, 10000],
-      registers: [prometheusRegistry],
-    });
+      buckets: [
+        1,
+        5,
+        10,
+        25,
+        50,
+        100,
+        250,
+        500,
+        1000,
+        2000,
+        5000,
+        10000,
+      ],
+      registers: [ prometheusRegistry ],
+    })
   }
 
   public observe(route: string, durationMs: number) {
-    this.value = durationMs;
-    this.histogram.observe({ route }, durationMs);
+    this.value = durationMs
+    this.histogram.observe({ route }, durationMs)
   }
 }

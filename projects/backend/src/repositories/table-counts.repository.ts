@@ -1,5 +1,5 @@
-import { sql } from "drizzle-orm";
-import { db } from "../db";
+import { sql } from 'drizzle-orm'
+import { db } from '../db'
 
 export type TableCountsRow = {
   id: number;
@@ -8,7 +8,7 @@ export type TableCountsRow = {
   scoresaberAccounts: number;
   scoresaberLeaderboards: number;
   refreshedAt: Date;
-};
+}
 
 type RawTableCountsRow = {
   id: string;
@@ -17,7 +17,7 @@ type RawTableCountsRow = {
   scoresaberAccounts: string;
   scoresaberLeaderboards: string;
   refreshedAt: Date;
-};
+}
 
 export class TableCountsRepository {
   public static async getCounts(): Promise<TableCountsRow> {
@@ -31,10 +31,10 @@ export class TableCountsRepository {
         "refreshedAt"
       FROM "ssr_table_counts"
       WHERE "id" = 1
-    `);
-    const rawCounts = result.rows[0];
+    `)
+    const rawCounts = result.rows[0]
     if (!rawCounts) {
-      throw new Error('Materialized counts row missing from "ssr_table_counts"');
+      throw new Error('Materialized counts row missing from "ssr_table_counts"')
     }
     return {
       id: Number.parseInt(rawCounts.id, 10),
@@ -43,10 +43,10 @@ export class TableCountsRepository {
       scoresaberAccounts: Number.parseInt(rawCounts.scoresaberAccounts, 10),
       scoresaberLeaderboards: Number.parseInt(rawCounts.scoresaberLeaderboards, 10),
       refreshedAt: rawCounts.refreshedAt,
-    };
+    }
   }
 
   public static async refreshConcurrently(): Promise<void> {
-    await db.execute(sql`REFRESH MATERIALIZED VIEW CONCURRENTLY "ssr_table_counts"`);
+    await db.execute(sql`REFRESH MATERIALIZED VIEW CONCURRENTLY "ssr_table_counts"`)
   }
 }

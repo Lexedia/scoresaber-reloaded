@@ -1,12 +1,12 @@
-import ApiServiceRegistry from "@ssr/common/api-service/api-service-registry";
-import { BeatSaverMap } from "@ssr/common/schemas/beatsaver/map/map";
-import { MapCharacteristic } from "@ssr/common/schemas/map/map-characteristic";
-import { MapDifficulty } from "@ssr/common/schemas/map/map-difficulty";
-import BeatSaverMapToken from "@ssr/common/types/token/beatsaver/map";
-import { beatSaverMapCacheKey, normalizeSongHash } from "../../common/cache-keys";
-import { beatSaverRowsToMap } from "../../db/converter/beatsaver-map";
-import { BeatSaverRepository } from "../../repositories/beatsaver.repository";
-import CacheService, { CacheId } from "../infra/cache.service";
+import ApiServiceRegistry from '@ssr/common/api-service/api-service-registry'
+import { BeatSaverMap } from '@ssr/common/schemas/beatsaver/map/map'
+import { MapCharacteristic } from '@ssr/common/schemas/map/map-characteristic'
+import { MapDifficulty } from '@ssr/common/schemas/map/map-difficulty'
+import BeatSaverMapToken from '@ssr/common/types/token/beatsaver/map'
+import { beatSaverMapCacheKey, normalizeSongHash } from '../../common/cache-keys'
+import { beatSaverRowsToMap } from '../../db/converter/beatsaver-map'
+import { BeatSaverRepository } from '../../repositories/beatsaver.repository'
+import CacheService, { CacheId } from '../infra/cache.service'
 
 export default class BeatSaverService {
   /**
@@ -21,38 +21,38 @@ export default class BeatSaverService {
   public static async getMap(
     hash: string,
     difficulty: MapDifficulty,
-    characteristic: MapCharacteristic
+    characteristic: MapCharacteristic,
   ): Promise<BeatSaverMap | undefined> {
-    const normalizedHash = normalizeSongHash(hash);
+    const normalizedHash = normalizeSongHash(hash)
 
     return await CacheService.fetch(
       CacheId.BEATSAVER_MAP,
       beatSaverMapCacheKey(normalizedHash, difficulty, characteristic),
       async () => {
-        let rows = await BeatSaverRepository.findMapBundleByVersionHash(normalizedHash);
+        let rows = await BeatSaverRepository.findMapBundleByVersionHash(normalizedHash)
 
         if (!rows) {
           const fetchedToken = await ApiServiceRegistry.getInstance()
             .getBeatSaverService()
-            .lookupMap(normalizedHash);
+            .lookupMap(normalizedHash)
           if (!fetchedToken) {
-            return undefined;
+            return undefined
           }
-          await this.saveMap(fetchedToken);
-          rows = await BeatSaverRepository.findMapBundleByVersionHash(normalizedHash);
+          await this.saveMap(fetchedToken)
+          rows = await BeatSaverRepository.findMapBundleByVersionHash(normalizedHash)
           if (!rows) {
             const picked = this.pickVersionForLeaderboard(
               fetchedToken,
               normalizedHash,
               difficulty,
-              characteristic
-            );
+              characteristic,
+            )
             if (picked != null) {
-              rows = await BeatSaverRepository.findMapBundleByVersionHash(picked.hash.toLowerCase());
+              rows = await BeatSaverRepository.findMapBundleByVersionHash(picked.hash.toLowerCase())
             }
           }
           if (!rows) {
-            return undefined;
+            return undefined
           }
         }
 
@@ -64,10 +64,10 @@ export default class BeatSaverService {
           uploader: rows.uploader,
           version: rows.version,
           difficulties: rows.difficulties,
-        });
-        return map;
-      }
-    );
+        })
+        return map
+      },
+    )
   }
 
   /**
@@ -77,7 +77,7 @@ export default class BeatSaverService {
    * @returns the saved map
    */
   public static async saveMap(map: BeatSaverMapToken): Promise<void> {
-    await BeatSaverRepository.upsertMap(map);
+    await BeatSaverRepository.upsertMap(map)
   }
 
   /**
@@ -89,28 +89,28 @@ export default class BeatSaverService {
     token: BeatSaverMapToken,
     songHashNormalized: string,
     difficulty: MapDifficulty,
-    characteristic: MapCharacteristic
+    characteristic: MapCharacteristic,
   ) {
-    const versions = token.versions;
+    const versions = token.versions
     if (versions.length === 0) {
-      return undefined;
+      return undefined
     }
 
-    const exact = versions.find(v => v.hash.toLowerCase() === songHashNormalized);
+    const exact = versions.find(v => v.hash.toLowerCase() === songHashNormalized)
     if (exact) {
-      return exact;
+      return exact
     }
 
-    const byCreatedDesc = [...versions].sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+    const byCreatedDesc = [ ...versions ].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    )
 
     for (const v of byCreatedDesc) {
       if (v.diffs?.some(d => d.characteristic === characteristic && d.difficulty === difficulty)) {
-        return v;
+        return v
       }
     }
 
-    return byCreatedDesc[0];
+    return byCreatedDesc[0]
   }
 }

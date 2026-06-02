@@ -1,28 +1,28 @@
-import Logger from "@ssr/common/logger";
-import { BeatLeaderScoreToken } from "@ssr/common/schemas/beatleader/tokens/score/score";
-import { getScoreSaberLeaderboardFromToken, getScoreSaberScoreFromToken } from "@ssr/common/token-creators";
-import ScoreSaberLeaderboardToken from "@ssr/common/types/token/scoresaber/leaderboard";
-import { ScoreSaberLeaderboardPlayerInfoToken } from "@ssr/common/types/token/scoresaber/leaderboard-player-info";
-import ScoreSaberScoreToken from "@ssr/common/types/token/scoresaber/score";
-import { TimeUnit } from "@ssr/common/utils/time-utils";
-import { connectBeatLeaderWebsocket } from "@ssr/common/websocket/beatleader-websocket";
-import { connectScoresaberWebsocket } from "@ssr/common/websocket/scoresaber-websocket";
-import { EventListener } from "../../event/event-listener";
-import { EventsManager } from "../../event/events-manager";
-import BeatLeaderSeenScoresMetric from "../../metrics/impl/player/beatleader-seen-scores";
-import BeatLeaderUniqueDailyPlayersMetric from "../../metrics/impl/player/beatleader-unique-daily-players";
-import UniqueDailyPlayersMetric from "../../metrics/impl/player/unique-daily-players";
-import { ScoreSaberLeaderboardsRepository } from "../../repositories/scoresaber-leaderboards.repository";
-import BeatLeaderService from "../../service/beatleader/beatleader.service";
-import MetricsService, { MetricType } from "../../service/infra/metrics.service";
-import { ScoreSaberLeaderboardsService } from "../../service/leaderboard/scoresaber-leaderboards.service";
-import { PlayerCoreService } from "../../service/player/player-core.service";
-import { ScoreEventService } from "../../service/score-event/score-event.service";
-import { TopScoresService } from "../../service/score/top-scores.service";
+import Logger from '@ssr/common/logger'
+import { BeatLeaderScoreToken } from '@ssr/common/schemas/beatleader/tokens/score/score'
+import { getScoreSaberLeaderboardFromToken, getScoreSaberScoreFromToken } from '@ssr/common/token-creators'
+import ScoreSaberLeaderboardToken from '@ssr/common/types/token/scoresaber/leaderboard'
+import { ScoreSaberLeaderboardPlayerInfoToken } from '@ssr/common/types/token/scoresaber/leaderboard-player-info'
+import ScoreSaberScoreToken from '@ssr/common/types/token/scoresaber/score'
+import { TimeUnit, toMillis } from '@ssr/common/utils/time-utils'
+import { connectBeatLeaderWebsocket } from '@ssr/common/websocket/beatleader-websocket'
+import { connectScoresaberWebsocket } from '@ssr/common/websocket/scoresaber-websocket'
+import { EventListener } from '../../event/event-listener'
+import { EventsManager } from '../../event/events-manager'
+import BeatLeaderSeenScoresMetric from '../../metrics/impl/player/beatleader-seen-scores'
+import BeatLeaderUniqueDailyPlayersMetric from '../../metrics/impl/player/beatleader-unique-daily-players'
+import UniqueDailyPlayersMetric from '../../metrics/impl/player/unique-daily-players'
+import { ScoreSaberLeaderboardsRepository } from '../../repositories/scoresaber-leaderboards.repository'
+import BeatLeaderService from '../../service/beatleader/beatleader.service'
+import MetricsService, { MetricType } from '../../service/infra/metrics.service'
+import { ScoreSaberLeaderboardsService } from '../../service/leaderboard/scoresaber-leaderboards.service'
+import { PlayerCoreService } from '../../service/player/player-core.service'
+import { ScoreEventService } from '../../service/score-event/score-event.service'
+import { TopScoresService } from '../../service/score/top-scores.service'
 
-const scoreSaberWsLog = Logger.withTopic("ScoreSaber WebSocket");
-const beatLeaderWsLog = Logger.withTopic("BeatLeader WebSocket");
-const scoresWsLog = Logger.withTopic("Scores WebSocket");
+const scoreSaberWsLog = Logger.withTopic('ScoreSaber WebSocket')
+const beatLeaderWsLog = Logger.withTopic('BeatLeader WebSocket')
+const scoresWsLog = Logger.withTopic('Scores WebSocket')
 
 interface PendingScore {
   scoreSaberToken?: ScoreSaberScoreToken;
@@ -33,8 +33,8 @@ interface PendingScore {
 }
 
 export class ScoreWebsockets implements EventListener {
-  private static readonly SCORE_MATCH_TIMEOUT = TimeUnit.toMillis(TimeUnit.Second, 10);
-  private static readonly PENDING_SCORES = new Map<string, PendingScore>();
+  private static readonly SCORE_MATCH_TIMEOUT = toMillis(TimeUnit.Second, 10)
+  private static readonly PENDING_SCORES = new Map<string, PendingScore>()
 
   constructor() {
     // Unique daily players are now managed by the metric itself with Redis
@@ -42,48 +42,51 @@ export class ScoreWebsockets implements EventListener {
     // Start the match timeout interval timer
     setInterval(
       () => {
-        const now = Date.now();
-        for (const [key, pendingScore] of ScoreWebsockets.PENDING_SCORES.entries()) {
+        const now = Date.now()
+        for (const [
+          key,
+          pendingScore,
+        ] of ScoreWebsockets.PENDING_SCORES.entries()) {
           if (now - pendingScore.timestamp >= ScoreWebsockets.SCORE_MATCH_TIMEOUT) {
-            ScoreWebsockets.clearPendingScore(key);
+            ScoreWebsockets.clearPendingScore(key)
             if (pendingScore.scoreSaberToken && pendingScore.leaderboardToken && pendingScore.player) {
               this.processScore(
                 pendingScore.scoreSaberToken,
                 pendingScore.leaderboardToken,
-                pendingScore.player
-              );
+                pendingScore.player,
+              )
             } else if (pendingScore.beatLeaderScore) {
-              this.processScore(undefined, undefined, undefined, pendingScore.beatLeaderScore);
+              this.processScore(undefined, undefined, undefined, pendingScore.beatLeaderScore)
             }
-            continue;
+            continue
           }
         }
       },
-      TimeUnit.toMillis(TimeUnit.Minute, 1)
-    );
+      toMillis(TimeUnit.Minute, 1),
+    )
 
     // Connect to websockets
     connectScoresaberWebsocket({
       onScore: async score => {
         try {
-          const player = score.score.leaderboardPlayerInfo;
-          const leaderboard = getScoreSaberLeaderboardFromToken(score.leaderboard);
+          const player = score.score.leaderboardPlayerInfo
+          const leaderboard = getScoreSaberLeaderboardFromToken(score.leaderboard)
 
           const key =
-            `${player.id}-${leaderboard.songHash}-${leaderboard.difficulty.difficulty}-${leaderboard.difficulty.characteristic}`.toUpperCase();
-          const pendingScore = ScoreWebsockets.PENDING_SCORES.get(key);
+            `${player.id}-${leaderboard.songHash}-${leaderboard.difficulty.difficulty}-${leaderboard.difficulty.characteristic}`.toUpperCase()
+          const pendingScore = ScoreWebsockets.PENDING_SCORES.get(key)
 
           //scoreSaberWsLog.info(`Received score for player ${player.id} with key ${key}`);
 
           if (pendingScore?.beatLeaderScore) {
             // Found a matching BeatLeader score, process both
-            ScoreWebsockets.clearPendingScore(key);
+            ScoreWebsockets.clearPendingScore(key)
             await this.processScore(
               score.score,
               score.leaderboard,
               score.score.leaderboardPlayerInfo,
-              pendingScore.beatLeaderScore
-            );
+              pendingScore.beatLeaderScore,
+            )
           } else {
             // No matching BeatLeader score yet, store this one
             ScoreWebsockets.PENDING_SCORES.set(key, {
@@ -91,65 +94,65 @@ export class ScoreWebsockets implements EventListener {
               leaderboardToken: score.leaderboard,
               player: score.score.leaderboardPlayerInfo,
               timestamp: Date.now(),
-            });
+            })
           }
         } catch (error) {
-          scoreSaberWsLog.error("Error processing ScoreSaber score:", error);
+          scoreSaberWsLog.error('Error processing ScoreSaber score:', error)
         }
       },
       onDisconnect: event => {
-        scoreSaberWsLog.warn("ScoreSaber websocket disconnected:", event);
+        scoreSaberWsLog.warn('ScoreSaber websocket disconnected:', event)
       },
-    });
+    })
 
     connectBeatLeaderWebsocket({
       onScore: async beatLeaderScore => {
         // a reallyyyyyyyyyyyyyyy jank fix because ell 🥹🥹😢
-        if (beatLeaderScore.playerId == "335393") {
-          beatLeaderScore.playerId = "76561198979484227";
+        if (beatLeaderScore.playerId == '335393') {
+          beatLeaderScore.playerId = '76561198979484227'
         }
 
         try {
           const beatLeaderSeenScoresMetric = MetricsService.getMetric<BeatLeaderSeenScoresMetric>(
-            MetricType.BEATLEADER_SEEN_SCORES
-          );
-          beatLeaderSeenScoresMetric?.increment();
+            MetricType.BEATLEADER_SEEN_SCORES,
+          )
+          beatLeaderSeenScoresMetric?.increment()
 
           const beatLeaderUniquePlayersMetric = MetricsService.getMetric<BeatLeaderUniqueDailyPlayersMetric>(
-            MetricType.BEATLEADER_UNIQUE_DAILY_PLAYERS
-          );
-          beatLeaderUniquePlayersMetric?.addPlayer(beatLeaderScore.player!.id);
+            MetricType.BEATLEADER_UNIQUE_DAILY_PLAYERS,
+          )
+          beatLeaderUniquePlayersMetric?.addPlayer(beatLeaderScore.player!.id)
 
-          const player = beatLeaderScore.player!;
-          const leaderboard = beatLeaderScore.leaderboard;
+          const player = beatLeaderScore.player!
+          const leaderboard = beatLeaderScore.leaderboard
 
           const key =
-            `${player.id}-${leaderboard.song.hash}-${leaderboard.difficulty.difficultyName}-${leaderboard.difficulty.modeName}`.toUpperCase();
-          const pendingScore = ScoreWebsockets.PENDING_SCORES.get(key);
+            `${player.id}-${leaderboard.song.hash}-${leaderboard.difficulty.difficultyName}-${leaderboard.difficulty.modeName}`.toUpperCase()
+          const pendingScore = ScoreWebsockets.PENDING_SCORES.get(key)
 
           //beatLeaderWsLog.info(`Received score for player ${player.id}(${player.platform}) with key ${key}`);
 
           if (pendingScore?.scoreSaberToken && pendingScore.leaderboardToken && pendingScore.player) {
             // Found a matching ScoreSaber score, process both
-            ScoreWebsockets.clearPendingScore(key);
+            ScoreWebsockets.clearPendingScore(key)
             await this.processScore(
               pendingScore.scoreSaberToken,
               pendingScore.leaderboardToken,
               pendingScore.player,
-              beatLeaderScore
-            );
+              beatLeaderScore,
+            )
           } else {
             // No matching ScoreSaber score yet, store this one
             ScoreWebsockets.PENDING_SCORES.set(key, {
               beatLeaderScore,
               timestamp: Date.now(),
-            });
+            })
           }
         } catch (error) {
-          beatLeaderWsLog.error("Error processing BeatLeader score:", error);
+          beatLeaderWsLog.error('Error processing BeatLeader score:', error)
         }
       },
-    });
+    })
   }
 
   /**
@@ -158,7 +161,7 @@ export class ScoreWebsockets implements EventListener {
    * @param key the key of the pending score to clear.
    */
   private static clearPendingScore(key: string) {
-    this.PENDING_SCORES.delete(key);
+    this.PENDING_SCORES.delete(key)
   }
 
   /**
@@ -173,42 +176,42 @@ export class ScoreWebsockets implements EventListener {
     scoreSaberToken?: ScoreSaberScoreToken,
     leaderboardToken?: ScoreSaberLeaderboardToken,
     player?: ScoreSaberLeaderboardPlayerInfoToken,
-    beatLeaderScore?: BeatLeaderScoreToken
+    beatLeaderScore?: BeatLeaderScoreToken,
   ) {
     if (scoreSaberToken && leaderboardToken && player) {
-      const scoreLeaderboard = getScoreSaberLeaderboardFromToken(leaderboardToken);
-      const score = getScoreSaberScoreFromToken(scoreSaberToken, scoreLeaderboard, player.id);
-      const isTop50GlobalScore = await TopScoresService.isTop50GlobalScore(score);
+      const scoreLeaderboard = getScoreSaberLeaderboardFromToken(leaderboardToken)
+      const score = getScoreSaberScoreFromToken(scoreSaberToken, scoreLeaderboard, player.id)
+      const isTop50GlobalScore = await TopScoresService.isTop50GlobalScore(score)
 
       // Create the player, update their name if they are already being tracked
       if (!(await PlayerCoreService.createPlayer(player.id))) {
         Promise.all([
           // Update the player's name last
           player.name ? PlayerCoreService.updatePlayer(player.id, { name: player.name }) : undefined,
-        ]);
+        ])
       }
 
       // Fetch the leaderboard if it doesn't exist
       if (!(await ScoreSaberLeaderboardsRepository.existsById(scoreLeaderboard.id))) {
-        await ScoreSaberLeaderboardsService.createLeaderboard(scoreLeaderboard.id, leaderboardToken);
+        await ScoreSaberLeaderboardsService.createLeaderboard(scoreLeaderboard.id, leaderboardToken)
       } else {
         await ScoreSaberLeaderboardsRepository.updateLeaderboard(scoreLeaderboard.id, {
           plays: scoreLeaderboard.plays + 1, // returned value from the websocket is 1 less than the actual plays
           maxScore: scoreLeaderboard.maxScore,
-        });
+        })
       }
 
       // Track unique daily players in Redis
-      const metric = MetricsService.getMetric<UniqueDailyPlayersMetric>(MetricType.UNIQUE_DAILY_PLAYERS);
-      metric?.addPlayer(player.id);
+      const metric = MetricsService.getMetric<UniqueDailyPlayersMetric>(MetricType.UNIQUE_DAILY_PLAYERS)
+      metric?.addPlayer(player.id)
 
       // Insert a score event
-      await ScoreEventService.insertScoreEvent(score);
+      await ScoreEventService.insertScoreEvent(score)
 
       // Save the score stats
       if (beatLeaderScore) {
         // no need to await this
-        BeatLeaderService.saveScoreStats(beatLeaderScore.id);
+        BeatLeaderService.saveScoreStats(beatLeaderScore.id)
       }
 
       // Wait for all event listeners to process the score
@@ -220,28 +223,31 @@ export class ScoreWebsockets implements EventListener {
               scoreLeaderboard,
               score.playerInfo!,
               beatLeaderScore,
-              isTop50GlobalScore
-            );
+              isTop50GlobalScore,
+            )
           } catch (error) {
-            scoresWsLog.error(`Error in listener ${listener.constructor.name}:`, error);
+            scoresWsLog.error(`Error in listener ${listener.constructor.name}:`, error)
           }
-        })
-      );
+        }),
+      )
     }
   }
 
   onStop: () => Promise<void> = async () => {
     // Process all pending scores
-    for (const [key, pendingScore] of ScoreWebsockets.PENDING_SCORES.entries()) {
+    for (const [
+      key,
+      pendingScore,
+    ] of ScoreWebsockets.PENDING_SCORES.entries()) {
       // Process the score
       this.processScore(
         pendingScore.scoreSaberToken,
         pendingScore.leaderboardToken,
         pendingScore.player,
-        pendingScore.beatLeaderScore
-      );
+        pendingScore.beatLeaderScore,
+      )
 
-      ScoreWebsockets.PENDING_SCORES.delete(key);
+      ScoreWebsockets.PENDING_SCORES.delete(key)
     }
-  };
+  }
 }

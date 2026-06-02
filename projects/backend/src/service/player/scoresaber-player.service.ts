@@ -1,38 +1,41 @@
-import { DetailType } from "@ssr/common/detail-type";
-import { NotFoundError } from "@ssr/common/error/not-found-error";
-import { HMD } from "@ssr/common/hmds";
-import Logger, { type ScopedLogger } from "@ssr/common/logger";
-import ScoreSaberPlayer from "@ssr/common/player/impl/scoresaber-player";
-import { ScoreSaberPlayerToken } from "@ssr/common/types/token/scoresaber/player";
-import { getPlayerStatisticChanges } from "@ssr/common/utils/player-utils";
-import { TimeUnit } from "@ssr/common/utils/time-utils";
-import { getPageFromRank } from "@ssr/common/utils/utils";
-import { parse, stringify } from "devalue";
-import { cachedPlayerTokenCacheKey, playerCacheKey } from "../../common/cache-keys";
-import { redisClient } from "../../common/redis";
-import ActiveAccountsMetric from "../../metrics/impl/player/active-accounts";
-import { ScoreSaberApiService } from "../external/scoresaber-api.service";
-import CacheService, { CacheId } from "../infra/cache.service";
-import MetricsService, { MetricType } from "../infra/metrics.service";
-import { PlayerStatisticsService } from "../player-statistics/player-statistics.service";
-import { PlayerCoreService } from "./player-core.service";
-import { PlayerHistoryService } from "./player-history.service";
-import { PlayerHmdService } from "./player-hmd.service";
+import { DetailType } from '@ssr/common/detail-type'
+import { NotFoundError } from '@ssr/common/error/not-found-error'
+import { HMD } from '@ssr/common/hmds'
+import Logger, { type ScopedLogger } from '@ssr/common/logger'
+import ScoreSaberPlayer from '@ssr/common/player/impl/scoresaber-player'
+import { ScoreSaberPlayerToken } from '@ssr/common/types/token/scoresaber/player'
+import { getPlayerStatisticChanges } from '@ssr/common/utils/player-utils'
+import { TimeUnit, toSeconds } from '@ssr/common/utils/time-utils'
+import { getPageFromRank } from '@ssr/common/utils/utils'
+import { parse, stringify } from 'devalue'
+import { cachedPlayerTokenCacheKey, playerCacheKey } from '../../common/cache-keys'
+import { redisClient } from '../../common/redis'
+import ActiveAccountsMetric from '../../metrics/impl/player/active-accounts'
+import { ScoreSaberApiService } from '../external/scoresaber-api.service'
+import CacheService, { CacheId } from '../infra/cache.service'
+import MetricsService, { MetricType } from '../infra/metrics.service'
+import { PlayerStatisticsService } from '../player-statistics/player-statistics.service'
+import { PlayerCoreService } from './player-core.service'
+import { PlayerHistoryService } from './player-history.service'
+import { PlayerHmdService } from './player-hmd.service'
 
-const CACHED_PLAYER_EXPIRY = TimeUnit.toSeconds(TimeUnit.Month, 3);
+const CACHED_PLAYER_EXPIRY = toSeconds(TimeUnit.Month, 3)
 
 function computeHmdUsagePercentages(hmdUsage: Record<HMD, number>): Record<HMD, number> {
-  const totalKnownHmdScores = Object.values(hmdUsage).reduce((sum, c) => sum + c, 0);
+  const totalKnownHmdScores = Object.values(hmdUsage).reduce((sum, c) => sum + c, 0)
   return Object.fromEntries(
-    Object.entries(hmdUsage).map(([hmd, c]) => [
+    Object.entries(hmdUsage).map(([
+      hmd,
+      c,
+    ]) => [
       hmd,
       totalKnownHmdScores > 0 ? (c / totalKnownHmdScores) * 100 : 0,
-    ])
-  ) as Record<HMD, number>;
+    ]),
+  ) as Record<HMD, number>
 }
 
 export default class ScoreSaberPlayerService {
-  private static readonly logger: ScopedLogger = Logger.withTopic("ScoreSaber Player");
+  private static readonly logger: ScopedLogger = Logger.withTopic('ScoreSaber Player')
 
   /**
    * Gets a ScoreSaber player using their account id.
@@ -43,18 +46,18 @@ export default class ScoreSaberPlayerService {
    */
   public static async getPlayer(
     id: string,
-    type: DetailType = "basic",
-    player?: ScoreSaberPlayerToken
+    type: DetailType = 'basic',
+    player?: ScoreSaberPlayerToken,
   ): Promise<ScoreSaberPlayer> {
-    player ??= await ScoreSaberApiService.lookupPlayer(id);
+    player ??= await ScoreSaberApiService.lookupPlayer(id)
     if (!player) {
-      throw new NotFoundError(`Player "${id}" not found`);
+      throw new NotFoundError(`Player "${id}" not found`)
     }
 
     return CacheService.fetch(CacheId.SCORESABER_PLAYER, playerCacheKey(id, type), async () => {
-      const account = await PlayerCoreService.getOrCreateAccount(id, player).catch(() => undefined);
+      const account = await PlayerCoreService.getOrCreateAccount(id, player).catch(() => undefined)
       if (!account) {
-        throw new NotFoundError(`Player account "${id}" not found`);
+        throw new NotFoundError(`Player account "${id}" not found`)
       }
 
       const basePlayer = {
@@ -75,26 +78,29 @@ export default class ScoreSaberPlayerService {
         inactive: player.inactive,
         trackedSince: account.trackedSince,
         joinedDate: new Date(player.firstSeen),
-      } as ScoreSaberPlayer;
+      } as ScoreSaberPlayer
 
-      if (type === "basic") {
-        return basePlayer;
+      if (type === 'basic') {
+        return basePlayer
       }
 
-      const statistics = await PlayerStatisticsService.getStatistics(player);
-      const [hmdBreakdown, history] = await Promise.all([
+      const statistics = await PlayerStatisticsService.getStatistics(player)
+      const [
+        hmdBreakdown,
+        history,
+      ] = await Promise.all([
         account && player !== undefined
           ? PlayerHmdService.getPlayerHmdBreakdown(id).then(computeHmdUsagePercentages)
           : undefined,
         PlayerHistoryService.getPlayerStatisticHistories(player, statistics, 30),
-      ]);
+      ])
 
       let rankPercentile =
         (player.rank /
           (MetricsService.getMetric<ActiveAccountsMetric>(MetricType.ACTIVE_ACCOUNTS)?.value || 1)) *
-        100;
+        100
       if (isNaN(rankPercentile)) {
-        rankPercentile = 0;
+        rankPercentile = 0
       }
 
       return {
@@ -124,8 +130,8 @@ export default class ScoreSaberPlayerService {
         currentStreak: account.currentStreak,
         longestStreak: account.longestStreak,
         statistics: statistics,
-      } as ScoreSaberPlayer;
-    });
+      } as ScoreSaberPlayer
+    })
   }
 
   /**
@@ -137,87 +143,93 @@ export default class ScoreSaberPlayerService {
    * @returns the player token
    */
   public static async getCachedPlayer(id: string): Promise<ScoreSaberPlayerToken> {
-    const cacheKey = cachedPlayerTokenCacheKey(id);
+    const cacheKey = cachedPlayerTokenCacheKey(id)
 
-    const cachedData = await redisClient.get(cacheKey);
+    const cachedData = await redisClient.get(cacheKey)
     if (cachedData) {
       try {
-        return parse(cachedData) as ScoreSaberPlayerToken;
+        return parse(cachedData) as ScoreSaberPlayerToken
       } catch {
         ScoreSaberPlayerService.logger.warn(
-          `Failed to parse cached player data for ${id}, removing from cache`
-        );
-        await redisClient.del(cacheKey);
+          `Failed to parse cached player data for ${id}, removing from cache`,
+        )
+        await redisClient.del(cacheKey)
       }
     }
 
-    const player = await ScoreSaberApiService.lookupPlayer(id);
+    const player = await ScoreSaberApiService.lookupPlayer(id)
     if (!player) {
-      throw new NotFoundError(`Player "${id}" not found`);
+      throw new NotFoundError(`Player "${id}" not found`)
     }
 
-    await redisClient.set(cacheKey, stringify(player), "EX", CACHED_PLAYER_EXPIRY);
-    return player;
+    await redisClient.set(cacheKey, stringify(player), 'EX', CACHED_PLAYER_EXPIRY)
+    return player
   }
 
   public static async getCachedPlayers(ids: string[]): Promise<Map<string, ScoreSaberPlayerToken>> {
-    const uniqueIds = [...new Set(ids)];
+    const uniqueIds = [ ...new Set(ids) ]
     if (uniqueIds.length === 0) {
-      return new Map();
+      return new Map()
     }
 
     const keyToId = new Map<string, string>(
-      uniqueIds.map(id => [cachedPlayerTokenCacheKey(id), id] as const)
-    );
-    const keys = [...keyToId.keys()];
-    const cachedValues = await redisClient.mget(keys);
-    const players = new Map<string, ScoreSaberPlayerToken>();
-    const missingIds: string[] = [];
+      uniqueIds.map(id => [
+        cachedPlayerTokenCacheKey(id),
+        id,
+      ] as const),
+    )
+    const keys = [ ...keyToId.keys() ]
+    const cachedValues = await redisClient.mget(keys)
+    const players = new Map<string, ScoreSaberPlayerToken>()
+    const missingIds: string[] = []
 
     for (let index = 0; index < keys.length; index++) {
-      const key = keys[index];
-      const cachedValue = cachedValues[index];
-      const id = keyToId.get(key);
+      const key = keys[index]
+      const cachedValue = cachedValues[index]
+      const id = keyToId.get(key)
       if (!id) {
-        continue;
+        continue
       }
 
       if (!cachedValue) {
-        missingIds.push(id);
-        continue;
+        missingIds.push(id)
+        continue
       }
 
       try {
-        players.set(id, parse(cachedValue) as ScoreSaberPlayerToken);
+        players.set(id, parse(cachedValue) as ScoreSaberPlayerToken)
       } catch {
         ScoreSaberPlayerService.logger.warn(
-          `Failed to parse cached player data for ${id} in bulk lookup, removing from cache`
-        );
-        await redisClient.del(key);
-        missingIds.push(id);
+          `Failed to parse cached player data for ${id} in bulk lookup, removing from cache`,
+        )
+        await redisClient.del(key)
+        missingIds.push(id)
       }
     }
 
     if (missingIds.length > 0) {
       const lookedUpPlayers = await Promise.all(
         missingIds.map(async id => {
-          const player = await ScoreSaberApiService.lookupPlayer(id);
-          return { id, player };
-        })
-      );
+          const player = await ScoreSaberApiService.lookupPlayer(id)
+          return {
+            id,
+            player,
+          }
+        }),
+      )
 
       await Promise.all(
         lookedUpPlayers.map(async ({ id, player }) => {
           if (!player) {
-            return;
+            return
           }
 
-          players.set(id, player);
-          await redisClient.set(cachedPlayerTokenCacheKey(id), stringify(player), "EX", CACHED_PLAYER_EXPIRY);
-        })
-      );
+          players.set(id, player)
+          await redisClient.set(cachedPlayerTokenCacheKey(id), stringify(player), 'EX', CACHED_PLAYER_EXPIRY)
+        }),
+      )
     }
 
-    return players;
+    return players
   }
 }

@@ -1,13 +1,13 @@
-import { ScoreWebsocket } from "./impl/score-websocket";
-import { Websocket } from "./websocket";
+import { ScoreWebsocket } from './impl/score-websocket'
+import { Websocket } from './websocket'
 
-export type WebsocketId = "score";
+export type WebsocketId = 'score'
 
 export class WebsocketManager {
-  private static readonly WEBSOCKETS = new Map<WebsocketId, Websocket<unknown>>();
+  private static readonly WEBSOCKETS = new Map<WebsocketId, Websocket<unknown>>()
 
   constructor() {
-    this.register("score", new ScoreWebsocket());
+    this.register('score', new ScoreWebsocket())
   }
 
   /**
@@ -19,11 +19,11 @@ export class WebsocketManager {
    */
   private register<TPayload>(id: WebsocketId, websocket: Websocket<TPayload>) {
     if (WebsocketManager.WEBSOCKETS.has(id)) {
-      throw new Error(`Websocket with id "${id}" is already registered.`);
+      throw new Error(`Websocket with id "${id}" is already registered.`)
     }
 
-    WebsocketManager.WEBSOCKETS.set(id, websocket as Websocket<unknown>);
-    return websocket;
+    WebsocketManager.WEBSOCKETS.set(id, websocket as Websocket<unknown>)
+    return websocket
   }
 
   /**
@@ -33,7 +33,7 @@ export class WebsocketManager {
    * @returns the websocket.
    */
   public static get<TPayload>(id: WebsocketId) {
-    return this.WEBSOCKETS.get(id) as Websocket<TPayload> | undefined;
+    return this.WEBSOCKETS.get(id) as Websocket<TPayload> | undefined
   }
 
   /**
@@ -42,6 +42,6 @@ export class WebsocketManager {
    * @returns all registered websockets.
    */
   public static getAll() {
-    return [...this.WEBSOCKETS.values()];
+    return [ ...this.WEBSOCKETS.values() ]
   }
 }

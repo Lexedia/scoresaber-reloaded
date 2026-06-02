@@ -1,10 +1,13 @@
-import { NotFoundError } from "@ssr/common/error/not-found-error";
-import { ScoreSaberPlayerStatistics } from "@ssr/common/schemas/scoresaber/player/statistics";
-import { ScoreSaberPlayerToken } from "@ssr/common/types/token/scoresaber/player";
-import { and, eq, gte, sql } from "drizzle-orm";
-import { db } from "../../db";
-import { scoreSaberAccountsTable, scoreSaberScoresTable } from "../../db/schema";
-import { PlayerRankedService } from "../player/player-ranked.service";
+/* eslint-disable @stylistic/max-len */
+import { NotFoundError } from '@ssr/common/error/not-found-error'
+import { ScoreSaberPlayerStatistics } from '@ssr/common/schemas/scoresaber/player/statistics'
+import { ScoreSaberPlayerToken } from '@ssr/common/types/token/scoresaber/player'
+import {
+  and, eq, gte, sql,
+} from 'drizzle-orm'
+import { db } from '../../db'
+import { scoreSaberAccountsTable, scoreSaberScoresTable } from '../../db/schema'
+import { PlayerRankedService } from '../player/player-ranked.service'
 
 export class PlayerStatisticsService {
   /**
@@ -14,21 +17,24 @@ export class PlayerStatisticsService {
    * @returns the inserted statistics
    */
   public static async getStatistics(playerToken: ScoreSaberPlayerToken): Promise<ScoreSaberPlayerStatistics> {
-    const playerId = playerToken.id;
-    const [account] = await db
+    const playerId = playerToken.id
+    const [ account ] = await db
       .select({
         medals: scoreSaberAccountsTable.medals,
       })
       .from(scoreSaberAccountsTable)
-      .where(eq(scoreSaberAccountsTable.id, playerId));
+      .where(eq(scoreSaberAccountsTable.id, playerId))
     if (!account) {
-      throw new NotFoundError(`Account "${playerId}" not found`);
+      throw new NotFoundError(`Account "${playerId}" not found`)
     }
 
-    const [scoreStats, plusOne] = await Promise.all([
+    const [
+      scoreStats,
+      plusOne,
+    ] = await Promise.all([
       PlayerStatisticsService.getScoreStats(playerId),
       PlayerRankedService.getPlayerPlusOnePp(playerId),
-    ]);
+    ])
 
     return {
       // Rank stats
@@ -64,11 +70,11 @@ export class PlayerStatisticsService {
       ssPlays: scoreStats.ssPlays,
       sspPlays: scoreStats.sspPlays,
       godPlays: scoreStats.godPlays,
-    };
+    }
   }
 
   private static async getScoreStats(playerId: string) {
-    const [scoreStats] = await db
+    const [ scoreStats ] = await db
       .select({
         totalScore: sql<number>`(coalesce(sum(${scoreSaberScoresTable.score}), 0))::double precision`,
         totalRankedScore: sql<number>`(coalesce(sum(case when ${scoreSaberScoresTable.pp} > 0 then ${scoreSaberScoresTable.score} else 0 end), 0))::double precision`,
@@ -86,7 +92,7 @@ export class PlayerStatisticsService {
         godPlays: sql<number>`(coalesce(sum(case when ${scoreSaberScoresTable.pp} > 0 and ${scoreSaberScoresTable.accuracy} >= 98 then 1 else 0 end), 0))::double precision`,
       })
       .from(scoreSaberScoresTable)
-      .where(and(eq(scoreSaberScoresTable.playerId, playerId), gte(scoreSaberScoresTable.accuracy, 0)));
-    return scoreStats;
+      .where(and(eq(scoreSaberScoresTable.playerId, playerId), gte(scoreSaberScoresTable.accuracy, 0)))
+    return scoreStats
   }
 }

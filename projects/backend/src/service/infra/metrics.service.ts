@@ -1,121 +1,121 @@
-import Logger, { type ScopedLogger } from "@ssr/common/logger";
-import { isProduction } from "@ssr/common/utils/utils";
-import { Registry } from "prom-client";
-import { ApiServicesMetric } from "../../metrics/impl/backend/api-services";
-import CachePerformanceMetric from "../../metrics/impl/backend/cache-performance";
-import EventLoopLagMetric from "../../metrics/impl/backend/event-loop-lag";
-import HttpResponseStatusMetric from "../../metrics/impl/backend/http-response-status";
-import MemoryUsageMetric from "../../metrics/impl/backend/memory-usage";
-import ProcessCpuMetric from "../../metrics/impl/backend/process-cpu";
-import RedisHealthMetric from "../../metrics/impl/backend/redis-health";
-import ResponseTimeHistogramMetric from "../../metrics/impl/backend/response-time";
-import TotalRequestsMetric from "../../metrics/impl/backend/total-requests";
-import ProcessUptimeMetric from "../../metrics/impl/backend/uptime";
-import LeaderboardCountMetric from "../../metrics/impl/database/leaderboard-count";
-import PostgresDbSizeMetric from "../../metrics/impl/database/postgres-db-size";
-import ActiveAccountsMetric from "../../metrics/impl/player/active-accounts";
-import ActivePlayerHmdStatisticMetric from "../../metrics/impl/player/active-player-hmd-statistic";
-import BeatLeaderPlayersMetric from "../../metrics/impl/player/beatleader-players";
-import BeatLeaderSeenScoresMetric from "../../metrics/impl/player/beatleader-seen-scores";
-import BeatLeaderUniqueDailyPlayersMetric from "../../metrics/impl/player/beatleader-unique-daily-players";
-import DailyNewAccountsMetric from "../../metrics/impl/player/daily-new-accounts";
-import TotalTrackedScoresMetric from "../../metrics/impl/player/total-tracked-scores";
-import TrackedPlayersMetric from "../../metrics/impl/player/tracked-players";
-import TrackedScoresMetric from "../../metrics/impl/player/tracked-scores";
-import UniqueDailyPlayersMetric from "../../metrics/impl/player/unique-daily-players";
-import QueueProcessingDurationMetric from "../../metrics/impl/queue/queue-processing-duration";
-import QueueSizesMetric from "../../metrics/impl/queue/queue-sizes";
-import Metric from "../../metrics/metric";
-import { MetricsRepository } from "../../repositories/metrics.repository";
+import Logger, { type ScopedLogger } from '@ssr/common/logger'
+import { isProduction } from '@ssr/common/utils/utils'
+import { Registry } from 'prom-client'
+import { ApiServicesMetric } from '../../metrics/impl/backend/api-services'
+import CachePerformanceMetric from '../../metrics/impl/backend/cache-performance'
+import EventLoopLagMetric from '../../metrics/impl/backend/event-loop-lag'
+import HttpResponseStatusMetric from '../../metrics/impl/backend/http-response-status'
+import MemoryUsageMetric from '../../metrics/impl/backend/memory-usage'
+import ProcessCpuMetric from '../../metrics/impl/backend/process-cpu'
+import RedisHealthMetric from '../../metrics/impl/backend/redis-health'
+import ResponseTimeHistogramMetric from '../../metrics/impl/backend/response-time'
+import TotalRequestsMetric from '../../metrics/impl/backend/total-requests'
+import ProcessUptimeMetric from '../../metrics/impl/backend/uptime'
+import LeaderboardCountMetric from '../../metrics/impl/database/leaderboard-count'
+import PostgresDbSizeMetric from '../../metrics/impl/database/postgres-db-size'
+import ActiveAccountsMetric from '../../metrics/impl/player/active-accounts'
+import ActivePlayerHmdStatisticMetric from '../../metrics/impl/player/active-player-hmd-statistic'
+import BeatLeaderPlayersMetric from '../../metrics/impl/player/beatleader-players'
+import BeatLeaderSeenScoresMetric from '../../metrics/impl/player/beatleader-seen-scores'
+import BeatLeaderUniqueDailyPlayersMetric from '../../metrics/impl/player/beatleader-unique-daily-players'
+import DailyNewAccountsMetric from '../../metrics/impl/player/daily-new-accounts'
+import TotalTrackedScoresMetric from '../../metrics/impl/player/total-tracked-scores'
+import TrackedPlayersMetric from '../../metrics/impl/player/tracked-players'
+import TrackedScoresMetric from '../../metrics/impl/player/tracked-scores'
+import UniqueDailyPlayersMetric from '../../metrics/impl/player/unique-daily-players'
+import QueueProcessingDurationMetric from '../../metrics/impl/queue/queue-processing-duration'
+import QueueSizesMetric from '../../metrics/impl/queue/queue-sizes'
+import Metric from '../../metrics/metric'
+import { MetricsRepository } from '../../repositories/metrics.repository'
 
 // Create Prometheus registry with default labels
-export const prometheusRegistry = new Registry();
+export const prometheusRegistry = new Registry()
 prometheusRegistry.setDefaultLabels({
-  environment: isProduction() ? "production" : "development",
-});
+  environment: isProduction() ? 'production' : 'development',
+})
 
 export enum MetricType {
   // Player metrics
-  TRACKED_SCORES = "tracked_scores",
-  TRACKED_PLAYERS = "tracked_players",
-  UNIQUE_DAILY_PLAYERS = "unique_daily_players",
-  ACTIVE_ACCOUNTS = "active_accounts",
-  ACTIVE_PLAYERS_HMD_STATISTIC = "active_players_hmd_statistic",
-  TOTAL_TRACKED_SCORES = "total_tracked_scores",
-  DAILY_NEW_ACCOUNTS = "daily_new_accounts",
-  BEATLEADER_SEEN_SCORES = "beatleader_seen_scores",
-  BEATLEADER_UNIQUE_DAILY_PLAYERS = "beatleader_unique_daily_players",
-  BEATLEADER_PLAYERS = "beatleader_players",
+  TRACKED_SCORES = 'tracked_scores',
+  TRACKED_PLAYERS = 'tracked_players',
+  UNIQUE_DAILY_PLAYERS = 'unique_daily_players',
+  ACTIVE_ACCOUNTS = 'active_accounts',
+  ACTIVE_PLAYERS_HMD_STATISTIC = 'active_players_hmd_statistic',
+  TOTAL_TRACKED_SCORES = 'total_tracked_scores',
+  DAILY_NEW_ACCOUNTS = 'daily_new_accounts',
+  BEATLEADER_SEEN_SCORES = 'beatleader_seen_scores',
+  BEATLEADER_UNIQUE_DAILY_PLAYERS = 'beatleader_unique_daily_players',
+  BEATLEADER_PLAYERS = 'beatleader_players',
 
   // Backend metrics
-  MEMORY_USAGE = "memory_usage",
-  EVENT_LOOP_LAG = "event_loop_lag",
-  RESPONSE_TIME_MS = "response_time_ms",
-  TOTAL_REQUESTS = "total_requests",
-  HTTP_RESPONSES = "http_responses",
-  API_SERVICES = "api_services",
-  CACHE_PERFORMANCE = "cache_performance",
-  PROCESS_UPTIME = "process_uptime",
-  PROCESS_CPU = "process_cpu",
-  REDIS_HEALTH = "redis_health",
+  MEMORY_USAGE = 'memory_usage',
+  EVENT_LOOP_LAG = 'event_loop_lag',
+  RESPONSE_TIME_MS = 'response_time_ms',
+  TOTAL_REQUESTS = 'total_requests',
+  HTTP_RESPONSES = 'http_responses',
+  API_SERVICES = 'api_services',
+  CACHE_PERFORMANCE = 'cache_performance',
+  PROCESS_UPTIME = 'process_uptime',
+  PROCESS_CPU = 'process_cpu',
+  REDIS_HEALTH = 'redis_health',
 
   // Queue metrics
-  QUEUE_SIZES = "queue_sizes",
-  QUEUE_PROCESSING_DURATION = "queue_processing_duration",
+  QUEUE_SIZES = 'queue_sizes',
+  QUEUE_PROCESSING_DURATION = 'queue_processing_duration',
 
   // Database metrics
-  POSTGRES_DB_SIZE = "postgres_db_size",
-  LEADERBOARD_COUNT = "leaderboard_count",
+  POSTGRES_DB_SIZE = 'postgres_db_size',
+  LEADERBOARD_COUNT = 'leaderboard_count',
 }
 
 export default class MetricsService {
-  private static readonly logger: ScopedLogger = Logger.withTopic("Metrics");
-  private static readonly metrics = new Map<MetricType, Metric<unknown>>();
-  private static initialized = false;
-  private static readonly persistIntervalMs = 30_000;
-  private static persistInterval: ReturnType<typeof setInterval> | undefined;
-  private static persistInFlight = false;
+  private static readonly logger: ScopedLogger = Logger.withTopic('Metrics')
+  private static readonly metrics = new Map<MetricType, Metric<unknown>>()
+  private static initialized = false
+  private static readonly persistIntervalMs = 30_000
+  private static persistInterval: ReturnType<typeof setInterval> | undefined
+  private static persistInFlight = false
 
   constructor() {
     if (MetricsService.initialized) {
-      return;
+      return
     }
-    MetricsService.initialized = true;
+    MetricsService.initialized = true
 
     // Player metrics
-    this.registerMetric(new TrackedScoresMetric());
-    this.registerMetric(new TrackedPlayersMetric());
-    this.registerMetric(new UniqueDailyPlayersMetric());
-    this.registerMetric(new ActiveAccountsMetric());
-    this.registerMetric(new ActivePlayerHmdStatisticMetric());
-    this.registerMetric(new TotalTrackedScoresMetric());
-    this.registerMetric(new DailyNewAccountsMetric());
-    this.registerMetric(new BeatLeaderSeenScoresMetric());
-    this.registerMetric(new BeatLeaderUniqueDailyPlayersMetric());
-    this.registerMetric(new BeatLeaderPlayersMetric());
+    this.registerMetric(new TrackedScoresMetric())
+    this.registerMetric(new TrackedPlayersMetric())
+    this.registerMetric(new UniqueDailyPlayersMetric())
+    this.registerMetric(new ActiveAccountsMetric())
+    this.registerMetric(new ActivePlayerHmdStatisticMetric())
+    this.registerMetric(new TotalTrackedScoresMetric())
+    this.registerMetric(new DailyNewAccountsMetric())
+    this.registerMetric(new BeatLeaderSeenScoresMetric())
+    this.registerMetric(new BeatLeaderUniqueDailyPlayersMetric())
+    this.registerMetric(new BeatLeaderPlayersMetric())
 
     // Backend metrics
-    this.registerMetric(new MemoryUsageMetric());
-    this.registerMetric(new EventLoopLagMetric());
-    this.registerMetric(new ResponseTimeHistogramMetric());
-    this.registerMetric(new TotalRequestsMetric());
-    this.registerMetric(new HttpResponseStatusMetric());
-    this.registerMetric(new ApiServicesMetric());
-    this.registerMetric(new CachePerformanceMetric());
-    this.registerMetric(new ProcessUptimeMetric());
-    this.registerMetric(new ProcessCpuMetric());
-    this.registerMetric(new RedisHealthMetric());
+    this.registerMetric(new MemoryUsageMetric())
+    this.registerMetric(new EventLoopLagMetric())
+    this.registerMetric(new ResponseTimeHistogramMetric())
+    this.registerMetric(new TotalRequestsMetric())
+    this.registerMetric(new HttpResponseStatusMetric())
+    this.registerMetric(new ApiServicesMetric())
+    this.registerMetric(new CachePerformanceMetric())
+    this.registerMetric(new ProcessUptimeMetric())
+    this.registerMetric(new ProcessCpuMetric())
+    this.registerMetric(new RedisHealthMetric())
 
     // Queue metrics
-    this.registerMetric(new QueueSizesMetric());
-    this.registerMetric(new QueueProcessingDurationMetric());
+    this.registerMetric(new QueueSizesMetric())
+    this.registerMetric(new QueueProcessingDurationMetric())
 
     // Database metrics
-    this.registerMetric(new PostgresDbSizeMetric());
-    this.registerMetric(new LeaderboardCountMetric());
+    this.registerMetric(new PostgresDbSizeMetric())
+    this.registerMetric(new LeaderboardCountMetric())
 
-    void MetricsService.loadPersistedValues();
-    MetricsService.startPersistenceLoop();
+    void MetricsService.loadPersistedValues()
+    MetricsService.startPersistenceLoop()
   }
 
   /**
@@ -125,12 +125,12 @@ export default class MetricsService {
    */
   private registerMetric(metric: Metric<unknown>): void {
     if (MetricsService.metrics.has(metric.id)) {
-      MetricsService.logger.warn(`Metric ${metric.id} already registered, skipping duplicate registration`);
-      return;
+      MetricsService.logger.warn(`Metric ${metric.id} already registered, skipping duplicate registration`)
+      return
     }
 
-    MetricsService.metrics.set(metric.id, metric);
-    MetricsService.logger.debug(`Registered metric ${metric.id}`);
+    MetricsService.metrics.set(metric.id, metric)
+    MetricsService.logger.debug(`Registered metric ${metric.id}`)
   }
 
   /**
@@ -140,82 +140,85 @@ export default class MetricsService {
    * @returns the metric instance, or undefined if not found
    */
   public static getMetric<T extends Metric<unknown>>(type: MetricType): T | undefined {
-    return MetricsService.metrics.get(type) as T | undefined;
+    return MetricsService.metrics.get(type) as T | undefined
   }
 
   public static cleanup(): void {
     if (MetricsService.persistInterval) {
-      clearInterval(MetricsService.persistInterval);
-      MetricsService.persistInterval = undefined;
+      clearInterval(MetricsService.persistInterval)
+      MetricsService.persistInterval = undefined
     }
-    void MetricsService.persistValues();
+    void MetricsService.persistValues()
 
     for (const metric of MetricsService.metrics.values()) {
-      metric.cleanup?.();
+      metric.cleanup?.()
     }
   }
 
   private static startPersistenceLoop(): void {
     if (MetricsService.persistInterval) {
-      return;
+      return
     }
 
     MetricsService.persistInterval = setInterval(() => {
-      void MetricsService.persistValues();
-    }, MetricsService.persistIntervalMs);
+      void MetricsService.persistValues()
+    }, MetricsService.persistIntervalMs)
   }
 
   private static async loadPersistedValues(): Promise<void> {
     try {
-      const rows = await MetricsRepository.loadAll();
+      const rows = await MetricsRepository.loadAll()
       for (const row of rows) {
-        const metric = MetricsService.metrics.get(row.id as MetricType);
+        const metric = MetricsService.metrics.get(row.id as MetricType)
         if (!metric || !metric.persist) {
-          continue;
+          continue
         }
 
-        metric.value = row.value;
+        metric.value = row.value
       }
 
       if (rows.length > 0) {
-        MetricsService.logger.info(`Loaded ${rows.length} persisted metric values from PostgreSQL`);
+        MetricsService.logger.info(`Loaded ${rows.length} persisted metric values from PostgreSQL`)
       }
     } catch (error) {
-      MetricsService.logger.warn("Failed to load persisted metric values from PostgreSQL:", error);
+      MetricsService.logger.warn('Failed to load persisted metric values from PostgreSQL:', error)
     }
   }
 
   private static async persistValues(): Promise<void> {
     if (MetricsService.persistInFlight) {
-      return;
+      return
     }
 
     const valuesToPersist = Array.from(MetricsService.metrics.entries())
-      .filter(([, metric]) => metric.persist)
-      .map(([id, metric]) => ({
+      .filter(([ , metric ]) => metric.persist)
+      .map(([
+        id,
+        metric,
+      ]) => ({
         id,
         value: metric.value === undefined ? null : metric.value,
       }))
       .filter(({ value }) => {
         try {
-          JSON.stringify(value);
-          return true;
+          JSON.stringify(value)
+          return true
         } catch {
-          return false;
+          return false
         }
-      });
+      })
 
     if (valuesToPersist.length === 0) {
-      return;
+      return
     }
 
-    MetricsService.persistInFlight = true;
+    MetricsService.persistInFlight = true
     try {
-      await MetricsRepository.upsertMany(valuesToPersist);
+      await MetricsRepository.upsertMany(valuesToPersist)
     } catch (error) {
-      MetricsService.logger.warn("Failed to persist metric values to PostgreSQL:", error);
+      MetricsService.logger.warn('Failed to persist metric values to PostgreSQL:', error)
     } finally {
-      MetricsService.persistInFlight = false;
+      MetricsService.persistInFlight = false
     }
   }
 }

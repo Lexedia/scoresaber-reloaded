@@ -8,7 +8,7 @@ interface WebsocketClient {
 }
 
 export abstract class Websocket<TPayload> {
-  private readonly clients = new Set<WebsocketClient>();
+  private readonly clients = new Set<WebsocketClient>()
 
   protected constructor(public readonly route: string) {}
 
@@ -18,7 +18,7 @@ export abstract class Websocket<TPayload> {
    * @param client the client that opened the connection.
    */
   public onOpen(client: WebsocketClient) {
-    this.clients.add(client);
+    this.clients.add(client)
   }
 
   /**
@@ -27,7 +27,7 @@ export abstract class Websocket<TPayload> {
    * @param client the client that closed the connection.
    */
   public onClose(client: WebsocketClient) {
-    this.clients.delete(client);
+    this.clients.delete(client)
   }
 
   /**
@@ -36,13 +36,13 @@ export abstract class Websocket<TPayload> {
    * @param payload the payload to publish.
    */
   public publish(payload: TPayload) {
-    const serializedPayload = JSON.stringify(payload);
+    const serializedPayload = JSON.stringify(payload)
 
     for (const client of this.clients) {
       try {
-        client.send(serializedPayload);
+        client.send(serializedPayload)
       } catch {
-        this.clients.delete(client);
+        this.clients.delete(client)
       }
     }
   }
@@ -53,6 +53,6 @@ export abstract class Websocket<TPayload> {
    * @returns the number of connected clients.
    */
   public getConnectedClientsAmount() {
-    return this.clients.size;
+    return this.clients.size
   }
 }
