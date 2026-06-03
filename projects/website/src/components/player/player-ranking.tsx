@@ -9,6 +9,7 @@ import { useStableLiveQuery } from '@/hooks/use-stable-live-query'
 import ScoreSaberPlayer from '@ssr/common/player/impl/scoresaber-player'
 import { formatNumberWithCommas } from '@ssr/common/utils/number-utils'
 import { getScoreSaberRoles } from '@ssr/common/utils/scoresaber.util'
+import { getCPConfig } from '../../config/cps'
 import { PlayerAvatar } from '../ranking/player-avatar'
 import CountryFlag from '../ui/country-flag'
 import { PlayerName } from './player-name'
@@ -64,7 +65,6 @@ export function PlayerRanking<T extends PlayerRankingRow>({
   getCountryRank,
   firstColumnWidth,
   worth,
-  showAccountInactive = true,
 }: {
   player: T;
   getRank: (player: T) => number;
@@ -87,12 +87,12 @@ export function PlayerRanking<T extends PlayerRankingRow>({
         className={cn(
           'bg-accent-deep hover:bg-accent-deep/50 hidden items-center gap-2 rounded-md px-(--spacing-xs) py-(--spacing-xs) lg:flex',
           mainPlayer?.id == player.id ? 'bg-primary/10 hover:bg-primary/15' : '',
+          inactive ? 'opacity-50 grayscale-20' : '',
         )}
       >
         <div
           className={cn(
             'grid grid-cols-[0.55fr_0.9fr] items-center gap-3',
-            inactive && showAccountInactive ? 'flex' : '',
           )}
           style={{
             width: `${firstColumnWidth}px`,
@@ -102,7 +102,6 @@ export function PlayerRanking<T extends PlayerRankingRow>({
             rank={rank}
             countryRank={countryRank}
             country={country}
-            inactive={inactive && showAccountInactive}
           />
         </div>
 
@@ -120,6 +119,7 @@ export function PlayerRanking<T extends PlayerRankingRow>({
           className={cn(
             'bg-muted/50 mb-1 flex min-h-[67px] w-full cursor-pointer flex-col justify-center gap-1 rounded-lg px-2 py-1 transition-colors hover:shadow-xs',
             mainPlayer?.id == player.id ? 'bg-primary/10' : '',
+            inactive ? 'opacity-50 grayscale-20' : '',
           )}
         >
           <div className="flex items-center justify-between">
@@ -128,7 +128,6 @@ export function PlayerRanking<T extends PlayerRankingRow>({
                 rank={rank}
                 countryRank={countryRank}
                 country={country}
-                inactive={inactive && showAccountInactive}
               />
             </div>
           </div>
@@ -193,6 +192,8 @@ function PlayerNameDisplay<T extends PlayerRankingRow>({
 }) {
   const roles = getScoreSaberRoles(player)
 
+  const cpConfig = getCPConfig(player.id)
+
   return (
     <div className={cn('flex min-w-0 flex-1 justify-start', className)}>
       <PlayerName
@@ -200,7 +201,7 @@ function PlayerNameDisplay<T extends PlayerRankingRow>({
         name={player.name}
         className="truncate text-sm font-medium text-white"
         style={{
-          color: roles[0]?.color,
+          color: cpConfig ? undefined : roles[0]?.color,
         }}
       />
     </div>
@@ -211,16 +212,11 @@ function PlayerRanks({
   rank,
   countryRank,
   country,
-  inactive,
 }: {
   rank: number;
   countryRank: number;
   country: string;
-  inactive: boolean;
 }) {
-  if (inactive) {
-    return <p className="text-inactive-account text-xs font-bold">Inactive Account</p>
-  }
 
   return (
     <>

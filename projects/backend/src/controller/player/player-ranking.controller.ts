@@ -10,10 +10,11 @@ export default function playerRankingController(app: Elysia) {
     app
       .get(
         '/:page',
-        async ({ params: { page }, query: { country, search } }) => {
+        async ({ params: { page }, query: { country, search, includeInactive } }) => {
           return await PlayerSearchService.getPlayerRanking(page, {
             country: country,
             search: search,
+            includeInactive: includeInactive,
           })
         },
         {
@@ -24,6 +25,7 @@ export default function playerRankingController(app: Elysia) {
           query: z.object({
             country: z.string().default('').optional(),
             search: z.string().default('').optional(),
+            includeInactive: z.string().optional().transform(v => v === 'true'),
           }),
           response: PlayerRankingsResponseSchema,
           detail: {

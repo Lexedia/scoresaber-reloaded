@@ -5,6 +5,7 @@ import ScoreSaberPlayer from '@ssr/common/player/impl/scoresaber-player'
 import { ScoreSaberLeaderboardPlayerInfo } from '@ssr/common/schemas/scoresaber/leaderboard/player-info'
 import { getScoreSaberRoles } from '@ssr/common/utils/scoresaber.util'
 import { clsx } from 'clsx'
+import { getCPConfig } from '../../config/cps'
 
 export function PlayerInfo({
   player,
@@ -19,6 +20,8 @@ export function PlayerInfo({
   hideCountryFlag?: boolean;
   useLink?: boolean;
 }) {
+  const cpConfig = getCPConfig(player.id)
+
   const name = (
     <p
       className={clsx(
@@ -27,7 +30,7 @@ export function PlayerInfo({
         className,
       )}
       style={{
-        color: getScoreSaberRoles(player)[0]?.color,
+        color: cpConfig ? undefined : getScoreSaberRoles(player)[0]?.color,
       }}
     >
       {player.name}

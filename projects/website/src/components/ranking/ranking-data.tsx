@@ -40,6 +40,10 @@ export default function RankingData({ initialPage, initialCountry }: RankingData
     setShowRelativePPDifference,
   ] = useState<boolean>(false)
   const [
+    showInactive,
+    setShowInactive,
+  ] = useState<boolean>(false)
+  const [
     currentPage,
     setCurrentPage,
   ] = useState(initialPage)
@@ -66,11 +70,13 @@ export default function RankingData({ initialPage, initialCountry }: RankingData
       currentPage,
       currentCountry,
       isValidSearch,
+      showInactive,
     ],
     queryFn: async () =>
       ssrApi.searchPlayersRanking(currentPage, {
         country: currentCountry,
         search: isValidSearch ? debouncedSearch : undefined,
+        includeInactive: showInactive,
       }),
     refetchIntervalInBackground: false,
     placeholderData: prev => prev,
@@ -189,10 +195,11 @@ export default function RankingData({ initialPage, initialCountry }: RankingData
         <FilterSection
           title="Filters"
           description="Filter players by country or search"
-          hasActiveFilters={Boolean(currentCountry || currentSearch)}
+          hasActiveFilters={Boolean(currentCountry || currentSearch || showInactive)}
           onClear={() => {
             setCurrentCountry(undefined)
             setCurrentSearch('')
+            setShowInactive(false)
             setCurrentPage(1)
           }}
         >
@@ -217,6 +224,19 @@ export default function RankingData({ initialPage, initialCountry }: RankingData
                 value={currentSearch ?? ''}
                 onChange={e => setCurrentSearch(e.target.value)}
                 className="h-10"
+              />
+            </FilterRow>
+          </FilterField>
+
+          <FilterField label="Inactive Players">
+            <FilterRow className="flex items-center justify-between">
+              <span className="text-sm">Show inactive</span>
+              <Switch
+                checked={showInactive}
+                onCheckedChange={checked => {
+                  setShowInactive(checked)
+                  setCurrentPage(1)
+                }}
               />
             </FilterRow>
           </FilterField>

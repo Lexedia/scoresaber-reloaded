@@ -36,6 +36,116 @@ const LOOKUP_PLAYER_SCORES_ENDPOINT = `${API_BASE}/player/:id/scores?limit=:limi
 const LOOKUP_ACTIVE_PLAYER_COUNT = `${API_BASE}/players/count`
 const REFRESH_PLAYER_ENDPOINT = `${API_BASE}/user/:id/refresh`
 
+
+const V2_LOOKUP_PLAYERS_ENDPOINT = `${API_BASE}/v2/players`
+
+
+type V2PlayerToken = {
+  id: string;
+  name: string;
+  country: string;
+  role: string | null;
+  avatar: string;
+  permissions: number;
+  banned: boolean;
+  inactive: boolean;
+  stats: {
+    rank: number;
+    countryRank: number;
+    totalPP: number;
+    totalScore: string;
+    totalRankedScore: string;
+    totalPlayedLeaderboards: number;
+    totalPlayedRankedLeaderboards: number;
+    totalSubmittedPlays: number;
+    totalReplayViews: number;
+    averageAccuracy: number;
+    weightedAverageAccuracy: number;
+  };
+}
+
+type V2PlayersResponse = {
+  data: V2PlayerToken[];
+  metadata: {
+    page: number;
+    itemsPerPage: number;
+    totalItems: number;
+    totalPages: number;
+  };
+}
+
+
+async function mapV2ToPlayersPageToken(v2: V2PlayersResponse): Promise<ScoreSaberPlayersPageToken> {
+  /*
+   * firstSeen is missing from the v2 API, so we fetch it from the v1 API, not sure if it's any good, but should work for now
+   * FIXME: kill yourself for that horror
+   */
+  const players = await Promise.all(v2.data.map(async p => {
+    const player = await ScoreSaberApiService.lookupPlayer(p.id)
+    if (!player) {
+      return {
+        id: p.id,
+        name: p.name,
+        profilePicture: p.avatar,
+        bio: null,
+        country: p.country,
+        pp: p.stats.totalPP,
+        rank: p.stats.rank,
+        countryRank: p.stats.countryRank,
+        role: p.role,
+        badges: null,
+        histories: '',
+        scoreStats: {
+          totalScore: Number(p.stats.totalScore),
+          totalRankedScore: Number(p.stats.totalRankedScore),
+          averageRankedAccuracy: p.stats.weightedAverageAccuracy,
+          totalPlayCount: p.stats.totalSubmittedPlays,
+          rankedPlayCount: p.stats.totalPlayedRankedLeaderboards,
+          replaysWatched: p.stats.totalReplayViews,
+        },
+        permissions: p.permissions,
+        banned: p.banned,
+        inactive: p.inactive,
+        firstSeen: new Date().toISOString(),
+      }
+    }
+    return {
+      id: p.id,
+      name: p.name,
+      profilePicture: p.avatar,
+      bio: null,
+      country: p.country,
+      pp: p.stats.totalPP,
+      rank: p.stats.rank,
+      countryRank: p.stats.countryRank,
+      role: p.role,
+      badges: null,
+      histories: player.histories,
+      scoreStats: {
+        totalScore: Number(p.stats.totalScore),
+        totalRankedScore: Number(p.stats.totalRankedScore),
+        averageRankedAccuracy: p.stats.weightedAverageAccuracy,
+        totalPlayCount: p.stats.totalSubmittedPlays,
+        rankedPlayCount: p.stats.totalPlayedRankedLeaderboards,
+        replaysWatched: p.stats.totalReplayViews,
+      },
+      permissions: p.permissions,
+      banned: p.banned,
+      inactive: p.inactive,
+      firstSeen: player.firstSeen,
+    }
+  }))
+
+  return {
+    players,
+    metadata: {
+      total: v2.metadata.totalItems,
+      page: v2.metadata.page,
+      itemsPerPage: v2.metadata.itemsPerPage,
+    },
+  }
+}
+
 /**
  * Leaderboard
  */
@@ -198,22 +308,47 @@ export class ScoreSaberApiService {
   }
 
   /**
-   * Lookup players on a specific page
+   * Lookup players on a specific page.
+   * Uses API v2 when includeInactive is requested (v1 doesn't support it).
    *
    * @param page the page to get players for
+   * @param search optional name search
+   * @param includeInactive whether to include inactive players (requires v2)
    * @returns the players on the page, or undefined
    */
   public static async lookupPlayers(
     page: number,
     search?: string,
-    withInactive?: boolean,
+    includeInactive?: boolean,
   ): Promise<ScoreSaberPlayersPageToken | undefined> {
     const before = performance.now()
     ScoreSaberApiService.log(`Looking up players on page "${page}"...`)
+
+    if (includeInactive) {
+      const searchParams: Record<string, string> = {
+        page: page.toString(),
+        includeInactive: 'true',
+      }
+      if (search) {
+        searchParams.search = search
+      }
+      const v2Response = await ScoreSaberApiService.fetch<V2PlayersResponse>(
+        V2_LOOKUP_PLAYERS_ENDPOINT,
+        { searchParams },
+      )
+      if (v2Response === undefined) {
+        return undefined
+      }
+      const mapped = await mapV2ToPlayersPageToken(v2Response)
+      ScoreSaberApiService.log(
+        `Found ${mapped.players.length} players (v2) in ${formatDuration(performance.now() - before)}`,
+      )
+      return mapped
+    }
+
     const response = await ScoreSaberApiService.fetch<ScoreSaberPlayersPageToken>(
-      LOOKUP_PLAYERS_ENDPOINT.replace(':page', page.toString()) + 
-        (search ? `&search=${search}` : '') +
-        (withInactive ? '&withInactive=true' : ''),
+      LOOKUP_PLAYERS_ENDPOINT.replace(':page', page.toString()) +
+        (search ? `&search=${search}` : ''),
     )
     if (response === undefined) {
       return undefined
@@ -225,24 +360,50 @@ export class ScoreSaberApiService {
   }
 
   /**
-   * Lookup players on a specific page and country
+   * Lookup players on a specific page and country.
+   * Uses API v2 when includeInactive is requested (v1 doesn't support it).
    *
    * @param page the page to get players for
    * @param country the country to get players for
+   * @param search optional name search
+   * @param includeInactive whether to include inactive players (requires v2)
    * @returns the players on the page, or undefined
    */
   public static async lookupPlayersByCountry(
     page: number,
     country: string,
     search?: string,
-    withInactive?: boolean,
+    includeInactive?: boolean,
   ): Promise<ScoreSaberPlayersPageToken | undefined> {
     const before = performance.now()
     ScoreSaberApiService.log(`Looking up players on page "${page}" for country "${country}"...`)
+
+    if (includeInactive) {
+      const searchParams: Record<string, string> = {
+        page: page.toString(),
+        countries: country,
+        includeInactive: 'true',
+      }
+      if (search) {
+        searchParams.search = search
+      }
+      const v2Response = await ScoreSaberApiService.fetch<V2PlayersResponse>(
+        V2_LOOKUP_PLAYERS_ENDPOINT,
+        { searchParams },
+      )
+      if (v2Response === undefined) {
+        return undefined
+      }
+      const mapped = await mapV2ToPlayersPageToken(v2Response)
+      ScoreSaberApiService.log(
+        `Found ${mapped.players.length} players (v2) in ${formatDuration(performance.now() - before)}`,
+      )
+      return mapped
+    }
+
     const response = await ScoreSaberApiService.fetch<ScoreSaberPlayersPageToken>(
       LOOKUP_PLAYERS_BY_COUNTRY_ENDPOINT.replace(':page', page.toString()).replace(':country', country) +
-        (search ? `&search=${search}` : '') +
-        (withInactive ? '&withInactive=true' : ''),
+        (search ? `&search=${search}` : ''),
     )
     if (response === undefined) {
       return undefined

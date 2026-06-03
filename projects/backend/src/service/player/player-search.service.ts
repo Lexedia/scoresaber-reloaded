@@ -77,17 +77,17 @@ export class PlayerSearchService {
     options?: {
       country?: string;
       search?: string;
-      withInactive?: boolean;
+      includeInactive?: boolean;
     },
   ): Promise<PlayerRankingsResponse> {
-    const { country, search, withInactive } = options ?? {}
+    const { country, search, includeInactive } = options ?? {}
     if (search && search.length < 3) {
       return Pagination.empty<ScoreSaberPlayer>()
     }
 
     const foundPlayers = country
-      ? await ScoreSaberApiService.lookupPlayersByCountry(page, country, search, withInactive)
-      : await ScoreSaberApiService.lookupPlayers(page, search, withInactive)
+      ? await ScoreSaberApiService.lookupPlayersByCountry(page, country, search, includeInactive)
+      : await ScoreSaberApiService.lookupPlayers(page, search, includeInactive)
 
     const tokens = foundPlayers?.players ?? []
     const items = await Promise.all(

@@ -11,6 +11,7 @@ import { ssrApi } from '@ssr/common/utils/ssr-api'
 import { useQuery } from '@tanstack/react-query'
 import clsx from 'clsx'
 import { ReactElement } from 'react'
+import { getCPConfig } from '../../../config/cps'
 import Card from '../../card'
 import CountryFlag from '../../ui/country-flag'
 
@@ -81,6 +82,8 @@ function PlayerMiniRanking({
   const variant = miniVariants[type]
   const icon = variant.icon(player)
 
+  const cpConfig = getCPConfig(player.id)
+
   const playerRankWidth = (() => {
     if (players.length === 0) {
       return 0
@@ -137,7 +140,7 @@ function PlayerMiniRanking({
                       'w-[125px] overflow-hidden text-left break-all text-ellipsis whitespace-nowrap transition-all duration-200',
                     )}
                     style={{
-                      color: getScoreSaberRoles(playerRanking)[0]?.color,
+                      color: cpConfig ? undefined : getScoreSaberRoles(playerRanking)[0]?.color,
                     }}
                   >
                     {playerRanking.name}

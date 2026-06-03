@@ -1,7 +1,9 @@
 import Avatar from '@/components/avatar'
 import SimpleLink from '@/components/simple-link'
+import { getCPConfig } from '@/config/cps'
 import ScoreSaberPlayer from '@ssr/common/player/impl/scoresaber-player'
 import { getScoreSaberRoles } from '@ssr/common/utils/scoresaber.util'
+import { cn } from '../../../common/utils'
 import PlayerOverview from './player-overview'
 
 type PlayerPreviewHeaderProps = {
@@ -12,17 +14,18 @@ type PlayerPreviewHeaderProps = {
 }
 
 export default function PlayerPreviewHeader({ player }: PlayerPreviewHeaderProps) {
+  const cpConfig = getCPConfig(player.id)
   return (
     <div className="relative flex flex-col items-center gap-4 text-center select-none lg:flex-row">
-      <Avatar src={player.avatar} size={128} className="h-32 w-32" alt={`${player.name}'s Profile Picture`} />
+      <Avatar src={player.avatar} size={128} className={cn('h-32 w-32', cpConfig?.avatarClass)} alt={`${player.name}'s Profile Picture`} />
       <div className="flex w-full flex-col items-center justify-center gap-2 lg:items-start">
         <div className="flex flex-col gap-1">
           <div className="flex items-center justify-center gap-2 lg:justify-start">
             <SimpleLink
               href={`/player/${player.id}`}
-              className="hover:text-primary/80 text-2xl font-bold transition-all"
+              className={cn('hover:text-primary/80 text-2xl font-bold transition-all', cpConfig?.nameClass)}
               style={{
-                color: getScoreSaberRoles(player)[0]?.color,
+                color: cpConfig ? undefined : getScoreSaberRoles(player)[0]?.color,
               }}
             >
               {player.name}

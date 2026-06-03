@@ -1,6 +1,6 @@
+import { cn } from '@/common/utils'
 import AddFriend from '@/components/friend/add-friend'
 import SimpleLink from '@/components/simple-link'
-import { cn } from '@/common/utils'
 import { getCPConfig } from '@/config/cps'
 import { env } from '@ssr/common/env'
 import ScoreSaberPlayer from '@ssr/common/player/impl/scoresaber-player'
@@ -22,7 +22,7 @@ type PlayerHeaderProps = {
 }
 
 export default function PlayerHeader({ player }: PlayerHeaderProps) {
-  const cpcConfig = getCPConfig(player.id)
+  const cpConfig = getCPConfig(player.id)
 
   return (
     <Card className="flex flex-col gap-6">
@@ -39,9 +39,9 @@ export default function PlayerHeader({ player }: PlayerHeaderProps) {
               <SimpleLink
                 href={`${env.NEXT_PUBLIC_STEAM_URL}/profiles/${player.id}`}
                 target="_blank"
-                className={cn('hover:text-primary/80 max-w-[300px] truncate text-2xl font-semibold transition-colors duration-200', cpcConfig?.nameClass)}
+                className={cn('hover:text-primary/80 max-w-[300px] truncate text-2xl font-semibold transition-colors duration-200', cpConfig?.nameClass)}
                 style={{
-                  color: getScoreSaberRoles(player)[0]?.color,
+                  color: cpConfig ? undefined : getScoreSaberRoles(player)[0]?.color,
                 }}
               >
                 {player.name}

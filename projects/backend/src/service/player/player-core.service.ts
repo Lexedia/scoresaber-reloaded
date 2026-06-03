@@ -1,6 +1,5 @@
 import { InternalServerError } from '@ssr/common/error/internal-server-error'
 import { NotFoundError } from '@ssr/common/error/not-found-error'
-import { HMD } from '@ssr/common/hmds'
 import Logger, { type ScopedLogger } from '@ssr/common/logger'
 import { PlayerRefreshResponse } from '@ssr/common/schemas/response/player/player-refresh'
 import { ScoreSaberAccount } from '@ssr/common/schemas/scoresaber/account'
@@ -137,7 +136,7 @@ export class PlayerCoreService {
               medals: 0,
               medalsRank: 0,
               medalsCountryRank: 0,
-              hmd: 'Unknown' as HMD,
+              hmd: 'Unknown',
               currentStreak: 0,
               longestStreak: 0,
               lastPlayedDate: null,
@@ -171,7 +170,7 @@ export class PlayerCoreService {
             }
             return scoreSaberAccountRowToType(playerInsert)
           } catch (err) {
-            PlayerCoreService.logger.error(`Failed to create player document for "${id}"`, err)
+            PlayerCoreService.logger.error(`Failed to create player document for "${id}"`, err, { token })
             throw new InternalServerError(`Failed to create player document for "${id}"`)
           } finally {
             delete accountCreationLock[id]

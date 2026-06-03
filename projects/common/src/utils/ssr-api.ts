@@ -399,11 +399,13 @@ class SSRApi {
     options?: {
       country?: string;
       search?: string;
+      includeInactive?: boolean;
     },
   ) {
     return await this.request<PlayerRankingsResponse>(`/ranking/${page}`, {
       ...(options?.country ? { country: options.country } : {}),
       ...(options?.search ? { search: options.search } : {}),
+      ...(options?.includeInactive ? { includeInactive: options.includeInactive.toString() } : {}),
     })
   }
 
