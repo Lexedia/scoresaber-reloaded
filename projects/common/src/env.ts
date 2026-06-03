@@ -51,6 +51,7 @@ export const env = createEnv({
     NEXT_PUBLIC_API_URL: z.string(),
     NEXT_PUBLIC_CDN_URL: z.string(),
     NEXT_PUBLIC_WEBSOCKET_URL: z.string(),
+    NEXT_PUBLIC_PROXY_URL: z.string().optional(),
 
     NEXT_PUBLIC_SCORESABER_DOMAIN: z.string().optional(),
     NEXT_PUBLIC_BEATLEADER_DOMAIN: z.string().optional(),
@@ -114,6 +115,7 @@ export const env = createEnv({
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL ?? 'https://ssr-api.lexedia.moe',
     NEXT_PUBLIC_CDN_URL: process.env.NEXT_PUBLIC_CDN_URL ?? 'https://s3.lexedia.moe',
     NEXT_PUBLIC_WEBSOCKET_URL: process.env.NEXT_PUBLIC_WEBSOCKET_URL ?? 'wss://ssr-api.lexedia.moe',
+    NEXT_PUBLIC_PROXY_URL: process.env.NEXT_PUBLIC_PROXY_URL ?? 'https://proxy.lexedia.moe/',
 
     // Analytics
     NEXT_PUBLIC_ANALYTICS_WEBSITE_ID: process.env.NEXT_PUBLIC_ANALYTICS_WEBSITE_ID,

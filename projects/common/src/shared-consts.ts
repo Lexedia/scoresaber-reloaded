@@ -1,3 +1,4 @@
+import { env } from './env'
 import { isProduction } from './utils/utils'
 
 export const SHARED_CONSTS = {
@@ -7,6 +8,6 @@ export const SHARED_CONSTS = {
 
 export const SERVER_PROXIES = [
   '', // No proxy
-  ...(isProduction() ? [ 'https://proxy.fascinated.cc/' ] : []),
+  ...(isProduction() && env.NEXT_PUBLIC_PROXY_URL ? [ env.NEXT_PUBLIC_PROXY_URL ] : []),
 ]
-export const CLIENT_PROXY = 'https://proxy.fascinated.cc/'
+export const CLIENT_PROXY = env.NEXT_PUBLIC_PROXY_URL ?? 'https://proxy.lexedia.moe/'
