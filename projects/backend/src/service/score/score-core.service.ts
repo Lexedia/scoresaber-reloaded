@@ -140,6 +140,8 @@ export class ScoreCoreService {
       rightController: score.rightController,
       leftController: score.leftController,
       timestamp: score.timestamp,
+      rank: score.rank,
+      weight: score.weight,
     })
   }
 
