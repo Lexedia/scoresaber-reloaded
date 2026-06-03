@@ -1,3 +1,4 @@
+import { env } from '@ssr/common/env'
 import { NotFoundError } from '@ssr/common/error/not-found-error'
 import Logger, { type ScopedLogger } from '@ssr/common/logger'
 import { StorageBucket } from '@ssr/common/minio-buckets'
@@ -256,7 +257,7 @@ export class ScoreSaberLeaderboardsService {
     }
 
     const request = await Request.get<ArrayBuffer>(
-      `https://cdn.scoresaber.com/covers/${leaderboard.songHash}.png`,
+      `https://${env.NEXT_PUBLIC_SCORESABER_DOMAIN}/covers/${leaderboard.songHash}.png`,
       {
         returns: 'arraybuffer',
       },

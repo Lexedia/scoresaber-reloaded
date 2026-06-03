@@ -1,3 +1,4 @@
+import { env } from '@ssr/common/env'
 import { NotFoundError } from '@ssr/common/error/not-found-error'
 import Logger, { type ScopedLogger } from '@ssr/common/logger'
 import { StorageBucket } from '@ssr/common/minio-buckets'
@@ -247,7 +248,7 @@ export default class BeatLeaderService {
     if (isProduction() && account && (account.trackReplays || isTop50GlobalScore)) {
       try {
         const replayId = getBeatLeaderReplayId(beatLeaderScore)
-        const replay = await Request.get<ArrayBuffer>(`https://cdn.replays.beatleader.xyz/${replayId}`, {
+        const replay = await Request.get<ArrayBuffer>(`https://cdn.replays.${env.NEXT_PUBLIC_BEATLEADER_DOMAIN}/${replayId}`, {
           returns: 'arraybuffer',
         })
 

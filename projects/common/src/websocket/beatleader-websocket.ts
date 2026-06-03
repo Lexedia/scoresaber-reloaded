@@ -1,3 +1,4 @@
+import { env } from '../env'
 import { BeatLeaderScoreToken } from '../schemas/beatleader/tokens/score/score'
 import { connectWebSocket, WebsocketCallbacks } from './websocket'
 
@@ -20,7 +21,7 @@ type BeatLeaderWebsocket = {
 export function connectBeatLeaderWebsocket({ onMessage, onScore, onDisconnect }: BeatLeaderWebsocket) {
   return connectWebSocket({
     name: 'BeatLeader',
-    url: 'wss://sockets.api.beatleader.xyz/scores',
+    url: `wss://sockets.api.${env.NEXT_PUBLIC_BEATLEADER_DOMAIN}/scores`,
     onMessage: (message: unknown) => {
       onScore?.(message as BeatLeaderScoreToken)
       onMessage?.(message)

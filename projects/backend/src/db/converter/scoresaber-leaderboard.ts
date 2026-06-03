@@ -47,7 +47,7 @@ export function leaderboardRowToType(
       levelAuthorName: row.levelAuthorName,
       songArt: row.cachedSongArt
         ? `${env.NEXT_PUBLIC_CDN_URL}/${getS3BucketName(StorageBucket.LeaderboardSongArt)}/${row.songHash.toUpperCase()}.png`
-        : `https://cdn.scoresaber.com/covers/${row.songHash.toUpperCase()}.png`,
+        : `https://cdn.${env.NEXT_PUBLIC_SCORESABER_DOMAIN}/covers/${row.songHash.toUpperCase()}.png`,
       difficulty,
       difficulties: difficulties ?? [],
       maxScore: row.maxScore,

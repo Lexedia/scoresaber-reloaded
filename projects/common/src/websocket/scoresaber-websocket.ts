@@ -1,3 +1,4 @@
+import { env } from '../env'
 import ScoreSaberPlayerScoreToken from '../types/token/scoresaber/player-score'
 import { ScoreSaberWebsocketMessageToken } from '../types/token/scoresaber/websocket/websocket-message'
 import { connectWebSocket, WebsocketCallbacks } from './websocket'
@@ -21,7 +22,7 @@ type ScoresaberWebsocket = {
 export function connectScoresaberWebsocket({ onMessage, onScore, onDisconnect }: ScoresaberWebsocket) {
   return connectWebSocket({
     name: 'Scoresaber',
-    url: 'wss://scoresaber.com/ws',
+    url: `wss://${env.NEXT_PUBLIC_SCORESABER_DOMAIN}/ws`,
     onMessage: (message: unknown) => {
       // ScoreSaber sends a plain text welcome message on connect, ignore it
       if (typeof message === 'string' && message.includes('Connected to the ScoreSaber')) {

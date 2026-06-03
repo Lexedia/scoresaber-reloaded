@@ -28,7 +28,7 @@ export const ReplayViewers: Record<string, ReplayViewer> = {
     id: 'beatleader',
     name: 'BeatLeader',
     generateUrl: (id, replayUrl) =>
-      `${env.NEXT_PUBLIC_BEATLEADER_REPLAY_URL}/${replayUrl ? `?link=${replayUrl}` : `?scoreId=${id}`}`,
+      `https://replay.${env.NEXT_PUBLIC_BEATLEADER_DOMAIN}/${replayUrl ? `?link=${replayUrl}` : `?scoreId=${id}`}`,
   },
   arcviewer: {
     id: 'arcviewer',

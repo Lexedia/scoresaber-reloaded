@@ -1,5 +1,6 @@
 import { CooldownPriority } from '@ssr/common/cooldown'
 import { DetailType } from '@ssr/common/detail-type'
+import { env } from '@ssr/common/env'
 import Logger from '@ssr/common/logger'
 import { PlayerRefreshResponse } from '@ssr/common/schemas/response/player/player-refresh'
 import ScoreSaberRankingRequestsResponse from '@ssr/common/schemas/response/scoresaber/ranking-requests'
@@ -23,7 +24,7 @@ import CacheService, { CacheId } from '../infra/cache.service'
 
 const scoreSaberApiLog = Logger.withTopic('ScoreSaber API')
 
-const API_BASE = 'https://scoresaber.com/api'
+const API_BASE = `https://${env.NEXT_PUBLIC_SCORESABER_DOMAIN}/api`
 
 /**
  * Player

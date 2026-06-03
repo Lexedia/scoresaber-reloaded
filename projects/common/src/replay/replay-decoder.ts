@@ -1,3 +1,4 @@
+import { env } from '../env'
 import { InternalServerError } from '../error/internal-server-error'
 import { BeatLeaderScoreToken } from '../schemas/beatleader/tokens/score/score'
 import request from '../utils/request'
@@ -198,7 +199,7 @@ export class ReplayDecoder {
     if (!Number.isNaN(Number(url))) {
       const scoreId = Number(url)
       const beatleaderScore = await request.get<BeatLeaderScoreToken>(
-        `https://api.beatleader.com/score/${scoreId}`,
+        `https://api.${env.NEXT_PUBLIC_BEATLEADER_DOMAIN}/score/${scoreId}`,
         {
           returns: 'json',
           throwOnError: true,

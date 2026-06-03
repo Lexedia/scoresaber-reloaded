@@ -1,3 +1,4 @@
+import { env } from '@ssr/common/env'
 import Logger from '@ssr/common/logger'
 import { BeatLeaderPlayersTotalSchema } from '@ssr/common/schemas/beatleader/tokens/players/page'
 import { ScoreStatsToken } from '@ssr/common/schemas/beatleader/tokens/score-stats/score-stats'
@@ -8,10 +9,10 @@ import {
 import { formatDuration } from '@ssr/common/utils/time-utils'
 import { getQueryParamsFromObject } from '@ssr/common/utils/utils'
 
-const LOOKUP_MAP_STATS_BY_SCORE_ID_ENDPOINT = 'https://cdn.scorestats.beatleader.xyz/:scoreId.json'
+const LOOKUP_MAP_STATS_BY_SCORE_ID_ENDPOINT = `https://cdn.scorestats.${env.NEXT_PUBLIC_BEATLEADER_DOMAIN}/:scoreId.json`
 const LOOKUP_PLAYERS_ENDPOINT =
-  'https://api.beatleader.com/players?leaderboardContext=general&page=1&count=50&sortBy=pp&mapsType=ranked&ppType=general&order=desc'
-const LOOKUP_PLAYER_SCORES_ENDPOINT = 'https://api.beatleader.com/player/:playerId/scores'
+  `https://api.${env.NEXT_PUBLIC_BEATLEADER_DOMAIN}/players?leaderboardContext=general&page=1&count=50&sortBy=pp&mapsType=ranked&ppType=general&order=desc`
+const LOOKUP_PLAYER_SCORES_ENDPOINT = `https://api.${env.NEXT_PUBLIC_BEATLEADER_DOMAIN}/player/:playerId/scores`
 const beatLeaderApiLog = Logger.withTopic('BeatLeader API')
 
 export class BeatLeaderApiService {

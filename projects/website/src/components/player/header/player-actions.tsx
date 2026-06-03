@@ -72,19 +72,19 @@ export default function PlayerActions({ player }: { player: ScoreSaberPlayer }) 
       <PlayerLink
         playerName={player.name}
         name="ScoreSaber"
-        url={`${env.NEXT_PUBLIC_SCORESABER_URL}/u/${player.id}`}
+        url={`https://${env.NEXT_PUBLIC_SCORESABER_DOMAIN}/u/${player.id}`}
         icon={<ScoresaberLogo size={20} className="select-none" />}
       />
       <PlayerLink
         playerName={player.name}
         name="BeatLeader"
-        url={`${env.NEXT_PUBLIC_BEATLEADER_URL}/u/${player.id}`}
+        url={`https://${env.NEXT_PUBLIC_BEATLEADER_DOMAIN}/u/${player.id}`}
         icon={<BeatLeaderLogo size={20} className="select-none" />}
       />
       <PlayerLink
         playerName={player.name}
         name="AccSaber"
-        url={`${env.NEXT_PUBLIC_ACCSABER_URL}/profile/${player.id}`}
+        url={`https://${env.NEXT_PUBLIC_ACCSABER_DOMAIN}/${env.NEXT_PUBLIC_ACCSABER_DOMAIN?.includes('reloaded') ? 'player' : 'profile'}/${player.id}`}
         icon={<AccSaberLogo size={20} className="select-none" />}
       />
 

@@ -12,7 +12,7 @@ import BeatSaverMapDifficultyToken from '../types/token/beatsaver/map-difficulty
  * @returns the beatsaver mapper profile url
  */
 export function getBeatSaverMapperProfileUrl(map?: BeatSaverMap) {
-  return map != undefined ? `${env.NEXT_PUBLIC_BEATSAVER_URL}/profile/${map?.author.id}` : undefined
+  return map != undefined ? `https://${env.NEXT_PUBLIC_BEATSAVER_DOMAIN}/profile/${map?.author.id}` : undefined
 }
 
 /**
