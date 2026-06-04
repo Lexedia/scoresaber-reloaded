@@ -48,7 +48,7 @@ export function LeaderboardInfo({ leaderboard, starChangeHistory }: LeaderboardI
         <div className="flex max-w-[900px] min-w-0 flex-col items-center gap-1">
           {/* Song Name */}
           <FallbackLink
-            href={beatsaver ? `${env.NEXT_PUBLIC_BEATSAVER_URL}/maps/${beatsaver.bsr}` : undefined}
+            href={beatsaver ? `https://${env.NEXT_PUBLIC_BEATSAVER_DOMAIN}/maps/${beatsaver.bsr}` : undefined}
             className="hover:text-primary/80 text-song-name w-fit max-w-full min-w-0 transition-all"
           >
             <h3 className="line-clamp-2 text-2xl leading-tight font-bold wrap-break-word">

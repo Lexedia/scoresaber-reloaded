@@ -41,7 +41,7 @@ export default function ScoreSongInfo({
   className,
 }: ScoreSongInfoProps) {
   const mappersProfile =
-    beatSaverMap != undefined ? `${env.NEXT_PUBLIC_BEATSAVER_URL}/profile/${beatSaverMap.author.id}` : undefined
+    beatSaverMap != undefined ? `https://${env.NEXT_PUBLIC_BEATSAVER_DOMAIN}/profile/${beatSaverMap.author.id}` : undefined
 
   const diff = getDifficulty(level.difficulty)
   const MetricIcon = metric?.icon

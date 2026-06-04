@@ -9,7 +9,7 @@ type BeatSaverMapProps = {
 }
 
 export function BeatSaverMapButton({ beatSaverMap }: BeatSaverMapProps) {
-  const url = `${env.NEXT_PUBLIC_BEATSAVER_URL}/maps/${beatSaverMap.bsr}`
+  const url = `https://${env.NEXT_PUBLIC_BEATSAVER_DOMAIN}/maps/${beatSaverMap.bsr}`
 
   return (
     <SimpleLink href={url} target="_blank">
