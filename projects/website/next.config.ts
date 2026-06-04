@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
   outputFileTracingRoot: path.join(__dirname, '../../'),
   reactCompiler: true,
   transpilePackages: [ '@ssr/common' ],
+  serverExternalPackages: [ '@takumi-rs/core' ],
   experimental: {
     optimizePackageImports: [
       '@ssr/common',

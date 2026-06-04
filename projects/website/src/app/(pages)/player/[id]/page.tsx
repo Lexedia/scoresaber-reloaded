@@ -50,12 +50,15 @@ HMD: ${player.hmd ?? 'Unknown'}
 Joined: ${formatDate(player.joinedDate, 'Do MMMM, YYYY')}`,
       images: [
         {
-          url: player.avatar,
+          url: `${env.NEXT_PUBLIC_WEBSITE_URL}/og/player/${id}`,
+          width: 1200,
+          height: 630,
+          alt: player.name,
         },
       ],
     },
     twitter: {
-      card: 'summary',
+      card: 'summary_large_image',
     },
   }
 }

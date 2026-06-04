@@ -49,12 +49,23 @@ export const metadata: Metadata = {
     title: env.NEXT_PUBLIC_WEBSITE_NAME,
     description:
       'ScoreSaber Reloaded is a new way to view your scores and get more stats about you and your plays',
-    url: 'https://ssr.fascinated.cc',
+    url: env.NEXT_PUBLIC_WEBSITE_URL,
     locale: 'en_US',
     type: 'website',
+    images: [
+      {
+        url: `${env.NEXT_PUBLIC_WEBSITE_URL}/og/default`,
+        width: 1200,
+        height: 630,
+        alt: env.NEXT_PUBLIC_WEBSITE_NAME,
+      },
+    ],
   },
   description:
     'ScoreSaber Reloaded is a new way to view your scores and get more stats about you and your plays',
+  twitter: {
+    card: 'summary',
+  },
 }
 
 export const viewport: Viewport = {

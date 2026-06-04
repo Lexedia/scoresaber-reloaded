@@ -67,18 +67,17 @@ export async function generateMetadata(props: ScorePageProps): Promise<Metadata>
       siteName: env.NEXT_PUBLIC_WEBSITE_NAME,
       title,
       description,
-      ...(leaderboard.songArt
-        ? {
-          images: [
-            {
-              url: leaderboard.songArt,
-            },
-          ],
-        }
-        : {}),
+      images: [
+        {
+          url: `${env.NEXT_PUBLIC_WEBSITE_URL}/og/score/${scoreId}`,
+          width: 1200,
+          height: 630,
+          alt: `${playerName} · ${songTitle}`,
+        },
+      ],
     },
     twitter: {
-      card: 'summary',
+      card: 'summary_large_image',
     },
   }
 }
