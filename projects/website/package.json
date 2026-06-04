@@ -62,6 +62,7 @@
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",
     "tailwindcss-animate": "^1.0.7",
+    "takumi-js": "^1.7.0",
     "websocket": "^1.0.35",
     "zod": "^4.3.6",
     "zustand": "^5.0.12"

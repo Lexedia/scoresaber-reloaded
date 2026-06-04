@@ -45,7 +45,10 @@ Mapped by: ${leaderboard.songAuthorName}
 Difficulty: ${getDifficultyName(leaderboard.difficulty.difficulty)}${leaderboard.stars > 0 ? ` (${leaderboard.stars}★)` : ''}`,
       images: [
         {
-          url: leaderboard.songArt,
+          url: `${env.NEXT_PUBLIC_WEBSITE_URL}/api/og/leaderboard/${id}`,
+          width: 1200,
+          height: 630,
+          alt: leaderboard.songName,
         },
       ],
     },
