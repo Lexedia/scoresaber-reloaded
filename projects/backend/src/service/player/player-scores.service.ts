@@ -31,6 +31,7 @@ import {
 } from 'drizzle-orm'
 import { scoreSaberMedalScoreRowToType } from '../../db/converter/medal-score'
 import { scoreSaberScoreRowToType } from '../../db/converter/scoresaber-score'
+import { db } from '../../db/index'
 import { scoreSaberScoresTable } from '../../db/schema'
 import { ScoreSaberLeaderboardsRepository } from '../../repositories/scoresaber-leaderboards.repository'
 import { ScoreSaberMedalsRepository } from '../../repositories/scoresaber-medals.repository'
@@ -153,7 +154,13 @@ export class PlayerScoresService {
     ): Promise<boolean> {
       const parsedScores = scoresPage.playerScores.map(parseScoreToken)
       const scoreIds = parsedScores.flatMap(entry => (entry.score ? [ entry.score.scoreId ] : []))
-      const existingScoreIds = await ScoreSaberScoresRepository.findExistingScoreIds(scoreIds)
+      const [
+        existingScoreIds,
+        existingScoreRanks,
+      ] = await Promise.all([
+        ScoreSaberScoresRepository.findExistingScoreIds(scoreIds),
+        ScoreSaberScoresRepository.findExistingScoreRanks(scoreIds),
+      ])
 
       await Promise.all(
         parsedScores.map(async ({ score, leaderboard }) => {
@@ -163,6 +170,14 @@ export class PlayerScoresService {
           }
 
           if (existingScoreIds.has(score.scoreId)) {
+            // If the rank stored in the DB has drifted, patch it in-place.
+            const storedRank = existingScoreRanks.get(score.scoreId)
+            if (storedRank !== undefined && storedRank !== score.rank && score.rank > 0) {
+              await db
+                .update(scoreSaberScoresTable)
+                .set({ rank: score.rank })
+                .where(eq(scoreSaberScoresTable.scoreId, score.scoreId))
+            }
             return
           }
 

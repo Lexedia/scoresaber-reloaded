@@ -72,6 +72,24 @@ export class ScoreSaberScoresRepository {
     return new Set(rows.map(row => row.scoreId))
   }
 
+  public static async findExistingScoreRanks(scoreIds: number[]): Promise<Map<number, number>> {
+    if (scoreIds.length === 0) {
+      return new Map()
+    }
+
+    const rows = await db
+      .select({
+        scoreId: scoreSaberScoresTable.scoreId,
+        rank: scoreSaberScoresTable.rank,
+      })
+      .from(scoreSaberScoresTable)
+      .where(inArray(scoreSaberScoresTable.scoreId, scoreIds))
+    return new Map(rows.map(row => [
+      row.scoreId,
+      row.rank,
+    ]))
+  }
+
   public static async existsByScoreIdAndScore(scoreId: number, scoreValue: number): Promise<boolean> {
     const rows = await db
       .select({ exists: sql`1` })
