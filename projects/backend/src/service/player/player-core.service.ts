@@ -59,7 +59,7 @@ export class PlayerCoreService {
     const avatar = playerToken?.profilePicture ?? '/assets/unknown.png'
 
     let shouldSave = false
-    const updates: Partial<Pick<ScoreSaberAccountRow, 'country' | 'banned' | 'avatar'>> = {}
+    const updates: Partial<ScoreSaberAccountRow> = {}
     if (playerToken?.country !== account.country) {
       updates.country = playerToken?.country ?? null
       shouldSave = true
@@ -70,6 +70,23 @@ export class PlayerCoreService {
     }
     if (account.avatar !== avatar) {
       updates.avatar = avatar
+      shouldSave = true
+    }
+    if (playerToken && playerToken.pp !== account.pp) {
+      updates.pp = playerToken.pp
+      shouldSave = true
+    }
+    if (playerToken && playerToken.rank !== account.rank) {
+      updates.rank = playerToken.rank
+      shouldSave = true
+    }
+    if (playerToken && playerToken.countryRank !== account.countryRank) {
+      updates.countryRank = playerToken.countryRank
+      shouldSave = true
+    }
+    if (playerToken && playerToken.rank !== 0 && (!account.peakRank || playerToken.rank < account.peakRank)) {
+      updates.peakRank = playerToken.rank
+      updates.peakRankTimestamp = new Date()
       shouldSave = true
     }
 
@@ -142,6 +159,8 @@ export class PlayerCoreService {
               lastPlayedDate: null,
               trackedSince: new Date(),
               joinedDate: new Date(token.firstSeen),
+              countryRank: token.countryRank,
+              rank: token.rank,
             }
             await ScoreSaberAccountsRepository.insert(playerInsert)
 
@@ -275,7 +294,7 @@ export class PlayerCoreService {
     }
 
     if (!account.peakRank || (account.peakRank && playerToken.rank < account.peakRank)) {
-      await ScoreSaberAccountsRepository.updateAccount(playerToken.id, {
+      await PlayerCoreService.updatePlayer(playerToken.id, {
         peakRank: playerToken.rank,
         peakRankTimestamp: new Date(),
       })

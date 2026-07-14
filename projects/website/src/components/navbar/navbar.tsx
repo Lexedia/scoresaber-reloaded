@@ -89,13 +89,12 @@ export default function Navbar() {
   return (
     <nav
       className={cn(
-        'border-border bg-background/55 sticky inset-x-0 top-0 z-50 flex h-12 w-full items-center justify-between',
-        'border-b px-2 py-1 backdrop-blur-md select-none lg:justify-around',
+        'bg-background/55 sticky inset-x-0 top-0 z-50 flex h-12 w-full items-center justify-between',
+        'relative px-2 py-1 backdrop-blur-md select-none lg:justify-around',
       )}
     >
-      {/* Left */}
+      <div className="from-primary to-accent-secondary pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r" />
       <div className="flex items-center gap-(--spacing-sm) md:gap-3">
-        {/* Branding */}
         <SimpleLink
           className="flex items-center gap-(--spacing-sm) hover:opacity-80 md:gap-2"
           href="/"
@@ -111,7 +110,6 @@ export default function Navbar() {
           <h1 className="text-primary hidden text-base font-bold md:flex md:text-lg">SSR</h1>
         </SimpleLink>
 
-        {/* Links */}
         <div className="flex items-center gap-0.5 md:gap-1">
           {leftLinks.map(link => (
             <NavButton key={link.name} {...link} />

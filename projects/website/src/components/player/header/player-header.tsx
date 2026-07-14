@@ -13,6 +13,7 @@ import PlayerAvatar from './player-avatar'
 import PlayerOverview from './player-overview'
 import PlayerStats from './player-stats'
 import PlayerStreak from './player-streak'
+import PlayerWrappedButton from '../wrapped/player-wrapped-button'
 
 type PlayerHeaderProps = {
   /**
@@ -79,7 +80,10 @@ export default function PlayerHeader({ player }: PlayerHeaderProps) {
 
       {/* Player Footer */}
       <div className="border-border/50 flex flex-col-reverse items-center gap-4 border-t pt-6 md:flex-row md:justify-between md:pt-4">
-        <PlayerActions player={player} />
+        <div className="flex items-center gap-3">
+          <PlayerActions player={player} />
+          <PlayerWrappedButton playerId={player.id} />
+        </div>
         <PlayerAccBadges statistics={player.statistics} />
       </div>
     </Card>

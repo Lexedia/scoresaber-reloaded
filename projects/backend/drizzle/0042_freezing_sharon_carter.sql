@@ -1,0 +1,1 @@
+ALTER TABLE "scoresaber-player-history" ADD COLUMN "medianRankedAccuracy" double precision;

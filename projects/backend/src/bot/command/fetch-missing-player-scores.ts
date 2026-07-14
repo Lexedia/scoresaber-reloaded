@@ -27,28 +27,33 @@ class FetchMissingPlayerScores {
       type: ApplicationCommandOptionType.String,
     })
     playerId: string,
+    @SlashOption({
+      description: 'Force scan all pages and update drifted scores',
+      name: 'force',
+      required: false,
+      type: ApplicationCommandOptionType.Boolean,
+    })
+    force: boolean = false,
     interaction: CommandInteraction,
   ) {
+    await interaction.deferReply()
     try {
       if (!playerId) {
-        interaction.reply({
-          content: 'Adding all players to the fetch missing scores queue...',
-        })
         const players = await ScoreSaberAccountsRepository.selectAllIds()
         const playerIds = players.map(p => p.id)
         if (playerIds.length === 0) {
-          interaction.editReply({
+          await interaction.editReply({
             content: 'No players to fetch missing scores for',
           })
           return
         }
         for (const playerId of playerIds) {
-          (QueueManager.getQueue(QueueId.PlayerScoreRefreshQueue) as FetchMissingScoresQueue).add({
+          await (QueueManager.getQueue(QueueId.PlayerScoreRefreshQueue) as FetchMissingScoresQueue).add({
             id: playerId,
             data: playerId,
           })
         }
-        interaction.editReply({
+        await interaction.editReply({
           content: `Added ${playerIds.length} players to the fetch missing scores queue`,
         })
         return
@@ -60,13 +65,13 @@ class FetchMissingPlayerScores {
       }
 
       const account = await PlayerCoreService.getOrCreateAccount(playerId, playerToken)
-      PlayerScoresService.fetchMissingPlayerScores(account, playerToken)
+      await PlayerScoresService.fetchMissingPlayerScores(account, playerToken, force)
 
-      interaction.reply({
-        content: `Fetching missing scores for ${playerToken.name}...`,
+      await interaction.editReply({
+        content: `Fetching missing scores for ${playerToken.name}${force ? ' (force)' : ''}...`,
       })
     } catch (error) {
-      interaction.reply({
+      await interaction.editReply({
         content: error instanceof Error ? error.message : 'An unknown error occurred',
       })
     }

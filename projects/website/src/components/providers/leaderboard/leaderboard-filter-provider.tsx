@@ -9,8 +9,10 @@ import { toast } from 'sonner'
 
 type FilterContextProps = {
   country: string | undefined;
+  hmd: string | undefined;
 
   setCountry: (country: string | undefined) => void;
+  setHmd: (hmd: string | undefined) => void;
   clearFilters: () => void;
   resetFilters: () => void;
 }
@@ -32,6 +34,13 @@ export const LeaderboardFilterProvider = ({ children }: { children: ReactNode })
   const country = countryQuery ?? undefined
   const setCountry = (value: string | undefined) => setCountryQuery(value ?? null)
 
+  const [
+    hmdQuery,
+    setHmdQuery,
+  ] = useQueryState('hmd', parseAsString)
+  const hmd = hmdQuery ?? undefined
+  const setHmd = (value: string | undefined) => setHmdQuery(value ?? null)
+
   useEffect(() => {
     // Keep previous behaviour: if URL has no country, fall back to the saved default.
     if (countryQuery == null && defaultCountry) {
@@ -45,10 +54,12 @@ export const LeaderboardFilterProvider = ({ children }: { children: ReactNode })
 
   const clearFilters = () => {
     setCountry(undefined)
+    setHmd(undefined)
   }
 
   const resetFilters = () => {
     setCountry(undefined)
+    setHmd(undefined)
     database.setSetting(SettingIds.DefaultLeaderboardCountry, undefined)
 
     toast.success('Reset your filters')
@@ -57,7 +68,9 @@ export const LeaderboardFilterProvider = ({ children }: { children: ReactNode })
   return (
     <LeaderboardFilterContext.Provider value={{
       country,
+      hmd,
       setCountry,
+      setHmd,
       clearFilters,
       resetFilters,
     }}>
@@ -74,7 +87,9 @@ export const useLeaderboardFilter = (initialCountry?: string): FilterContextProp
   if (!context) {
     return {
       country: initialCountry ?? undefined,
+      hmd: undefined,
       setCountry: () => {},
+      setHmd: () => {},
       clearFilters: () => {},
       resetFilters: () => {},
     }

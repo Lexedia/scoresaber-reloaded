@@ -1,8 +1,10 @@
 'use client'
 
 import { cn } from '@/common/utils'
+import Card from '@/components/card'
 import { ScoreOverview } from '@/components/platform/scoresaber/score/score-views/score-overview'
 import { MapStats } from '@/components/score/map-stats'
+import ScoreGridAccuracy from '@/components/score/score-grid-accuracy'
 import { useLeaderboardDropdownData } from '@/hooks/use-leaderboard-dropdown-data'
 import { BeatSaverMap } from '@ssr/common/schemas/beatsaver/map/map'
 import { ScoreSaberLeaderboard } from '@ssr/common/schemas/scoresaber/leaderboard/leaderboard'
@@ -93,13 +95,16 @@ export default function ScoreDetailsDropdown({
             !isLeaderboardScore ? 'mt-(--spacing-md)' : '',
           )}
         >
-          {/* Map Stats */}
           {beatSaverMap && <MapStats beatSaver={beatSaverMap} />}
 
-          {/* Main Card Content */}
           <ScoreOverview score={score} leaderboard={leaderboard} scoreStats={dropdownData.scoreStats} />
 
-          {/* Leaderboard Scores */}
+          {dropdownData.scoreStats && (
+            <Card className="rounded-xl p-4 md:p-6">
+              <ScoreGridAccuracy scoreStats={dropdownData.scoreStats.current} />
+            </Card>
+          )}
+
           {showLeaderboardScores && (
             <LeaderboardScoresDropdown
               initialPage={scoresPage}

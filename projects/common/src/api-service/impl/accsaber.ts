@@ -127,7 +127,7 @@ export class AccSaberService extends ApiService {
               ap: number;
               weightedAp: number;
               score: number;
-              beatSaverKey: string;
+              beatSaverKey: string | null;
               categoryName: string;
             }[];
             totalCount: number;

@@ -1,0 +1,2 @@
+ALTER TABLE "scoresaber-player-history" ADD COLUMN "medianUnrankedAccuracy" double precision;--> statement-breakpoint
+ALTER TABLE "scoresaber-player-history" ADD COLUMN "medianAccuracy" double precision;

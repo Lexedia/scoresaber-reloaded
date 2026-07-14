@@ -3,6 +3,7 @@ import { MapCharacteristic } from '@ssr/common/schemas/map/map-characteristic'
 import { MapDifficulty } from '@ssr/common/schemas/map/map-difficulty'
 import { isNotNull, sql } from 'drizzle-orm'
 import {
+  bigint,
   boolean,
   date,
   doublePrecision,
@@ -38,6 +39,8 @@ export const scoreSaberAccountsTable = pgTable(
     banned: boolean().notNull(),
 
     hmd: varchar({ length: 32 }).$type<HMD>().notNull().default('Unknown'),
+    rank: integer(),
+    countryRank: integer(),
     pp: doublePrecision().notNull().default(0),
     medals: integer().notNull().default(0),
     medalsRank: integer().notNull().default(0),
@@ -110,6 +113,9 @@ export const playerHistoryTable = pgTable(
     averageRankedAccuracy: doublePrecision(),
     averageUnrankedAccuracy: doublePrecision(),
     averageAccuracy: doublePrecision(),
+    medianRankedAccuracy: doublePrecision(),
+    medianUnrankedAccuracy: doublePrecision(),
+    medianAccuracy: doublePrecision(),
 
     // Ranked play stats
     aPlays: integer(),
@@ -250,6 +256,9 @@ export const scoreSaberLeaderboardsTable = pgTable(
     plays: integer().notNull(),
     dailyPlays: integer().notNull(),
 
+    crouchWalls: integer(),
+    dodgeWalls: integer(),
+
     // Misc
     seededScores: boolean().notNull(),
     cachedSongArt: boolean().notNull(),
@@ -260,7 +269,15 @@ export const scoreSaberLeaderboardsTable = pgTable(
   table => [
     index('leaderboards_search_idx').using(
       'gin',
-      sql`to_tsvector('english', ${table.songName} || ' ' || ${table.songSubName} || ' ' || ${table.songAuthorName} || ' ' || ${table.levelAuthorName})`,
+      sql`to_tsvector('english', 
+          translate(${table.songName}, '◇◆●○◎', 'ooooo') || 
+          ' ' || 
+          translate(${table.songSubName}, '◇◆●○◎', 'ooooo') || 
+          ' ' || 
+          translate(${table.songAuthorName}, '◇◆●○◎', 'ooooo') || 
+          ' ' || 
+          translate(${table.levelAuthorName}, '◇◆●○◎', 'ooooo')
+        )`,
     ),
     index('leaderboards_song_lookup_idx').on(
       sql`lower(${table.songHash})`,
@@ -483,6 +500,17 @@ export const scoreSaberScoreEventTable = pgTable(
   ],
 )
 
+export const tableCountsTable = pgTable('scoresaber-table-counts', {
+  id: integer().primaryKey(),
+  scoresaberScores: bigint({ mode: 'number' }).notNull(),
+  scoresaberScoreHistory: bigint({ mode: 'number' }).notNull(),
+  scoresaberAccounts: bigint({ mode: 'number' }).notNull(),
+  scoresaberInactiveAccounts: bigint({ mode: 'number' }).notNull(),
+  scoresaberLeaderboards: bigint({ mode: 'number' }).notNull(),
+  refreshedAt: timestamp().notNull(),
+})
+
+export type TableCountsTableRow = typeof tableCountsTable.$inferSelect
 export type ScoreSaberAccountRow = typeof scoreSaberAccountsTable.$inferSelect
 export type PlayerHistoryRow = typeof playerHistoryTable.$inferSelect
 export type ScoreSaberScoreRow = typeof scoreSaberScoresTable.$inferSelect

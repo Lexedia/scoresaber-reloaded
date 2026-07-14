@@ -11,8 +11,8 @@ import { formatNumberWithCommas } from '@ssr/common/utils/number-utils'
 import { getScoreSaberRoles } from '@ssr/common/utils/scoresaber.util'
 import { getCPConfig } from '../../config/cps'
 import { PlayerAvatar } from '../ranking/player-avatar'
-import CountryFlag from '../ui/country-flag'
 import SimpleTooltip from '../simple-tooltip'
+import CountryFlag from '../ui/country-flag'
 import { PlayerName } from './player-name'
 
 /** Row types supported by {@link PlayerRanking}: display fields used by the layout. */
@@ -29,6 +29,7 @@ export function ScoreSaberPlayerRanking<T extends ScoreSaberPlayer>({
   firstColumnWidth,
   getRank = p => p.contextualRank ?? p.rank,
   getCountryRank = p => p.contextualCountryRank ?? p.countryRank,
+  getActiveRank,
   mainPlayer,
   relativePerformancePoints,
   showAccountInactive = true,
@@ -37,6 +38,7 @@ export function ScoreSaberPlayerRanking<T extends ScoreSaberPlayer>({
   firstColumnWidth: number;
   getRank?: (player: T) => number;
   getCountryRank?: (player: T) => number;
+  getActiveRank?: (player: T) => number | undefined;
   mainPlayer?: ScoreSaberPlayer;
   relativePerformancePoints: boolean;
   showAccountInactive?: boolean;
@@ -46,7 +48,7 @@ export function ScoreSaberPlayerRanking<T extends ScoreSaberPlayer>({
       player={player}
       getRank={getRank}
       getCountryRank={getCountryRank}
-      getActiveRank={p => p.rank !== getRank(p) ? p.rank : undefined}
+      getActiveRank={getActiveRank ?? (p => p.rank !== getRank(p) ? p.rank : undefined)}
       getActiveCountryRank={p => p.countryRank !== getCountryRank(p) ? p.countryRank : undefined}
       firstColumnWidth={firstColumnWidth}
       showAccountInactive={showAccountInactive}
@@ -124,7 +126,6 @@ export function PlayerRanking<T extends PlayerRankingRow>({
         {worth}
       </div>
 
-      {/* Mobile Layout */}
       <div className="block lg:hidden">
         <div
           className={cn(

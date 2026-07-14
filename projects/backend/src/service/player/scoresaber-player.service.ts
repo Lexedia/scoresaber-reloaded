@@ -49,12 +49,17 @@ export default class ScoreSaberPlayerService {
     type: DetailType = 'basic',
     player?: ScoreSaberPlayerToken,
   ): Promise<ScoreSaberPlayer> {
-    player ??= await ScoreSaberApiService.lookupPlayer(id)
-    if (!player) {
-      throw new NotFoundError(`Player "${id}" not found`)
-    }
-
     return CacheService.fetch(CacheId.SCORESABER_PLAYER, playerCacheKey(id, type), async () => {
+      if (!player) {
+        player = await ScoreSaberApiService.lookupPlayer(id)
+        if (!player) {
+          player = await ScoreSaberPlayerService.getCachedPlayer(id).catch(() => undefined)
+        }
+        if (!player) {
+          throw new NotFoundError(`Player "${id}" not found`)
+        }
+      }
+
       const account = await PlayerCoreService.getOrCreateAccount(id, player).catch(() => undefined)
       if (!account) {
         throw new NotFoundError(`Player account "${id}" not found`)

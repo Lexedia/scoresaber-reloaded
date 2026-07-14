@@ -1,5 +1,6 @@
 'use client'
 
+import { useThemeColors } from '@/hooks/use-theme-colors'
 import { isServer } from '@ssr/common/utils/utils'
 import {
   createContext, ReactNode, useEffect, useState,
@@ -84,7 +85,17 @@ export default function DatabaseLoader({ children }: DatabaseLoaderProps) {
 
   return (
     <DatabaseContext.Provider value={database}>
-      {isLoading ? <FullscreenLoader reason="Loading database..." /> : children}
+      {isLoading ? <FullscreenLoader reason="Loading database..." /> : (
+        <>
+          <ThemeColorApplier />
+          {children}
+        </>
+      )}
     </DatabaseContext.Provider>
   )
+}
+
+function ThemeColorApplier() {
+  useThemeColors()
+  return null
 }

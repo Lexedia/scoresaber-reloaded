@@ -138,6 +138,73 @@ export default class BeatLeaderService {
   }
 
   /**
+   * Fetches a BeatLeader score from the main SSR instance (ssr-api.fascinated.cc) and saves it locally.
+   *
+   * @param scoreId the ScoreSaber score id
+   * @param songScore the raw score value
+   * @returns the BeatLeader score, or undefined if not found
+   */
+  public static async fetchFromMainInstance(
+    scoreId: number,
+    songScore: number,
+  ): Promise<BeatLeaderScore | undefined> {
+    try {
+      const data = await Request.get<{
+        score: {
+          beatLeaderScore?: BeatLeaderScore;
+        };
+      }>(`https://ssr-api.fascinated.cc/scores/${scoreId}`)
+
+      const blScore = data?.score?.beatLeaderScore
+      if (!blScore) {
+        return undefined
+      }
+
+      const insert: BeatLeaderScoreInsert = {
+        id: blScore.scoreId,
+        playerId: blScore.playerId,
+        songHash: blScore.songHash.toUpperCase(),
+        leaderboardId: blScore.leaderboardId,
+        songDifficulty: blScore.difficulty,
+        songCharacteristic: blScore.characteristic,
+        songScore,
+        pauses: blScore.pauses,
+        fcAccuracy: blScore.fcAccuracy,
+        fullCombo: blScore.fullCombo,
+        savedReplay: blScore.savedReplay,
+        leftHandAccuracy: blScore.handAccuracy.left,
+        rightHandAccuracy: blScore.handAccuracy.right,
+        misses: blScore.misses.misses,
+        missedNotes: blScore.misses.missedNotes,
+        bombCuts: blScore.misses.bombCuts,
+        wallsHit: blScore.misses.wallsHit,
+        badCuts: blScore.misses.badCuts,
+        improvementScore: blScore.scoreImprovement.score,
+        improvementPauses: blScore.scoreImprovement.pauses,
+        improvementMisses: blScore.scoreImprovement.misses.misses,
+        improvementMissedNotes: blScore.scoreImprovement.misses.missedNotes,
+        improvementBombCuts: blScore.scoreImprovement.misses.bombCuts,
+        improvementWallsHit: blScore.scoreImprovement.misses.wallsHit,
+        improvementBadCuts: blScore.scoreImprovement.misses.badCuts,
+        improvementLeftHandAccuracy: blScore.scoreImprovement.handAccuracy.left,
+        improvementRightHandAccuracy: blScore.scoreImprovement.handAccuracy.right,
+        timestamp: new Date(blScore.timestamp),
+      }
+
+      const existing = await BeatLeaderScoresRepository.findRowById(blScore.scoreId)
+      if (!existing) {
+        await BeatLeaderScoresRepository.insertReturning(insert)
+        BeatLeaderService.logger.info(`Fetched BeatLeader score ${blScore.scoreId} from main instance for ScoreSaber score ${scoreId}`)
+      }
+
+      return blScore
+    } catch (error) {
+      BeatLeaderService.logger.error(`Failed to fetch BeatLeader score for ScoreSaber score ${scoreId}: ${error}`)
+      return undefined
+    }
+  }
+
+  /**
    * Gets the BeatLeader score for a player's score.
    *
    * @param scoreId the id of the score

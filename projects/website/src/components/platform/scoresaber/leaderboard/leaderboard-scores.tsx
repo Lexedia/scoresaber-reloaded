@@ -1,6 +1,7 @@
 'use client'
 
 import CountrySelector from '@/components/country-selector'
+import HmdSelector from '@/components/hmd-selector'
 import { useLeaderboardFilter } from '@/components/providers/leaderboard/leaderboard-filter-provider'
 import ScoreModeSwitcher, { ScoreModeEnum } from '@/components/score/score-mode-switcher'
 import { Spinner } from '@/components/spinner'
@@ -12,12 +13,39 @@ import { MapCharacteristic } from '@ssr/common/schemas/map/map-characteristic'
 import { ScoreSaberLeaderboard } from '@ssr/common/schemas/scoresaber/leaderboard/leaderboard'
 import { ScoreSaberScore } from '@ssr/common/schemas/scoresaber/score/score'
 import { getDifficulty } from '@ssr/common/utils/song-utils'
+import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react'
 import { parseAsInteger, parseAsStringLiteral, useQueryState } from 'nuqs'
 import Card from '../../../card'
 import { CharacteristicButton } from '../../../leaderboard/button/characteristic-button'
 import { DifficultyButton } from '../../../leaderboard/button/difficulty-button'
 import SimplePagination from '../../../simple-pagination'
 import ScoreSaberLeaderboardScore from '../score/leaderboard-score'
+
+const SORT_FIELDS = [
+  'date',
+  'acc',
+  'misses',
+  'pp',
+  'score',
+] as const
+const SORT_DIRECTIONS = [ 'asc', 'desc' ] as const
+
+const defaultDirectionForField = (field: string): 'asc' | 'desc' =>
+  field === 'misses' ? 'asc' : 'desc'
+
+function SortIndicator({ field, currentSort, currentDirection }: {
+  field: string;
+  currentSort: string | null;
+  currentDirection: string | null;
+}) {
+  if (currentSort !== field) {
+    return <ArrowUpDown className="ml-1 inline-block size-3 opacity-30" />
+  }
+  const dir = currentDirection ?? defaultDirectionForField(field)
+  return dir === 'asc'
+    ? <ArrowUp className="ml-1 inline-block size-3 text-primary" />
+    : <ArrowDown className="ml-1 inline-block size-3 text-primary" />
+}
 
 function getScoreId(score: ScoreSaberScore) {
   return score.scoreId + '-' + score.timestamp
@@ -50,20 +78,50 @@ export default function LeaderboardScores({ leaderboard }: { leaderboard: ScoreS
     setPage,
   ] = useQueryState('page', parseAsInteger.withDefault(1))
   const [ highlight ] = useQueryState('highlight')
+  const [
+    sortField,
+    setSortField,
+  ] = useQueryState('sort', parseAsStringLiteral<string>(SORT_FIELDS))
+  const [
+    sortDirection,
+    setSortDirection,
+  ] = useQueryState('direction', parseAsStringLiteral<string>(SORT_DIRECTIONS))
+
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      const newDir = sortDirection === 'asc' ? 'desc' : 'asc'
+      setSortDirection(newDir)
+    } else {
+      setSortField(field)
+      setSortDirection(defaultDirectionForField(field))
+    }
+    setPage(1)
+  }
+
   const {
     data: scores,
     isError,
     isLoading,
     isRefetching,
-  } = useLeaderboardScores(leaderboard.id, mainPlayer?.id ?? '', page, mode, filter.country ?? undefined)
+  } = useLeaderboardScores(
+    leaderboard.id,
+    mainPlayer?.id ?? '',
+    page,
+    mode,
+    filter.country ?? undefined,
+    filter.hmd ?? undefined,
+    sortField ?? undefined,
+    sortDirection ?? undefined,
+  )
 
   const isFriends = mode === ScoreModeEnum.Friends
+  const isLocalOnly = filter.hmd != null
   const noScores =
     isError || (!isLoading && !isRefetching && (!scores || (scores && scores.items.length === 0)))
 
   const currentCharacteristic = leaderboard.difficulties.find(
     difficulty => difficulty.characteristic === leaderboard.difficulty.characteristic,
-  )!.characteristic
+  )?.characteristic ?? leaderboard.difficulty.characteristic
 
   const seenCharacteristics = new Set<MapCharacteristic>()
   const characteristicLeaderboards = leaderboard.difficulties.filter(difficulty => {
@@ -117,10 +175,21 @@ export default function LeaderboardScores({ leaderboard }: { leaderboard: ScoreS
           <div className="flex shrink-0 justify-center">
             <ScoreModeSwitcher initialMode={mode} onModeChange={setMode} />
           </div>
-          <div className="flex w-full min-w-0 justify-center sm:flex-1 sm:justify-end">
+          <div className="flex w-full min-w-0 justify-center sm:flex-1 sm:justify-end gap-2">
+            {/* HMD Filter */}
+            <HmdSelector
+              className="w-full max-w-48"
+              clearable
+              value={filter.hmd}
+              onValueChange={newHmd => {
+                filter.setHmd(newHmd)
+                setPage(1)
+              }}
+              placeholder="All headsets"
+            />
             {/* Country Filter */}
             <CountrySelector
-              className="w-full max-w-72"
+              className="w-full max-w-48"
               clearable
               prioritizeCountry={mainPlayer?.country}
               value={filter.country}
@@ -132,6 +201,12 @@ export default function LeaderboardScores({ leaderboard }: { leaderboard: ScoreS
             />
           </div>
         </div>
+
+        {isLocalOnly && (
+          <div className="bg-muted text-muted-foreground mt-2 w-full rounded-md p-2 text-center text-sm">
+            HMD filtering is limited to scores tracked by SSR. Some scores may be missing.
+          </div>
+        )}
 
         {isLoading && !scores ? (
           <div className="flex items-center justify-center py-12">
@@ -145,11 +220,33 @@ export default function LeaderboardScores({ leaderboard }: { leaderboard: ScoreS
                   <tr className="border-border bg-muted/30 border-b">
                     <th className="text-foreground/90 py-3 pr-1 pl-3 font-semibold">Rank</th>
                     <th className="text-foreground/90 px-1 py-3 font-semibold">Player</th>
-                    <th className="text-foreground/90 px-1 py-3 text-center font-semibold">Date Set</th>
-                    <th className="text-foreground/90 px-1 py-3 text-center font-semibold">Accuracy</th>
-                    <th className="text-foreground/90 px-1 py-3 text-center font-semibold">Misses</th>
-                    <th className="text-foreground/90 px-1 py-3 text-center font-semibold">
+                    <th
+                      className="text-foreground/90 hover:bg-accent/50 cursor-pointer select-none px-1 py-3 text-center font-semibold transition-colors"
+                      onClick={() => handleSort('date')}
+                    >
+                      Date Set
+                      <SortIndicator field="date" currentSort={sortField} currentDirection={sortDirection} />
+                    </th>
+                    <th
+                      className="text-foreground/90 hover:bg-accent/50 cursor-pointer select-none px-1 py-3 text-center font-semibold transition-colors"
+                      onClick={() => handleSort('acc')}
+                    >
+                      Accuracy
+                      <SortIndicator field="acc" currentSort={sortField} currentDirection={sortDirection} />
+                    </th>
+                    <th
+                      className="text-foreground/90 hover:bg-accent/50 cursor-pointer select-none px-1 py-3 text-center font-semibold transition-colors"
+                      onClick={() => handleSort('misses')}
+                    >
+                      Misses
+                      <SortIndicator field="misses" currentSort={sortField} currentDirection={sortDirection} />
+                    </th>
+                    <th
+                      className="text-foreground/90 hover:bg-accent/50 cursor-pointer select-none px-1 py-3 text-center font-semibold transition-colors"
+                      onClick={() => handleSort(leaderboard.stars > 0 ? 'pp' : 'score')}
+                    >
                       {leaderboard.stars > 0 ? 'PP' : 'Score'}
+                      <SortIndicator field={leaderboard.stars > 0 ? 'pp' : 'score'} currentSort={sortField} currentDirection={sortDirection} />
                     </th>
                     <th className="text-foreground/90 px-3 py-3 text-center font-semibold">Mods</th>
                     <th></th>
@@ -176,12 +273,13 @@ export default function LeaderboardScores({ leaderboard }: { leaderboard: ScoreS
 
                 {scores &&
                   scores.items.length > 0 &&
-                  scores.items.map(playerScore => (
+                  scores.items.map((playerScore, index) => (
                     <ScoreSaberLeaderboardScore
                       key={getScoreId(playerScore)}
                       score={playerScore}
                       leaderboard={leaderboard}
                       highlightedPlayerId={highlight ?? undefined}
+                      offsetRank={isLocalOnly ? ((page - 1) * scores.metadata.itemsPerPage) + index + 1 : undefined}
                     />
                   ))}
               </table>

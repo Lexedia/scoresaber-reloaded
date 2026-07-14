@@ -1,0 +1,1 @@
+ALTER TABLE "scoresaber-leaderboards" ADD COLUMN "duckwalls" integer;

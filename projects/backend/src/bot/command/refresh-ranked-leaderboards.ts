@@ -1,28 +1,28 @@
-import { IsGuildUser } from "@discordx/utilities";
-import { CommandInteraction } from "discord.js";
-import { Discord, Guard, Slash } from "discordx";
-import { LeaderboardRankedSyncService } from "../../service/leaderboard/leaderboard-ranked-sync.service";
-import { OwnerOnly } from "../lib/guards";
+import { IsGuildUser } from '@discordx/utilities'
+import { CommandInteraction } from 'discord.js'
+import { Discord, Guard, Slash } from 'discordx'
+import { LeaderboardRankedSyncService } from '../../service/leaderboard/leaderboard-ranked-sync.service'
+import { OwnerOnly } from '../lib/guards'
 
 @Discord()
 @Guard(IsGuildUser(OwnerOnly))
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class RefreshRankedLeaderboards {
   @Slash({
-    description: "Force refresh ranked leaderboards",
-    name: "refresh-ranked-leaderboards",
+    description: 'Force refresh ranked leaderboards',
+    name: 'refresh-ranked-leaderboards',
   })
   async forceRankedLeaderboardsRefresh(interaction: CommandInteraction) {
-    await interaction.deferReply();
+    await interaction.deferReply()
     try {
-      await LeaderboardRankedSyncService.refreshRankedLeaderboards();
+      await LeaderboardRankedSyncService.refreshRankedLeaderboards()
       await interaction.editReply({
-        content: "Ranked leaderboards refreshed",
-      });
+        content: 'Ranked leaderboards refreshed',
+      })
     } catch (error) {
       await interaction.editReply({
-        content: error instanceof Error ? error.message : "An unknown error occurred",
-      });
+        content: error instanceof Error ? error.message : 'An unknown error occurred',
+      })
     }
   }
 }

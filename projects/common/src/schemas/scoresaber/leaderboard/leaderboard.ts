@@ -35,6 +35,8 @@ export const ScoreSaberLeaderboardSchema = z.object({
   plays: z.number(),
   dailyPlays: z.number(),
 
+  duckwalls: z.number().nullable().optional(),
+
   timestamp: z.date(),
 })
 export type ScoreSaberLeaderboard = z.infer<typeof ScoreSaberLeaderboardSchema>

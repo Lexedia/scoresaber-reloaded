@@ -1,4 +1,5 @@
 import { Replay } from '../replay/replay-decoder'
+import { ReplayAnalysis } from '../replay/replay-analysis'
 
 export type CutDistribution = {
   score: number;
@@ -18,4 +19,5 @@ export interface DecodedReplayResponse {
   cutDistribution: CutDistribution[];
   swingSpeed: SwingSpeed;
   replayLengthSeconds: number;
+  analysis: ReplayAnalysis;
 }

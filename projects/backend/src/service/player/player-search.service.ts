@@ -78,11 +78,66 @@ export class PlayerSearchService {
       country?: string;
       search?: string;
       includeInactive?: boolean;
+      hmd?: string;
     },
   ): Promise<PlayerRankingsResponse> {
-    const { country, search, includeInactive } = options ?? {}
+    const {
+      country, search, includeInactive, hmd,
+    } = options ?? {}
     if (search && search.length < 3) {
       return Pagination.empty<ScoreSaberPlayer>()
+    }
+
+    if (hmd) {
+      const itemsPerPage = 50
+      const { players, total } = await ScoreSaberAccountsRepository.searchPlayersRankingPaginated(
+        page,
+        itemsPerPage,
+        {
+          country,
+          search,
+          includeInactive,
+          hmd,
+        },
+      )
+
+      const items = players.map(account => {
+        return {
+          id: account.id,
+          name: account.name,
+          country: account.country ?? undefined,
+          avatar: account.avatar,
+          rank: account.rank ?? 0,
+          countryRank: account.countryRank ?? 0,
+          pp: account.pp,
+          history: '',
+          banned: account.banned,
+          inactive: account.inactive,
+          scoreStats: {
+            totalScore: 0,
+            totalRankedScore: 0,
+            averageRankedAccuracy: 0,
+            totalPlayCount: 0,
+            rankedPlayCount: 0,
+            replaysWatched: 0,
+          },
+          permissions: 0,
+          role: null,
+          firstSeen: account.joinedDate?.toISOString() ?? '',
+          contextualRank: account.rank ?? 0,
+          contextualCountryRank: account.countryRank ?? 0,
+        } as unknown as ScoreSaberPlayer
+      })
+
+      return {
+        items,
+        metadata: {
+          totalPages: Math.ceil(total / itemsPerPage),
+          totalItems: total,
+          page,
+          itemsPerPage,
+        },
+      }
     }
 
     const foundPlayers = country

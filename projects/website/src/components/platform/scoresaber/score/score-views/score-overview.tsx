@@ -30,7 +30,6 @@ export function ScoreOverview({ score, scoreStats, leaderboard }: ScoreOverviewP
 
   return (
     <div className="flex w-full flex-col gap-2 md:flex-row">
-      {/* Stats */}
       <Card className="flex w-full flex-col items-center justify-center gap-3 rounded-xl md:mb-0 md:max-w-[360px]">
         <div className="flex w-full flex-row flex-wrap items-center justify-center gap-2">
           {score.beatLeaderScore && <StatValue value={score.beatLeaderScore.pauses} name="Pauses" />}
@@ -49,16 +48,15 @@ export function ScoreOverview({ score, scoreStats, leaderboard }: ScoreOverviewP
           )}
         </div>
 
-        {/* Accuracy Stats */}
         <div className="bg-accent-deep border-border flex w-full flex-col items-center justify-center gap-3 rounded-md border p-3">
           <ScoreAccuracyStats scoreStats={scoreStats} />
         </div>
       </Card>
 
-      {/* Accuracy Chart */}
       <div className="flex h-full w-full items-center justify-center md:min-h-[320px]">
         <PlayerScoreAccuracyChart scoreStats={scoreStats} leaderboard={leaderboard} />
       </div>
     </div>
   )
 }
+

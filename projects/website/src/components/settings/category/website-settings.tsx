@@ -1,26 +1,53 @@
 'use client'
 
-import { SettingIds, WebsiteLanding } from '@/common/database/database'
+import {
+  DEFAULT_ACCENT_COLOR, DEFAULT_PRIMARY_COLOR, SettingIds, WebsiteLanding,
+} from '@/common/database/database'
 import { BACKGROUND_COVERS } from '@/components/background-cover'
 import { Form, FormDescription, FormLabel } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Switch } from '@/components/ui/switch'
 import { useBackgroundCover } from '@/hooks/use-background-cover'
 import useDatabase from '@/hooks/use-database'
 import { useSettingsForm } from '@/hooks/use-settings-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ssrConfig } from 'config'
 import type { LucideIcon } from 'lucide-react'
 import {
-  Globe, Image as ImageIcon, Palette, Snowflake,
+  Globe, Image as ImageIcon, Palette, Settings2, Snowflake,
 } from 'lucide-react'
-import { useTheme } from 'next-themes'
-import { Path, useForm } from 'react-hook-form'
+import { useEffect, useState } from 'react'
+import {
+  Path, useForm, useFormContext, useWatch,
+} from 'react-hook-form'
 import { z } from 'zod'
 import { Field, SettingSection } from '../setting-section'
 import { SettingsCategorySkeleton } from '../settings-category-skeleton'
 import { getMonotonicTimeMs, showSettingsSavedToast } from '../settings-feedback'
+
+const PRESETS = [
+  {
+    name: 'Blue',
+    primary: '#5555FF',
+    accent: '#9900FF',
+  },
+  {
+    name: 'Purple',
+    primary: '#9900FF',
+    accent: '#BB44FF',
+  },
+  {
+    name: 'Red',
+    primary: '#FF3333',
+    accent: '#FF6666',
+  },
+  {
+    name: 'Green',
+    primary: '#22CC55',
+    accent: '#44DD77',
+  },
+] as const
 
 const formSchema = z.object({
   backgroundCover: z.string().min(0).max(128),
@@ -29,7 +56,10 @@ const formSchema = z.object({
   snowParticles: z.boolean(),
   showKitty: z.boolean(),
   websiteLanding: z.enum(WebsiteLanding),
-  theme: z.string(),
+  primaryColor: z.string(),
+  accentColor: z.string(),
+  useGradient: z.boolean(),
+  developerMode: z.boolean(),
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -93,6 +123,159 @@ const BackgroundCoverControl = (props: {
           </div>
         </RadioGroup>
       </div>
+    </div>
+  )
+}
+
+const ThemeColorControl = (props: {
+  field: {
+    value: string | number | boolean;
+    onChange: (value: string | number | boolean) => void;
+    name?: string;
+  };
+}) => {
+  const form = useFormContext<FormValues>()
+  const primaryColor = props.field.value as string
+
+  const watchedAccent = useWatch({
+    control: form.control,
+    name: 'accentColor',
+  })
+  const watchedGradient = useWatch({
+    control: form.control,
+    name: 'useGradient',
+  })
+
+  const [ accentColor, setAccentColor ] = useState(() => form.getValues('accentColor') || DEFAULT_ACCENT_COLOR)
+  const [ useGradient, setUseGradient ] = useState(() => form.getValues('useGradient') || false)
+
+  useEffect(() => {
+    if (watchedAccent && watchedAccent !== accentColor)
+      setAccentColor(watchedAccent)
+  }, [ watchedAccent ])
+
+  useEffect(() => {
+    if (watchedGradient !== useGradient)
+      setUseGradient(watchedGradient)
+  }, [ watchedGradient ])
+
+  const applyPreset = (preset: typeof PRESETS[number]) => {
+    setAccentColor(preset.accent)
+    setUseGradient(true)
+    form.setValue('accentColor', preset.accent)
+    form.setValue('useGradient', true)
+    props.field.onChange(preset.primary)
+  }
+
+  const handlePrimaryChange = (color: string) => {
+    props.field.onChange(color)
+  }
+
+  const handleAccentChange = (color: string) => {
+    setAccentColor(color)
+    form.setValue('accentColor', color)
+    props.field.onChange(form.getValues('primaryColor'))
+  }
+
+  const handleGradientToggle = (enabled: boolean) => {
+    setUseGradient(enabled)
+    form.setValue('useGradient', enabled)
+    props.field.onChange(form.getValues('primaryColor'))
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="w-full min-w-0">
+        <FormLabel className="text-foreground text-[15px] leading-snug font-medium">
+          Theme Colors
+        </FormLabel>
+        <FormDescription className="text-muted-foreground mt-1 text-[13px] leading-snug">
+          Customize the color scheme of the website
+        </FormDescription>
+      </div>
+
+      <div>
+        <span className="text-muted-foreground mb-2 block text-xs font-medium uppercase tracking-wider">
+          Quick Pick
+        </span>
+        <div className="flex gap-3">
+          {PRESETS.map(preset => {
+            const isActive = primaryColor === preset.primary && accentColor === preset.accent && useGradient
+            return (
+              <button
+                key={preset.name}
+                type="button"
+                onClick={() => applyPreset(preset)}
+                className={`group flex size-10 items-center justify-center rounded-full transition-all ${
+                  isActive ? 'ring-2 ring-white ring-offset-2 ring-offset-background' : ''
+                }`}
+                style={{ backgroundColor: preset.primary }}
+                title={preset.name}
+              >
+                <span className="text-[10px] font-bold text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                  {preset.name[0]}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <Label className="text-foreground shrink-0 text-sm font-medium">Primary</Label>
+        <div className="relative">
+          <input
+            type="color"
+            value={primaryColor}
+            onChange={e => handlePrimaryChange(e.target.value)}
+            className="size-9 cursor-pointer rounded-md border border-white/10 bg-transparent p-0.5"
+          />
+        </div>
+        <Input
+          value={primaryColor}
+          onChange={e => handlePrimaryChange(e.target.value)}
+          className="h-8 w-28 font-mono text-xs uppercase"
+        />
+      </div>
+
+      <div className="flex items-center gap-3">
+        <Switch
+          id="use-gradient"
+          checked={useGradient}
+          onCheckedChange={handleGradientToggle}
+        />
+        <Label htmlFor="use-gradient" className="text-foreground cursor-pointer text-sm font-medium">
+          Gradient accent
+        </Label>
+      </div>
+
+      {useGradient && (
+        <div className="flex items-center gap-3">
+          <Label className="text-foreground shrink-0 text-sm font-medium">Accent</Label>
+          <div className="relative">
+            <input
+              type="color"
+              value={accentColor}
+              onChange={e => handleAccentChange(e.target.value)}
+              className="size-9 cursor-pointer rounded-md border border-white/10 bg-transparent p-0.5"
+            />
+          </div>
+          <Input
+            value={accentColor}
+            onChange={e => handleAccentChange(e.target.value)}
+            className="h-8 w-28 font-mono text-xs uppercase"
+          />
+        </div>
+      )}
+
+      <div
+        className="h-6 w-full rounded-md"
+        style={{
+          background: useGradient && accentColor !== primaryColor
+            ? `linear-gradient(to right, ${primaryColor}, ${accentColor})`
+            : primaryColor,
+        }}
+      />
     </div>
   )
 }
@@ -187,21 +370,29 @@ const settings: {
     icon: Palette,
     fields: [
       {
-        name: 'theme' as Path<FormValues>,
-        label: 'Theme',
+        name: 'primaryColor' as Path<FormValues>,
+        label: '',
         type: 'select' as const,
-        description: 'Choose which color theme to use for the website',
-        options: ssrConfig.themes.map(theme => ({
-          value: theme.id,
-          label: theme.name,
-        })),
+        customControl: ThemeColorControl,
+      },
+    ],
+  },
+  {
+    id: 'advanced',
+    title: 'Advanced',
+    icon: Settings2,
+    fields: [
+      {
+        name: 'developerMode' as Path<FormValues>,
+        label: 'Developer Mode',
+        type: 'checkbox' as const,
+        description: 'Enable advanced features',
       },
     ],
   },
 ]
 
 const WebsiteSettings = () => {
-  const { setTheme, theme } = useTheme()
   const database = useDatabase()
 
   const form = useForm<FormValues>({
@@ -213,7 +404,10 @@ const WebsiteSettings = () => {
       snowParticles: false,
       showKitty: false,
       websiteLanding: WebsiteLanding.PLAYER_HOME,
-      theme: ssrConfig.themes[0].id,
+      primaryColor: DEFAULT_PRIMARY_COLOR,
+      accentColor: DEFAULT_ACCENT_COLOR,
+      useGradient: false,
+      developerMode: false,
     },
   })
 
@@ -227,7 +421,10 @@ const WebsiteSettings = () => {
       snowParticles: () => database.getSnowParticles(),
       showKitty: () => database.getShowKitty(),
       websiteLanding: () => database.getWebsiteLanding(),
-      theme: () => theme,
+      primaryColor: () => database.getPrimaryColor(),
+      accentColor: () => database.getAccentColor(),
+      useGradient: () => database.getUseGradient(),
+      developerMode: () => database.getDeveloperMode(),
     },
     [ 'backgroundCover' ], // Exclude backgroundCover - let BackgroundCoverControl handle it
   )
@@ -240,8 +437,11 @@ const WebsiteSettings = () => {
       database.setSetting(SettingIds.SnowParticles, values.snowParticles),
       database.setSetting(SettingIds.ShowKitty, values.showKitty),
       database.setWebsiteLanding(values.websiteLanding),
+      database.setPrimaryColor(values.primaryColor),
+      database.setAccentColor(values.accentColor),
+      database.setUseGradient(values.useGradient),
+      database.setDeveloperMode(values.developerMode),
     ])
-    setTheme(values.theme)
 
     showSettingsSavedToast(before)
   }

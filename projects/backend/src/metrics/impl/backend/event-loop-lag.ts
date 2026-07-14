@@ -10,7 +10,7 @@ export default class EventLoopLagMetric extends Metric<number> {
   constructor() {
     super(MetricType.EVENT_LOOP_LAG, 0, { persist: false })
 
-    this.lastCheck = performance.now()
+    this.lastCheck = Bun.nanoseconds()
     this.lag = 0
 
     const gauge = new Gauge({

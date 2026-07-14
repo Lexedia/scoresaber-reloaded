@@ -1,4 +1,5 @@
 import { CutDistribution, DecodedReplayResponse, SwingSpeed } from '../types/decoded-replay-response'
+import { type ReplayAnalysis, analyzeReplay } from './replay-analysis'
 import { NoteCutInfo, Replay, ReplayDecoder } from './replay-decoder'
 
 type IntervalSwingAgg = {
@@ -15,7 +16,9 @@ function computeReplayDerivedData(replay: Replay): {
   cutDistribution: CutDistribution[];
   swingSpeed: SwingSpeed;
   replayLengthSeconds: number;
+  analysis: ReplayAnalysis;
 } {
+  const analysis = analyzeReplay(replay)
   const scoreCounts = new Map<number, number>()
   const swingByInterval = new Map<number, IntervalSwingAgg>()
 
@@ -88,6 +91,7 @@ function computeReplayDerivedData(replay: Replay): {
       leftSwingSpeed,
     },
     replayLengthSeconds: maxEventTime,
+    analysis,
   }
 }
 
@@ -99,12 +103,15 @@ function computeReplayDerivedData(replay: Replay): {
  */
 export async function getDecodedReplay(query: string): Promise<DecodedReplayResponse> {
   const replay = await ReplayDecoder.decodeReplay(query)
-  const { cutDistribution, swingSpeed, replayLengthSeconds } = computeReplayDerivedData(replay)
+  const {
+    cutDistribution, swingSpeed, replayLengthSeconds, analysis,
+  } = computeReplayDerivedData(replay)
   return {
     rawReplay: replay,
     cutDistribution,
     swingSpeed,
     replayLengthSeconds,
+    analysis,
   }
 }
 

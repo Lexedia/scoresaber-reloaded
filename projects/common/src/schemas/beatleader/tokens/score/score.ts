@@ -57,7 +57,7 @@ export const BeatLeaderScoreSchema = z
     playCount: z.number(),
     priority: z.number(),
     player: BeatLeaderPlayerSchema.nullable(),
-    scoreImprovement: BeatLeaderScoreImprovementSchema,
+    scoreImprovement: BeatLeaderScoreImprovementSchema.nullable(),
     rankVoting: z.null(),
     metadata: z.null(),
     offsets: BeatLeaderScoreOffsetsSchema.nullable().optional(),

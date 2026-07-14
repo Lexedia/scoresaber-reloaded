@@ -295,6 +295,55 @@
       "when": 1780392615003,
       "tag": "0041_shallow_iron_fist",
       "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1781169578358,
+      "tag": "0042_freezing_sharon_carter",
+      "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1781170282741,
+      "tag": "0043_sad_genesis",
+      "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1781171000000,
+      "tag": "0044_add_rank_countryrank_to_accounts",
+      "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1782724529087,
+      "tag": "0045_lush_captain_universe",
+      "breakpoints": true
+    },
+    {
+      "idx": 46,
+      "version": "7",
+      "when": 1782725352047,
+      "tag": "0046_misty_carmella_unuscione",
+      "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1783936345219,
+      "tag": "0047_unique_shinobi_shaw",
+      "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "7",
+      "when": 1783946240577,
+      "tag": "0048_tiresome_killraven",
+      "breakpoints": true
     }
   ]
 }

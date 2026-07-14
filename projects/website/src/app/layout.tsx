@@ -25,8 +25,8 @@ export const metadata: Metadata = {
   applicationName: env.NEXT_PUBLIC_WEBSITE_NAME,
   authors: [
     {
-      name: 'Fascinated',
-      url: 'https://github.com/RealFascinated/scoresaber-reloaded',
+      name: 'Lexedia',
+      url: 'https://github.com/Lexedia/scoresaber-reloaded',
     },
   ],
   robots: {
@@ -80,12 +80,25 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${siteFont.className} h-full w-full antialiased`}>
-        {env.NEXT_PUBLIC_ANALYTICS_WEBSITE_ID && env.NEXT_PUBLIC_ANALYTICS_SCRIPT_URL && (
-          <Script
-            strategy="afterInteractive"
-            src={env.NEXT_PUBLIC_ANALYTICS_SCRIPT_URL}
-            data-website-id={env.NEXT_PUBLIC_ANALYTICS_WEBSITE_ID}
-          />
+        {env.NEXT_PUBLIC_ANALYTICS_SCRIPT_URL && (
+          <>
+            <Script
+              strategy="afterInteractive"
+              defer
+              async
+              src={env.NEXT_PUBLIC_ANALYTICS_SCRIPT_URL}
+            />
+            <Script
+              type="text/javascript"
+              dangerouslySetInnerHTML={{
+                __html: `
+                window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},
+                plausible.init=plausible.init||function(i){plausible.o=i||{}};
+                plausible.init()
+              `,
+              }}
+            />
+          </>
         )}
         <Toaster />
         <PreloadResources />

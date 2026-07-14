@@ -47,7 +47,7 @@ export default defineConfig({
       'error',
       {
         multiline: true,
-        minItems: 2,
+        minItems: 4,
         consistent: true,
       },
     ],
@@ -106,8 +106,18 @@ export default defineConfig({
     ],
     'no-warning-comments': 'warn',
     '@typescript-eslint/array-type': 'error',
+    '@typescript-eslint/no-unused-vars': [
+      'error',
+      {
+        args: 'after-used',
+        argsIgnorePattern: '^_',
+        caughtErrors: 'all',
+        caughtErrorsIgnorePattern: '^_',
+        destructuredArrayIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        ignoreRestSiblings: true,
+      },
+    ],
   },
-},
-{
-  files: [ '**/*.{ts,tsx,cts,mts,js,jsx,cjs,mjs}' ],
+  files: ['**/*.{ts,tsx,cts,mts,js,jsx,cjs,mjs}'],
 })

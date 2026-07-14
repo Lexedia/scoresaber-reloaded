@@ -28,7 +28,7 @@ export class BeatLeaderApiService {
     },
   ): Promise<T | undefined> {
     options = {
-      useProxy: true,
+      useProxy: false,
       ...options,
     }
     const startedAt = performance.now()
@@ -38,7 +38,7 @@ export class BeatLeaderApiService {
     const timeoutId = setTimeout(() => controller.abort(), 15_000)
 
     const baseUrl = options?.useProxy
-      ? `https://p.fascinated.cc/${encodeURIComponent(`${url}${getQueryParamsFromObject(options?.searchParams || {})}`)}`
+      ? `https://proxy.lexedia.moe/${url}${getQueryParamsFromObject(options?.searchParams || {})}`
       : `${url}${getQueryParamsFromObject(options?.searchParams || {})}`
     let response: Response | undefined
     try {

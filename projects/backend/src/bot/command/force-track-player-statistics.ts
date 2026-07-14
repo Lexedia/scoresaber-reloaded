@@ -15,13 +15,13 @@ class ForceTrackPlayerStatistics {
   })
   async forceTrackPlayerStatistics(interaction: CommandInteraction) {
     const before = Date.now()
-    interaction.reply({
+    await interaction.reply({
       content: 'Updating player statistics...',
     })
 
     await PlayerHistoryService.updatePlayerStatistics()
 
-    interaction.editReply({
+    await interaction.editReply({
       content: `Player statistics updated in ${formatDuration(Date.now() - before)}`,
     })
   }

@@ -7,15 +7,33 @@ import { LeaderboardStarChange } from '@ssr/common/schemas/leaderboard/leaderboa
 import { formatDate, getDaysAgo, timeAgo } from '@ssr/common/utils/time-utils'
 import { useMemo } from 'react'
 
+import { ScoreSaberLeaderboard } from '@ssr/common/schemas/scoresaber/leaderboard/leaderboard'
+
 export function LeaderboardStarChangeHistory({
+  leaderboard,
   starChangeHistory,
 }: {
+  leaderboard: ScoreSaberLeaderboard;
   starChangeHistory: LeaderboardStarChange[];
 }) {
-  const orderedPoints = useMemo(
-    () => starChangeHistory.toSorted((a, b) => a.timestamp.getTime() - b.timestamp.getTime()),
-    [ starChangeHistory ],
-  )
+  const orderedPoints = useMemo(() => {
+    const history = starChangeHistory
+      .filter(change => change.timestamp.getTime() > 0)
+      .toSorted((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
+    if (history.length > 0) {
+      const firstChange = history[0]
+      const initialTimestamp = leaderboard.rankedDate ?? new Date(firstChange.timestamp.getTime() - (7 * 24 * 60 * 60 * 1000))
+
+      if (initialTimestamp.getTime() < firstChange.timestamp.getTime()) {
+        history.unshift({
+          previousStars: firstChange.previousStars,
+          newStars: firstChange.previousStars,
+          timestamp: initialTimestamp,
+        })
+      }
+    }
+    return history
+  }, [ starChangeHistory, leaderboard.rankedDate ])
 
   const labels = orderedPoints.map(change => change.timestamp.getTime())
   const formatRelativeDate = (value: number, withTime: boolean) => {
@@ -23,7 +41,7 @@ export function LeaderboardStarChangeHistory({
     if (getDaysAgo(date) <= 7) {
       return timeAgo(date, 1)
     }
-    return formatDate(date, withTime ? 'Do MMMM, YYYY HH:mm a' : 'DD MMMM YYYY')
+    return formatDate(date, withTime ? 'Do MMMM, YYYY HH:mm' : 'DD MMMM YYYY')
   }
 
   const chartConfig = buildChartConfig({
@@ -48,6 +66,11 @@ export function LeaderboardStarChangeHistory({
       newStars: orderedPoints.map(change => change.newStars),
     },
     options: {
+      elements: {
+        line: {
+          tension: 0.3,
+        },
+      },
       scales: {
         x: {
           type: 'linear',

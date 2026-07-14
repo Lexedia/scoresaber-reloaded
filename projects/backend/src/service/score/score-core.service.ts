@@ -187,13 +187,17 @@ export class ScoreCoreService {
       if (options?.insertBeatLeaderScore === false) {
         return undefined
       }
-      return BeatLeaderService.getBeatLeaderScoreFromSong(
+      const local = await BeatLeaderService.getBeatLeaderScoreFromSong(
         score.playerId,
         leaderboard.songHash,
         leaderboard.difficulty.difficulty,
         leaderboard.difficulty.characteristic,
         score.score,
       )
+      if (local) {
+        return local
+      }
+      return BeatLeaderService.fetchFromMainInstance(score.scoreId, score.score)
     }
 
     async function getPreviousScore() {
@@ -240,10 +244,11 @@ export class ScoreCoreService {
 
     if (playerInfo !== undefined) {
       score.playerInfo = {
+        ...score.playerInfo,
         id: playerInfo.id,
         name: playerInfo.name,
         avatar: playerInfo.avatar,
-        country: playerInfo.country ?? undefined,
+        country: playerInfo.country ?? score.playerInfo?.country,
       }
     }
 

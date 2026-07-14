@@ -58,6 +58,9 @@ export class PlayerHistoryRepository {
           averageRankedAccuracy: sql`excluded."averageRankedAccuracy"`,
           averageUnrankedAccuracy: sql`excluded."averageUnrankedAccuracy"`,
           averageAccuracy: sql`excluded."averageAccuracy"`,
+          medianRankedAccuracy: sql`excluded."medianRankedAccuracy"`,
+          medianUnrankedAccuracy: sql`excluded."medianUnrankedAccuracy"`,
+          medianAccuracy: sql`excluded."medianAccuracy"`,
           aPlays: sql`excluded."aPlays"`,
           sPlays: sql`excluded."sPlays"`,
           spPlays: sql`excluded."spPlays"`,
@@ -81,13 +84,11 @@ export class PlayerHistoryRepository {
       .select()
       .from(playerHistoryTable)
       .where(
-        dayCount > 0
-          ? and(
-            eq(playerHistoryTable.playerId, playerId),
-            gte(playerHistoryTable.date, alignedStart),
-            lte(playerHistoryTable.date, today),
-          )
-          : eq(playerHistoryTable.playerId, playerId),
+        and(
+          eq(playerHistoryTable.playerId, playerId),
+          gte(playerHistoryTable.date, alignedStart),
+          lte(playerHistoryTable.date, today),
+        ),
       )
       .orderBy(desc(playerHistoryTable.date))
     return await (dayCount > 0 ? base.limit(dayCount) : base)
@@ -173,5 +174,52 @@ export class PlayerHistoryRepository {
       .from(playerHistoryTable)
       .where(eq(playerHistoryTable.playerId, playerId))
     return row?.c ?? 0
+  }
+
+  public static async bulkUpsertHistory(rows: (Partial<ScoreSaberPlayerHistory> & {
+    playerId: string,
+    date: Date
+  })[]): Promise<void> {
+    if (rows.length === 0) {
+      return
+    }
+
+    await db
+      .insert(playerHistoryTable)
+      .values(rows)
+      .onConflictDoUpdate({
+        target: [
+          playerHistoryTable.playerId,
+          playerHistoryTable.date,
+        ],
+        set: {
+          rank: sql`COALESCE(excluded."rank", ${playerHistoryTable.rank})`,
+          countryRank: sql`COALESCE(excluded."countryRank", ${playerHistoryTable.countryRank})`,
+          medals: sql`COALESCE(excluded."medals", ${playerHistoryTable.medals})`,
+          pp: sql`COALESCE(excluded."pp", ${playerHistoryTable.pp})`,
+          plusOnePp: sql`COALESCE(excluded."plusOnePp", ${playerHistoryTable.plusOnePp})`,
+          totalScore: sql`COALESCE(excluded."totalScore", ${playerHistoryTable.totalScore})`,
+          totalRankedScore: sql`COALESCE(excluded."totalRankedScore", ${playerHistoryTable.totalRankedScore})`,
+          rankedScores: sql`COALESCE(excluded."rankedScores", ${playerHistoryTable.rankedScores})`,
+          unrankedScores: sql`COALESCE(excluded."unrankedScores", ${playerHistoryTable.unrankedScores})`,
+          rankedScoresImproved: sql`COALESCE(excluded."rankedScoresImproved", ${playerHistoryTable.rankedScoresImproved})`,
+          unrankedScoresImproved: sql`COALESCE(excluded."unrankedScoresImproved", ${playerHistoryTable.unrankedScoresImproved})`,
+          totalRankedScores: sql`COALESCE(excluded."totalRankedScores", ${playerHistoryTable.totalRankedScores})`,
+          totalUnrankedScores: sql`COALESCE(excluded."totalUnrankedScores", ${playerHistoryTable.totalUnrankedScores})`,
+          totalScores: sql`COALESCE(excluded."totalScores", ${playerHistoryTable.totalScores})`,
+          averageRankedAccuracy: sql`COALESCE(excluded."averageRankedAccuracy", ${playerHistoryTable.averageRankedAccuracy})`,
+          averageUnrankedAccuracy: sql`COALESCE(excluded."averageUnrankedAccuracy", ${playerHistoryTable.averageUnrankedAccuracy})`,
+          averageAccuracy: sql`COALESCE(excluded."averageAccuracy", ${playerHistoryTable.averageAccuracy})`,
+          medianRankedAccuracy: sql`COALESCE(excluded."medianRankedAccuracy", ${playerHistoryTable.medianRankedAccuracy})`,
+          medianUnrankedAccuracy: sql`COALESCE(excluded."medianUnrankedAccuracy", ${playerHistoryTable.medianUnrankedAccuracy})`,
+          medianAccuracy: sql`COALESCE(excluded."medianAccuracy", ${playerHistoryTable.medianAccuracy})`,
+          aPlays: sql`COALESCE(excluded."aPlays", ${playerHistoryTable.aPlays})`,
+          sPlays: sql`COALESCE(excluded."sPlays", ${playerHistoryTable.sPlays})`,
+          spPlays: sql`COALESCE(excluded."spPlays", ${playerHistoryTable.spPlays})`,
+          ssPlays: sql`COALESCE(excluded."ssPlays", ${playerHistoryTable.ssPlays})`,
+          sspPlays: sql`COALESCE(excluded."sspPlays", ${playerHistoryTable.sspPlays})`,
+          godPlays: sql`COALESCE(excluded."godPlays", ${playerHistoryTable.godPlays})`,
+        },
+      })
   }
 }

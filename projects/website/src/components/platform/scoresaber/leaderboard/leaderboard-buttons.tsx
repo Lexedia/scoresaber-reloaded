@@ -83,7 +83,7 @@ const buttons = [
           </DialogTrigger>
           <DialogContent className="sm:max-w-4xl">
             <DialogTitle>Star History</DialogTitle>
-            <LeaderboardStarChangeHistory starChangeHistory={starChangeHistory} />
+            <LeaderboardStarChangeHistory leaderboard={leaderboard} starChangeHistory={starChangeHistory} />
           </DialogContent>
         </Dialog>
       )

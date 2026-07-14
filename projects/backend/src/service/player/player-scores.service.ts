@@ -6,7 +6,11 @@ import { Pagination, type Page } from '@ssr/common/pagination'
 import type { AccSaberScoreSort, AccSaberScoreType } from '@ssr/common/schemas/accsaber/tokens/query/query'
 import { AccSaberScore } from '@ssr/common/schemas/accsaber/tokens/score/score'
 import { MapCharacteristic } from '@ssr/common/schemas/map/map-characteristic'
-import { PlayerScoresChartResponse } from '@ssr/common/schemas/response/player/scores-chart'
+import {
+  DifficultyCurveResponse,
+  PlayerScoresChartResponse,
+  SkillBreakdownResponse,
+} from '@ssr/common/schemas/response/player/scores-chart'
 import type { AccSaberScoresPageResponse } from '@ssr/common/schemas/response/score/accsaber-scores-page'
 import { PlayerScoresPageResponse } from '@ssr/common/schemas/response/score/player-scores'
 import { PlayerScoresQuery } from '@ssr/common/schemas/score/query/player-scores-query'
@@ -25,16 +29,22 @@ import ScoreSaberPlayerScoreToken from '@ssr/common/types/token/scoresaber/playe
 import ScoreSaberPlayerScoresPageToken from '@ssr/common/types/token/scoresaber/player-scores-page'
 import { accSaberDifficultyToMapDifficulty } from '@ssr/common/utils/accsaber-difficulty'
 import { formatNumberWithCommas } from '@ssr/common/utils/number-utils'
+import { getScoreBadgeFromName } from '@ssr/common/utils/song-utils'
 import { formatDuration } from '@ssr/common/utils/time-utils'
 import {
-  SQL, asc, desc, eq, gt, gte, inArray, isNotNull, sql, type AnyColumn,
+  asc, desc, eq, gt, gte,
+  inArray, isNotNull,
+  lt,
+  SQL,
+  sql, type AnyColumn,
 } from 'drizzle-orm'
 import { scoreSaberMedalScoreRowToType } from '../../db/converter/medal-score'
 import { scoreSaberScoreRowToType } from '../../db/converter/scoresaber-score'
 import { db } from '../../db/index'
 import { scoreSaberScoresTable } from '../../db/schema'
-import { ScoreSaberLeaderboardsRepository } from '../../repositories/scoresaber-leaderboards.repository'
+import { normalizeSearchQuery, ScoreSaberLeaderboardsRepository } from '../../repositories/scoresaber-leaderboards.repository'
 import { ScoreSaberMedalsRepository } from '../../repositories/scoresaber-medals.repository'
+import { ScoreSaberScoreHistoryRepository } from '../../repositories/scoresaber-score-history.repository'
 import { ScoreSaberScoresRepository } from '../../repositories/scoresaber-scores.repository'
 import BeatLeaderService from '../beatleader/beatleader.service'
 import BeatSaverService from '../external/beatsaver.service'
@@ -74,6 +84,7 @@ export class PlayerScoresService {
   public static async fetchMissingPlayerScores(
     account: ScoreSaberAccount,
     playerToken: ScoreSaberPlayerToken,
+    forceFullRefresh: boolean = false,
   ): Promise<{
     missingScores: number;
     totalScores: number;
@@ -98,7 +109,17 @@ export class PlayerScoresService {
     const playerScoresCount = await ScoreSaberScoresRepository.countByPlayerId(playerId)
 
     // The player has the correct number of scores
-    if (playerScoresCount === playerToken.scoreStats.totalPlayCount) {
+    if (!forceFullRefresh && playerScoresCount === playerToken.scoreStats.totalPlayCount) {
+      const [ latestScore ] = await db
+        .select({ hmd: scoreSaberScoresTable.hmd })
+        .from(scoreSaberScoresTable)
+        .where(eq(scoreSaberScoresTable.playerId, playerId))
+        .orderBy(desc(scoreSaberScoresTable.timestamp))
+        .limit(1)
+      if (latestScore && latestScore.hmd !== 'Unknown') {
+        await PlayerCoreService.updatePlayer(account.id, { hmd: latestScore.hmd })
+      }
+
       // Mark player as seeded
       if (!account.seededScores) {
         await PlayerCoreService.updatePlayer(account.id, { seededScores: true })
@@ -156,10 +177,10 @@ export class PlayerScoresService {
       const scoreIds = parsedScores.flatMap(entry => (entry.score ? [ entry.score.scoreId ] : []))
       const [
         existingScoreIds,
-        existingScoreRanks,
+        existingScoreStats,
       ] = await Promise.all([
         ScoreSaberScoresRepository.findExistingScoreIds(scoreIds),
-        ScoreSaberScoresRepository.findExistingScoreRanks(scoreIds),
+        ScoreSaberScoresRepository.findExistingScoreStats(scoreIds),
       ])
 
       await Promise.all(
@@ -170,13 +191,25 @@ export class PlayerScoresService {
           }
 
           if (existingScoreIds.has(score.scoreId)) {
-            // If the rank stored in the DB has drifted, patch it in-place.
-            const storedRank = existingScoreRanks.get(score.scoreId)
-            if (storedRank !== undefined && storedRank !== score.rank && score.rank > 0) {
-              await db
-                .update(scoreSaberScoresTable)
-                .set({ rank: score.rank })
-                .where(eq(scoreSaberScoresTable.scoreId, score.scoreId))
+            const stored = existingScoreStats.get(score.scoreId)
+            if (stored !== undefined) {
+              const needsUpdate =
+                (score.rank > 0 && stored.rank !== score.rank) ||
+                stored.pp !== score.pp ||
+                stored.weight !== score.weight ||
+                stored.accuracy !== score.accuracy
+
+              if (needsUpdate) {
+                await db
+                  .update(scoreSaberScoresTable)
+                  .set({
+                    rank: score.rank > 0 ? score.rank : stored.rank,
+                    pp: score.pp,
+                    weight: score.weight,
+                    accuracy: score.accuracy,
+                  })
+                  .where(eq(scoreSaberScoresTable.scoreId, score.scoreId))
+              }
             }
             return
           }
@@ -200,7 +233,7 @@ export class PlayerScoresService {
         }),
       )
 
-      if (result.totalScores >= scoresPage.metadata.total) {
+      if (!forceFullRefresh && result.totalScores >= scoresPage.metadata.total) {
         return false
       }
 
@@ -227,6 +260,16 @@ export class PlayerScoresService {
 
     for (const leaderboard of rankedLeaderboardsToRefresh.values()) {
       await PlayerMedalsService.refreshLeaderboardMedals(leaderboard)
+    }
+
+    const [ latestScore ] = await db
+      .select({ hmd: scoreSaberScoresTable.hmd })
+      .from(scoreSaberScoresTable)
+      .where(eq(scoreSaberScoresTable.playerId, playerId))
+      .orderBy(desc(scoreSaberScoresTable.timestamp))
+      .limit(1)
+    if (latestScore && latestScore.hmd !== 'Unknown') {
+      await PlayerCoreService.updatePlayer(account.id, { hmd: latestScore.hmd })
     }
 
     if (!account.seededScores) {
@@ -267,26 +310,146 @@ export class PlayerScoresService {
         leaderboardId: row.leaderboardId,
         leaderboardName: row.songName ?? '',
         leaderboardDifficulty: row.difficulty,
+        characteristic: row.characteristic,
       })),
     }
+  }
+
+  /**
+   * Gets the player's difficulty curve: accuracy/PP bucketed by star rating.
+   *
+   * @param playerId the player's id
+   */
+  public static async getPlayerDifficultyCurve(playerId: string): Promise<DifficultyCurveResponse> {
+    const rows = await ScoreSaberScoresRepository.getChartRowsByPlayer(playerId)
+    if (!rows.length) {
+      return { data: [] }
+    }
+
+    const bins = new Map<string, {
+      scores: {
+        accuracy: number;
+        pp: number
+      }[];
+      minStars: number;
+      maxStars: number;
+    }>()
+
+    for (const row of rows) {
+      const stars = row.stars ?? 0
+      const binStart = Math.floor(stars / 0.5) * 0.5
+      const binEnd = binStart + 0.5
+      const key = `${binStart.toFixed(1)}-${binEnd.toFixed(1)}`
+
+      if (!bins.has(key)) {
+        bins.set(key, {
+          scores: [],
+          minStars: stars,
+          maxStars: stars,
+        })
+      }
+      const bin = bins.get(key)!
+      bin.scores.push({
+        accuracy: row.accuracy,
+        pp: row.pp,
+      })
+      bin.minStars = Math.min(bin.minStars, stars)
+      bin.maxStars = Math.max(bin.maxStars, stars)
+    }
+
+    const data = Array.from(bins.entries())
+      .map(([ bin, { scores, minStars, maxStars } ]) => ({
+        bin,
+        minStars,
+        maxStars,
+        avgAccuracy: scores.reduce((s, x) => s + x.accuracy, 0) / scores.length,
+        avgPp: scores.reduce((s, x) => s + x.pp, 0) / scores.length,
+        maxPp: Math.max(...scores.map(s => s.pp)),
+        scoreCount: scores.length,
+      }))
+      .sort((a, b) => a.minStars - b.minStars)
+
+    return { data }
+  }
+
+  /**
+   * Gets the player's skill breakdown by characteristic and difficulty.
+   *
+   * @param playerId the player's id
+   */
+  public static async getPlayerSkillBreakdown(playerId: string): Promise<SkillBreakdownResponse> {
+    const rows = await ScoreSaberScoresRepository.getChartRowsByPlayer(playerId)
+    if (!rows.length) {
+      return { data: [] }
+    }
+
+    const groups = new Map<string, {
+      characteristic: string;
+      difficulty: string;
+      scores: {
+        accuracy: number;
+        pp: number;
+        stars: number
+      }[];
+    }>()
+
+    for (const row of rows) {
+      const characteristic = row.characteristic ?? 'Standard'
+      const key = `${characteristic}|${row.difficulty}`
+      if (!groups.has(key)) {
+        groups.set(key, {
+          characteristic,
+          difficulty: row.difficulty,
+          scores: [],
+        })
+      }
+      groups.get(key)!.scores.push({
+        accuracy: row.accuracy,
+        pp: row.pp,
+        stars: row.stars ?? 0,
+      })
+    }
+
+    const data = Array.from(groups.values())
+      .map(g => ({
+        characteristic: g.characteristic,
+        difficulty: g.difficulty,
+        label: `${g.characteristic} ${g.difficulty}`,
+        scoreCount: g.scores.length,
+        totalPp: g.scores.reduce((s, x) => s + x.pp, 0),
+        avgAccuracy: g.scores.reduce((s, x) => s + x.accuracy, 0) / g.scores.length,
+        avgStars: g.scores.reduce((s, x) => s + x.stars, 0) / g.scores.length,
+      }))
+      .sort((a, b) => b.totalPp - a.totalPp)
+
+    return { data }
   }
 
   /**
    * Gets a score by its ID.
    *
    * @param scoreId the id of the score
-   * @returns the score
    */
   public static async getScore(scoreId: number): Promise<PlayerScore<ScoreSaberScore>> {
-    const scoreRow = await ScoreSaberScoresRepository.findRowByScoreId(scoreId)
+    let scoreRow = await ScoreSaberScoresRepository.findRowByScoreId(scoreId)
+    let isHistorical = false
+
+    // If not found in the main scores table, check the history table
     if (!scoreRow) {
-      throw new NotFoundError('Score not found')
+      const historyRow = await ScoreSaberScoreHistoryRepository.findRowByScoreId(scoreId)
+      if (!historyRow) {
+        throw new NotFoundError('Score not found')
+      }
+      scoreRow = historyRow
+      isHistorical = true
     }
 
     const leaderboard = await ScoreSaberLeaderboardsService.getLeaderboard(scoreRow.leaderboardId)
     const [
       score,
       beatSaver,
+      allPlayerScores,
+      currentScore,
     ] = await Promise.all([
       ScoreCoreService.insertScoreData(scoreSaberScoreRowToType(scoreRow), leaderboard),
       BeatSaverService.getMap(
@@ -294,11 +457,30 @@ export class PlayerScoresService {
         leaderboard.difficulty.difficulty,
         leaderboard.difficulty.characteristic,
       ),
+      // Fetch all scores for this player+leaderboard combo for the version switcher
+      ScoreSaberScoreHistoryRepository.getCombinedScoresForPlayerMap(
+        scoreRow.playerId,
+        scoreRow.leaderboardId,
+      ),
+      // Get the current score on the leaderboard (if any)
+      ScoreSaberScoresRepository.findByPlayerAndLeaderboard(
+        scoreRow.playerId,
+        scoreRow.leaderboardId,
+      ),
     ])
     return {
       score,
       leaderboard,
       beatSaver,
+      isHistorical,
+      allPlayerScores: allPlayerScores.map(s => ({
+        scoreId: s.scoreId,
+        score: s.score,
+        accuracy: s.accuracy,
+        pp: s.pp,
+        timestamp: s.timestamp,
+        isCurrent: currentScore?.scoreId === s.scoreId,
+      })),
     }
   }
 
@@ -311,11 +493,12 @@ export class PlayerScoresService {
     sort: string,
     search?: string,
   ): Promise<PlayerScoresPageResponse> {
+    const normalizedSearch = search ? normalizeSearchQuery(search) : search
     const requestedPage = await ScoreSaberApiService.lookupPlayerScores({
       playerId,
       page: pageNumber,
       sort: sort as ScoreSaberScoreSort,
-      search,
+      search: normalizedSearch,
     })
 
     if (!requestedPage) {
@@ -495,6 +678,20 @@ export class PlayerScoresService {
           conditions.push(eq(scoreSaberScoresTable.hmd, hmd))
         }
 
+        if (query.accBadge) {
+          try {
+            const badge = getScoreBadgeFromName(query.accBadge)
+            if (badge.min !== null) {
+              conditions.push(gte(scoreSaberScoresTable.accuracy, badge.min))
+            }
+            if (badge.max !== null) {
+              conditions.push(lt(scoreSaberScoresTable.accuracy, badge.max))
+            }
+          } catch (_) {
+            // Ignore invalid badge names
+          }
+        }
+
         return conditions
       },
 
@@ -576,6 +773,20 @@ export class PlayerScoresService {
         }
         if (hmd) {
           conditions.push(eq(scoreSaberScoresTable.hmd, hmd))
+        }
+
+        if (query.accBadge) {
+          try {
+            const badge = getScoreBadgeFromName(query.accBadge)
+            if (badge.min !== null) {
+              conditions.push(gte(scoreSaberScoresTable.accuracy, badge.min))
+            }
+            if (badge.max !== null) {
+              conditions.push(lt(scoreSaberScoresTable.accuracy, badge.max))
+            }
+          } catch (_) {
+            // Ignore invalid badge names
+          }
         }
 
         return conditions

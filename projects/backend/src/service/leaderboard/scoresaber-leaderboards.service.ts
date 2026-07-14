@@ -257,7 +257,7 @@ export class ScoreSaberLeaderboardsService {
     }
 
     const request = await Request.get<ArrayBuffer>(
-      `https://${env.NEXT_PUBLIC_SCORESABER_DOMAIN}/covers/${leaderboard.songHash}.png`,
+      `https://cdn.${env.NEXT_PUBLIC_SCORESABER_DOMAIN}/covers/${leaderboard.songHash}.png`,
       {
         returns: 'arraybuffer',
       },

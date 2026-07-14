@@ -9,6 +9,7 @@ import { ScoreSaberLeaderboardsRepository } from '../../repositories/scoresaber-
 import { ScoreSaberApiService } from '../external/scoresaber-api.service'
 import { PlayerMedalsService } from '../medals/player-medals.service'
 import { PlayerScoreHistoryService } from '../player/player-score-history.service'
+import { MapParityService } from './map-parity.service'
 
 export type LeaderboardUpdate = {
   previousLeaderboard?: Pick<ScoreSaberLeaderboard, 'ranked' | 'qualified' | 'stars'>;
@@ -70,12 +71,14 @@ export class LeaderboardRankedSyncService {
           newLeaderboard: apiLeaderboard,
         })
 
-        // Stars count has changed
-        if (dbLeaderboard && dbLeaderboard.stars !== apiLeaderboard.stars) {
-          await PlayerScoreHistoryService.reweightHistoryScoresForLeaderboard(apiLeaderboard)
+        const previousStars = dbLeaderboard?.stars ?? 0
+        if (previousStars !== apiLeaderboard.stars) {
+          if (dbLeaderboard) {
+            await PlayerScoreHistoryService.reweightHistoryScoresForLeaderboard(apiLeaderboard)
+          }
           await ScoreSaberLeaderboardStarChangeRepository.insertRow({
             leaderboardId: apiLeaderboard.id,
-            previousStars: dbLeaderboard.stars ?? 0,
+            previousStars,
             newStars: apiLeaderboard.stars,
             timestamp: new Date(),
           })
@@ -113,6 +116,10 @@ export class LeaderboardRankedSyncService {
           .setDescription(`Updated ${leaderboardsToUpsert.length} leaderboards in ${duration}`)
           .setColor('#00ff00'),
       )
+
+      MapParityService.populateDuckwallsForLeaderboards(leaderboardsToUpsert).catch(err => {
+        LeaderboardRankedSyncService.logger.error('Failed to populate duckwalls', err)
+      })
     }
 
     const medalRefreshSeen = new Set<number>()

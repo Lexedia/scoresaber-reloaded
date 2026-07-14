@@ -261,7 +261,7 @@ function FormFieldComponent<TFormValues extends FieldValues, TName extends Path<
 
   if (hasCustomControl && field.type === 'select' && field.customControl) {
     const CustomControl = field.customControl
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     const { ref: _unusedFieldRef, ...fieldForCustom } = formField
     return (
       <FormItem className="space-y-0 py-4">

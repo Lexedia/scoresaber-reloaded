@@ -4,42 +4,64 @@ import SimpleTooltip from '@/components/simple-tooltip'
 import { Spinner } from '@/components/spinner'
 import { Slider } from '@/components/ui/slider'
 import ScoreSaberPlayer from '@ssr/common/player/impl/scoresaber-player'
+import { formatPp } from '@ssr/common/utils/number-utils'
 import { ssrApi } from '@ssr/common/utils/ssr-api'
 import { useQuery } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 
-const GYP_L = 57.74
-const VIEWBOX_WIDTH = 100
-const VIEWBOX_HEIGHT = 86.6
 
-const DEFAULT_MAX_PASS = 14 // star rating
-const DEFAULT_MAX_ACC = 97 // accuracy %
-const DEFAULT_MAX_TECH = 0.5 // pp efficiency ratio
+const VW = 100
+const VH = 86.6
 
-interface SkillMetrics {
-  pass: number;
-  acc: number;
-  tech: number;
+const OUTER_TECH = {
+  x: 0,
+  y: 0,
+}
+
+const OUTER_ACC = {
+  x: VW,
+  y: 0,
+}
+
+const OUTER_PASS = {
+  x: VW / 2,
+  y: VH,
+}
+
+const CENTER = {
+  x: (OUTER_TECH.x + OUTER_ACC.x + OUTER_PASS.x) / 3,
+  y: (OUTER_TECH.y + OUTER_ACC.y + OUTER_PASS.y) / 3,
+}
+
+const MAX_STARS = 14
+const MAX_TECH_EFFICIENCY = 0.5
+
+interface SkillPP {
+  techPP: number
+  accPP: number
+  passPP: number
+  totalPP: number
 }
 
 interface TimelineEntry {
-  label: string;
-  timestamp: number;
-  metrics: SkillMetrics;
-  scoreCount: number;
+  label: string
+  timestamp: number
+  skillPP: SkillPP
+  scoreCount: number
 }
 
-const monthFormatter = new Intl.DateTimeFormat('en-GB', {
+const monthFormatter = new Intl.DateTimeFormat(undefined, {
   year: 'numeric',
   month: 'long',
   timeZone: 'UTC',
 })
 
-function computeSkillMetrics(scores: {
+
+function computeSkillPP(scores: {
   stars: number;
   accuracy: number;
   pp: number
-}[]): SkillMetrics | null {
+}[]): SkillPP | null {
   const ranked = scores.filter(s => s.stars > 0 && s.pp > 0 && s.accuracy > 0)
   if (ranked.length === 0) {
     return null
@@ -48,35 +70,45 @@ function computeSkillMetrics(scores: {
   const sorted = ranked.toSorted((a, b) => b.pp - a.pp)
   const topN = sorted.slice(0, 100)
 
-  let totalWeight = 0
-  let weightedStars = 0
-  let weightedAcc = 0
-  let weightedTech = 0
+  let techPP = 0
+  let accPP = 0
+  let passPP = 0
+  let totalPP = 0
 
   for (let i = 0; i < topN.length; i++) {
     const score = topN[i]
     const weight = Math.pow(0.965, i)
-    totalWeight += weight
-    weightedStars += score.stars * weight
-    weightedAcc += score.accuracy * weight
-    weightedTech += (score.pp / (score.stars * score.accuracy)) * weight
+    const weightedPP = score.pp * weight
+
+    const rawPass = Math.min(score.stars / MAX_STARS, 1)
+    const rawAcc = score.accuracy / 100
+    const rawTech = Math.min(score.pp / (score.stars * score.accuracy) / MAX_TECH_EFFICIENCY, 1)
+
+    const rawTotal = rawPass + rawAcc + rawTech
+    if (rawTotal === 0) {
+      continue
+    }
+
+    techPP += weightedPP * (rawTech / rawTotal)
+    accPP += weightedPP * (rawAcc / rawTotal)
+    passPP += weightedPP * (rawPass / rawTotal)
+    totalPP += weightedPP
   }
 
   return {
-    pass: weightedStars / totalWeight,
-    acc: weightedAcc / totalWeight,
-    tech: weightedTech / totalWeight,
+    techPP,
+    accPP,
+    passPP,
+    totalPP,
   }
 }
 
-function buildTimeline(
-  scores: {
-    stars: number;
-    accuracy: number;
-    pp: number;
-    timestamp: Date
-  }[],
-): TimelineEntry[] {
+function buildTimeline(scores: {
+  stars: number
+  accuracy: number
+  pp: number
+  timestamp: Date
+}[]): TimelineEntry[] {
   if (scores.length === 0) {
     return []
   }
@@ -97,15 +129,14 @@ function buildTimeline(
 
   while (current <= endMonth) {
     const monthEnd = new Date(Date.UTC(current.getUTCFullYear(), current.getUTCMonth() + 1, 0))
-
     const cumulativeScores = sorted.filter(s => new Date(s.timestamp).getTime() <= monthEnd.getTime())
+    const skillPP = computeSkillPP(cumulativeScores)
 
-    const metrics = computeSkillMetrics(cumulativeScores)
-    if (metrics) {
+    if (skillPP) {
       entries.push({
         label: monthFormatter.format(current),
         timestamp: monthEnd.getTime(),
-        metrics,
+        skillPP,
         scoreCount: cumulativeScores.filter(s => s.stars > 0 && s.pp > 0).length,
       })
     }
@@ -116,144 +147,148 @@ function buildTimeline(
   return entries
 }
 
-function normalizeMetrics(metrics: SkillMetrics) {
-  const passScale = metrics.pass > DEFAULT_MAX_PASS ? metrics.pass / DEFAULT_MAX_PASS : 1
-  const accScale = metrics.acc > DEFAULT_MAX_ACC ? metrics.acc / DEFAULT_MAX_ACC : 1
-  const techScale = metrics.tech > DEFAULT_MAX_TECH ? metrics.tech / DEFAULT_MAX_TECH : 1
-  const triangleScale = Math.max(passScale, accScale, techScale)
+function lerp(a: number, b: number, t: number) {
+  return a + (t * (b - a))
+}
 
-  const maxPass = DEFAULT_MAX_PASS * triangleScale
-  const maxAcc = DEFAULT_MAX_ACC * triangleScale
-  const maxTech = DEFAULT_MAX_TECH * triangleScale
-
-  const nPass = Math.min(metrics.pass / maxPass, 1)
-  const nAcc = Math.min(metrics.acc / maxAcc, 1)
-  const nTech = Math.min(metrics.tech / maxTech, 1)
-
-  const totalNormalized = (metrics.pass * (maxAcc / maxPass)) + metrics.acc + (metrics.tech * (maxAcc / maxTech))
+function computeInnerCorners(techPct: number, accPct: number, passPct: number) {
+  const t = Math.min(techPct, 1)
+  const a = Math.min(accPct, 1)
+  const p = Math.min(passPct, 1)
 
   return {
-    normalizedPass: nPass,
-    normalizedAcc: nAcc,
-    normalizedTech: nTech,
-    passPart: totalNormalized > 0 ? ((metrics.pass * (maxAcc / maxPass)) / totalNormalized) * 100 : 0,
-    accPart: totalNormalized > 0 ? (metrics.acc / totalNormalized) * 100 : 0,
-    techPart: totalNormalized > 0 ? ((metrics.tech * (maxAcc / maxTech)) / totalNormalized) * 100 : 0,
+    tech: {
+      x: lerp(CENTER.x, OUTER_TECH.x, t),
+      y: lerp(CENTER.y, OUTER_TECH.y, t),
+    },
+    acc: {
+      x: lerp(CENTER.x, OUTER_ACC.x, a),
+      y: lerp(CENTER.y, OUTER_ACC.y, a),
+    },
+    pass: {
+      x: lerp(CENTER.x, OUTER_PASS.x, p),
+      y: lerp(CENTER.y, OUTER_PASS.y, p),
+    },
   }
 }
 
-function cornerOffset(normalized: number) {
-  return GYP_L - (normalized * GYP_L)
-}
-
-function cornerX(offset: number) {
-  return offset * 0.866
-}
-
-function cornerY(offset: number) {
-  return VIEWBOX_HEIGHT - (offset / 2)
-}
-
-function computeTriangleCorners(normalizedPass: number, normalizedAcc: number, normalizedTech: number) {
-  const techOffset = cornerOffset(normalizedTech)
-  const accOffset = cornerOffset(normalizedAcc)
-
-  const corner1 = {
-    x: cornerX(techOffset),
-    y: cornerY(techOffset),
-  }
-  const corner2 = {
-    x: VIEWBOX_WIDTH - cornerX(accOffset),
-    y: cornerY(accOffset),
-  }
-  const corner3 = {
-    x: 50,
-    y: (VIEWBOX_HEIGHT - (GYP_L / 2)) * (1 - normalizedPass),
-  }
-
-  return {
-    corner1,
-    corner2,
-    corner3,
-  }
-}
-
-function TriangleSVG({
-  normalizedPass,
-  normalizedAcc,
-  normalizedTech,
-}: {
-  normalizedPass: number;
-  normalizedAcc: number;
-  normalizedTech: number;
+function TriangleSVG({ techPct, accPct, passPct }: {
+  techPct: number;
+  accPct: number;
+  passPct: number
 }) {
-  const { corner1, corner2, corner3 } = computeTriangleCorners(normalizedPass, normalizedAcc, normalizedTech)
+  const { tech, acc, pass } = computeInnerCorners(techPct, accPct, passPct)
+
+  const outerPath = `M ${OUTER_TECH.x},${OUTER_TECH.y} L ${OUTER_ACC.x},${OUTER_ACC.y} ${OUTER_PASS.x},${OUTER_PASS.y} Z`
+  const innerPath = `M ${tech.x},${tech.y} L ${acc.x},${acc.y} ${pass.x},${pass.y} Z`
+  const clipId = 'skillInnerClip'
 
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width="100%"
       height="100%"
-      viewBox={`0 0 ${VIEWBOX_WIDTH} ${VIEWBOX_HEIGHT}`}
-      className="max-h-[300px] max-w-[300px]"
+      viewBox={`0 0 ${VW} ${VH}`}
+      className="max-h-[280px] max-w-[280px]"
     >
-      <g transform={`matrix(1 0 0 -1 0 ${VIEWBOX_HEIGHT})`}>
-        <defs>
-          <linearGradient
-            id="fadeA"
-            gradientUnits="userSpaceOnUse"
-            x1={corner1.x}
-            y1={corner1.y}
-            x2={(corner2.x + corner3.x) / 2}
-            y2={(corner2.y + corner3.y) / 2}
-          >
-            <stop offset="0%" stopColor={`rgba(255, 0, 0, ${normalizedTech})`} />
-            <stop offset="100%" stopColor={`rgba(255, 0, 0, ${normalizedTech * 0.25})`} />
-          </linearGradient>
-          <linearGradient
-            id="fadeB"
-            gradientUnits="userSpaceOnUse"
-            x1={corner3.x}
-            y1={corner3.y}
-            x2={(corner1.x + corner2.x) / 2}
-            y2={(corner1.y + corner2.y) / 2}
-          >
-            <stop offset="0%" stopColor={`rgba(0, 255, 0, ${normalizedPass})`} />
-            <stop offset="100%" stopColor={`rgba(0, 255, 0, ${normalizedPass * 0.25})`} />
-          </linearGradient>
-          <linearGradient
-            id="fadeC"
-            gradientUnits="userSpaceOnUse"
-            x1={corner2.x}
-            y1={corner2.y}
-            x2={(corner3.x + corner1.x) / 2}
-            y2={(corner1.y + corner3.y) / 2}
-          >
-            <stop offset="0%" stopColor={`rgba(0, 100, 255, ${normalizedAcc})`} />
-            <stop offset="100%" stopColor={`rgba(0, 100, 255, ${normalizedAcc * 0.25})`} />
-          </linearGradient>
-        </defs>
+      <defs>
+        <radialGradient
+          id="gTech"
+          gradientUnits="userSpaceOnUse"
+          cx={OUTER_TECH.x}
+          cy={OUTER_TECH.y}
+          r={VW}
+        >
+          <stop offset="0%" stopColor={`rgba(255, 60, 60, ${0.6 + (techPct * 0.4)})`} />
+          <stop offset="60%" stopColor="rgba(255, 60, 60, 0)" />
+        </radialGradient>
+        <radialGradient
+          id="gAcc"
+          gradientUnits="userSpaceOnUse"
+          cx={OUTER_ACC.x}
+          cy={OUTER_ACC.y}
+          r={VW}
+        >
+          <stop offset="0%" stopColor={`rgba(60, 120, 255, ${0.6 + (accPct * 0.4)})`} />
+          <stop offset="60%" stopColor="rgba(60, 120, 255, 0)" />
+        </radialGradient>
+        <radialGradient
+          id="gPass"
+          gradientUnits="userSpaceOnUse"
+          cx={OUTER_PASS.x}
+          cy={OUTER_PASS.y}
+          r={VW}
+        >
+          <stop offset="0%" stopColor={`rgba(60, 210, 60, ${0.6 + (passPct * 0.4)})`} />
+          <stop offset="60%" stopColor="rgba(60, 210, 60, 0)" />
+        </radialGradient>
+        <clipPath id={clipId}>
+          <path d={innerPath} />
+        </clipPath>
+      </defs>
 
-        <g stroke="rgba(255,255,255,0.3)" strokeWidth="0.5">
-          <path
-            d={`M ${corner3.x},${corner3.y} L ${corner1.x},${corner1.y} ${corner2.x},${corner2.y} Z`}
-            fill="url(#fadeA)"
-          />
-          <path
-            d={`M ${corner3.x},${corner3.y} L ${corner1.x},${corner1.y} ${corner2.x},${corner2.y} Z`}
-            fill="url(#fadeB)"
-          />
-          <path
-            d={`M ${corner3.x},${corner3.y} L ${corner1.x},${corner1.y} ${corner2.x},${corner2.y} Z`}
-            fill="url(#fadeC)"
-          />
-        </g>
+      <line
+        x1={CENTER.x} y1={CENTER.y}
+        x2={OUTER_TECH.x} y2={OUTER_TECH.y}
+        stroke="rgba(255,255,255,0.12)" strokeWidth="0.5"
+      />
+      <line
+        x1={CENTER.x} y1={CENTER.y}
+        x2={OUTER_ACC.x} y2={OUTER_ACC.y}
+        stroke="rgba(255,255,255,0.12)" strokeWidth="0.5"
+      />
+      <line
+        x1={CENTER.x} y1={CENTER.y}
+        x2={OUTER_PASS.x} y2={OUTER_PASS.y}
+        stroke="rgba(255,255,255,0.12)" strokeWidth="0.5"
+      />
 
-        <g stroke="rgba(255,255,255,0.5)" fill="none" strokeWidth="2" strokeDasharray="4">
-          <path d={`M 50,0 L 0,${VIEWBOX_HEIGHT} ${VIEWBOX_WIDTH},${VIEWBOX_HEIGHT} Z`} />
-        </g>
+      <path
+        d={outerPath}
+        fill="none"
+        stroke="rgba(255,255,255,0.3)"
+        strokeWidth="1"
+        strokeDasharray="4 2"
+      />
+
+      <g clipPath={`url(#${clipId})`}>
+        <path d={innerPath} fill="rgba(255,255,255,0.06)" />
+        <path d={innerPath} fill="url(#gTech)" />
+        <path d={innerPath} fill="url(#gAcc)" />
+        <path d={innerPath} fill="url(#gPass)" />
       </g>
+
+      <path
+        d={innerPath}
+        fill="none"
+        stroke="rgba(255,255,255,0.55)"
+        strokeWidth="0.75"
+        strokeLinejoin="round"
+      />
     </svg>
+  )
+}
+
+function SkillBar({ techPct, accPct, passPct }: {
+  techPct: number;
+  accPct: number;
+  passPct: number
+}) {
+  return (
+    <div className="mt-1 flex h-1.5 w-full overflow-hidden rounded-full">
+      <div
+        className="h-full bg-red-400 transition-all duration-500"
+        style={{ width: `${techPct * 100}%` }}
+      />
+      <div
+        className="h-full bg-blue-400 transition-all duration-500"
+        style={{ width: `${accPct * 100}%` }}
+      />
+      <div
+        className="h-full bg-green-400 transition-all duration-500"
+        style={{ width: `${passPct * 100}%` }}
+      />
+    </div>
   )
 }
 
@@ -262,9 +297,9 @@ function TimelineSlider({
   selectedIndex,
   onSelect,
 }: {
-  timeline: TimelineEntry[];
-  selectedIndex: number;
-  onSelect: (index: number) => void;
+  timeline: TimelineEntry[]
+  selectedIndex: number
+  onSelect: (index: number) => void
 }) {
   if (timeline.length <= 1) {
     return null
@@ -282,22 +317,30 @@ function TimelineSlider({
         className="w-full"
       />
       <div className="scrollbar-none max-h-[min(42vh,220px)] overflow-y-auto overscroll-contain md:max-h-[280px]">
-        <div className="flex flex-col gap-0.5 md:gap-0.5">
+        <div className="flex flex-col gap-0.5">
           {[ ...timeline ].reverse().map((entry, reverseIdx) => {
             const idx = timeline.length - 1 - reverseIdx
             const isSelected = idx === selectedIndex
+            const {
+              totalPP, techPP, accPP, passPP,
+            } = entry.skillPP
+            const techPct = totalPP > 0 ? techPP / totalPP : 0
+            const accPct = totalPP > 0 ? accPP / totalPP : 0
+            const passPct = totalPP > 0 ? passPP / totalPP : 0
+
             return (
               <button
                 type="button"
                 key={entry.timestamp}
                 onClick={() => onSelect(idx)}
-                className={`cursor-pointer touch-manipulation rounded-md px-3 py-2.5 text-left text-sm transition-colors md:px-2 md:py-0.5 md:text-xs ${
+                className={`cursor-pointer touch-manipulation rounded-md px-3 py-2 text-left text-sm transition-colors md:px-2 md:py-1 md:text-xs ${
                   isSelected
                     ? 'bg-primary/20 text-primary font-semibold'
-                    : 'text-muted-foreground active:bg-muted/70 hover:text-foreground hover:bg-muted/50'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                 }`}
               >
                 {idx === timeline.length - 1 ? 'Today' : entry.label}
+                <SkillBar techPct={techPct} accPct={accPct} passPct={passPct} />
               </button>
             )
           })}
@@ -333,23 +376,11 @@ export default function SkillTriangleChart({ player }: { player: ScoreSaberPlaye
 
   const activeIndex = selectedIndex ?? (timeline.length > 0 ? timeline.length - 1 : 0)
   const activeEntry = timeline[activeIndex]
-  const metrics = activeEntry?.metrics ?? null
+  const skillPP = activeEntry?.skillPP ?? null
 
-  const {
-    normalizedPass, normalizedAcc, normalizedTech, passPart, accPart, techPart,
-  } = useMemo(() => {
-    if (!metrics) {
-      return {
-        normalizedPass: 0,
-        normalizedAcc: 0,
-        normalizedTech: 0,
-        passPart: 0,
-        accPart: 0,
-        techPart: 0,
-      }
-    }
-    return normalizeMetrics(metrics)
-  }, [ metrics ])
+  const techPct = skillPP && skillPP.totalPP > 0 ? skillPP.techPP / skillPP.totalPP : 0
+  const accPct = skillPP && skillPP.totalPP > 0 ? skillPP.accPP / skillPP.totalPP : 0
+  const passPct = skillPP && skillPP.totalPP > 0 ? skillPP.passPP / skillPP.totalPP : 0
 
   if (isLoading) {
     return (
@@ -362,7 +393,7 @@ export default function SkillTriangleChart({ player }: { player: ScoreSaberPlaye
     )
   }
 
-  if (!metrics) {
+  if (!skillPP) {
     return (
       <div className="flex min-h-[min(50vh,400px)] items-center justify-center px-4 py-8">
         <p className="text-muted-foreground text-center text-sm">
@@ -373,82 +404,71 @@ export default function SkillTriangleChart({ player }: { player: ScoreSaberPlaye
   }
 
   return (
-    <div
-      className="flex flex-col items-center justify-center gap-4 overflow-visible px-3 pt-3
-      pb-[max(0.75rem,env(safe-area-inset-bottom))] md:gap-6 md:p-6 md:pb-6">
+    <div className="flex flex-col items-center justify-center gap-4 overflow-visible px-3 pt-3
+                      pb-[max(0.75rem,env(safe-area-inset-bottom))] md:gap-6 md:p-6 md:pb-6">
       <div className="flex w-full max-w-lg flex-col-reverse items-stretch gap-6 overflow-visible
-       md:max-w-none md:flex-row md:items-center md:justify-center md:gap-10">
+                        md:max-w-none md:flex-row md:items-center md:justify-center md:gap-10">
         {timeline.length > 1 && (
-          <TimelineSlider timeline={timeline} selectedIndex={activeIndex} onSelect={setSelectedIndex} />
+          <TimelineSlider
+            timeline={timeline}
+            selectedIndex={activeIndex}
+            onSelect={setSelectedIndex}
+          />
         )}
 
-        <div className="relative mx-auto w-full max-w-[min(100%,320px)] overflow-visible px-1 pt-8 pb-8 md:pt-9 md:pb-9">
-          <div className="relative flex w-full items-center justify-center">
-            <div className="absolute -top-1 left-0 z-10 flex max-w-[42%] -translate-y-full flex-col
-            items-start gap-0.5 sm:max-w-none md:-left-4 md:items-center">
-              <SimpleTooltip
-                display={
-                  <p>
-                    Tech skill ratio (higher means the player extracts more PP relative to map difficulty and
-                    accuracy)
-                  </p>
-                }
-                side="top"
-                showOnMobile
-              >
-                <div className="flex flex-col items-start gap-0.5 md:items-center">
-                  <span className="text-xs font-semibold text-red-400 sm:text-sm">
-                    Tech: {metrics.tech.toFixed(4)}
-                  </span>
-                  <span className="text-[10px] text-yellow-400 sm:text-xs">({techPart.toFixed(1)}%)</span>
-                </div>
-              </SimpleTooltip>
-            </div>
+        <div className="relative mx-auto w-full max-w-[min(100%,340px)] overflow-visible pt-12 pb-12">
+          <div className="absolute top-0 left-0 flex flex-col items-start">
+            <SimpleTooltip
+              display={<p>PP from high-efficiency plays — extracting more PP per unit of difficulty</p>}
+              side="top"
+              showOnMobile
+            >
+              <div className="flex flex-col items-start gap-0">
+                <span className="text-xs font-semibold text-red-400 sm:text-sm">
+                  Tech: {formatPp(skillPP.techPP)}pp
+                </span>
+                <span className="text-[10px] text-yellow-400 sm:text-xs">({(techPct * 100).toFixed(2)}%)</span>
+              </div>
+            </SimpleTooltip>
+          </div>
 
-            <div className="absolute -top-1 right-0 z-10 flex max-w-[42%] -translate-y-full flex-col
-            items-end gap-0.5 sm:max-w-none md:-right-4 md:items-center">
-              <SimpleTooltip
-                display={<p>Weighted average accuracy across top ranked scores</p>}
-                side="top"
-                showOnMobile
-              >
-                <div className="flex flex-col items-end gap-0.5 md:items-center">
-                  <span className="text-xs font-semibold text-blue-400 sm:text-sm">
-                    Acc: {metrics.acc.toFixed(2)}%
-                  </span>
-                  <span className="text-[10px] text-yellow-400 sm:text-xs">({accPart.toFixed(1)}%)</span>
-                </div>
-              </SimpleTooltip>
-            </div>
+          <div className="absolute top-0 right-0 flex flex-col items-end">
+            <SimpleTooltip
+              display={<p>PP from high-accuracy plays — scoring closer to the maximum on each map</p>}
+              side="top"
+              showOnMobile
+            >
+              <div className="flex flex-col items-end gap-0">
+                <span className="text-xs font-semibold text-blue-400 sm:text-sm">
+                  Acc: {formatPp(skillPP.accPP)}pp
+                </span>
+                <span className="text-[10px] text-yellow-400 sm:text-xs">({(accPct * 100).toFixed(2)}%)</span>
+              </div>
+            </SimpleTooltip>
+          </div>
 
-            <div className="absolute -bottom-1 left-1/2 z-10 flex max-w-[90%] -translate-x-1/2 translate-y-full flex-col items-center gap-0.5 px-1 text-center">
-              <SimpleTooltip
-                display={<p>Weighted average star rating (higher means the player passes harder maps)</p>}
-                side="bottom"
-                showOnMobile
-              >
-                <div className="flex flex-col items-center gap-0.5">
-                  <span className="text-xs font-semibold text-green-400 sm:text-sm">
-                    Pass: {metrics.pass.toFixed(1)}
-                    {'\u2009'}★
-                  </span>
-                  <span className="text-[10px] text-yellow-400 sm:text-xs">({passPart.toFixed(1)}%)</span>
-                </div>
-              </SimpleTooltip>
-            </div>
+          <div className="mx-auto aspect-square w-full max-w-[220px] transition-all duration-500 sm:max-w-[240px] md:h-[280px] md:w-[280px] md:max-w-[280px]">
+            <TriangleSVG techPct={techPct} accPct={accPct} passPct={passPct} />
+          </div>
 
-            <div className="mx-auto aspect-square w-full max-w-[220px] transition-all duration-500 sm:max-w-[240px] md:h-[280px] md:w-[280px] md:max-w-[280px]">
-              <TriangleSVG
-                normalizedPass={normalizedPass}
-                normalizedAcc={normalizedAcc}
-                normalizedTech={normalizedTech}
-              />
-            </div>
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex flex-col items-center">
+            <SimpleTooltip
+              display={<p>PP from passing harder, higher star-rated maps</p>}
+              side="bottom"
+              showOnMobile
+            >
+              <div className="flex flex-col items-center gap-0">
+                <span className="text-xs font-semibold text-green-400 sm:text-sm">
+                  Pass: {formatPp(skillPP.passPP)}pp
+                </span>
+                <span className="text-[10px] text-yellow-400 sm:text-xs">({(passPct * 100).toFixed(2)}%)</span>
+              </div>
+            </SimpleTooltip>
           </div>
         </div>
       </div>
 
-      <div className="text-muted-foreground mt-5 w-full text-center text-xs md:mt-8">
+      <div className="text-muted-foreground mt-2 w-full text-center text-xs md:mt-4">
         Based on top {Math.min(100, activeEntry?.scoreCount ?? 0)} ranked scores
         {activeIndex !== timeline.length - 1 && activeEntry ? ` as of ${activeEntry.label}` : ''}
       </div>

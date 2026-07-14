@@ -39,6 +39,41 @@ function playerMapFilters(playerId: string, leaderboardId: number) {
 
 export class ScoreSaberScoreHistoryRepository {
   /**
+   * Finds a row in the history table by scoreId.
+   *
+   * @param scoreId the score id to look up
+   * @returns the row if found
+   */
+  public static async findRowByScoreId(scoreId: number): Promise<ScoreSaberScoreHistoryRow | undefined> {
+    const [ row ] = await db
+      .select()
+      .from(scoreSaberScoreHistoryTable)
+      .where(eq(scoreSaberScoreHistoryTable.scoreId, scoreId))
+    return row
+  }
+
+  /**
+   * Gets all combined scores (current + history) for a player on a leaderboard, unordered.
+   *
+   * @param playerId the player id
+   * @param leaderboardId the leaderboard id
+   * @returns all scores
+   */
+  public static async getCombinedScoresForPlayerMap(
+    playerId: string,
+    leaderboardId: number,
+  ): Promise<ScoreSaberScoreRow[]> {
+    const { onScores, onHistory } = playerMapFilters(playerId, leaderboardId)
+    const fullRowsUnion = unionAll(
+      db.select(scoreCols).from(scoreSaberScoresTable).where(onScores),
+      db.select(histAsScoreCols).from(scoreSaberScoreHistoryTable).where(onHistory),
+    )
+    const combined = fullRowsUnion.as('combined')
+    const rawScores = await db.select().from(combined).orderBy(desc(sql`"timestamp"`))
+    return rawScores as ScoreSaberScoreRow[]
+  }
+
+  /**
    * Inserts a snapshot of a score into the history table.
    *
    * @param previous the previous score to snapshot

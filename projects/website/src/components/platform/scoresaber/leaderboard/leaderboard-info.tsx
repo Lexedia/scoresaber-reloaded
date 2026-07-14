@@ -3,6 +3,7 @@
 import Card from '@/components/card'
 import FallbackLink from '@/components/fallback-link'
 import LeaderboardButtons from '@/components/platform/scoresaber/leaderboard/leaderboard-buttons'
+import { Tooltip } from '@/components/ui/tooltip'
 import { env } from '@ssr/common/env'
 import { LeaderboardStarChange } from '@ssr/common/schemas/leaderboard/leaderboard-star-change'
 import { LeaderboardResponse } from '@ssr/common/schemas/response/leaderboard/leaderboard'
@@ -72,7 +73,7 @@ export function LeaderboardInfo({ leaderboard, starChangeHistory }: LeaderboardI
 
           {/* Created At */}
           <p className="text-muted-foreground text-sm">
-            Created {formatDate(leaderboardData.timestamp, 'Do MMMM, YYYY HH:mm a')}
+            Created {formatDate(leaderboardData.timestamp, 'Do MMMM, YYYY HH:mm')}
           </p>
         </div>
       </div>
@@ -99,15 +100,39 @@ export function LeaderboardInfo({ leaderboard, starChangeHistory }: LeaderboardI
       </div>
 
       <div className="flex w-full flex-col gap-4">
-        {/* BeatSaver Info */}
         {beatsaver && (
           <div className="flex w-full flex-wrap justify-center gap-2">
-            <StatValue name="NJS" value={formatNumber(beatsaver.difficulty.njs, 'number')} />
-            <StatValue name="BPM" value={formatNumber(beatsaver.metadata.bpm, 'number')} />
-            <StatValue name="NPS" value={beatsaver.difficulty.nps.toFixed(2)} />
-            <StatValue name="Notes" value={formatNumberWithCommas(beatsaver.difficulty.notes)} />
-            <StatValue name="Bombs" value={formatNumberWithCommas(beatsaver.difficulty.bombs)} />
-            <StatValue name="Obstacles" value={formatNumberWithCommas(beatsaver.difficulty.obstacles)} />
+            <Tooltip content="Note Jump Speed: The speed at which the notes approach the player.">
+              <StatValue name="NJS" value={formatNumber(beatsaver.difficulty.njs, 'number')} />
+            </Tooltip>
+            <Tooltip content="Beats Per Minute: The tempo of the song.">
+              <StatValue name="BPM" value={formatNumber(beatsaver.metadata.bpm, 'number')} />
+            </Tooltip>
+            <Tooltip content="Notes Per Second: The average number of notes to hit per second.">
+              <StatValue name="NPS" value={beatsaver.difficulty.nps.toFixed(2)} />
+            </Tooltip>
+            <Tooltip content="Number of notes in the map.">
+              <StatValue name="Notes" value={formatNumberWithCommas(beatsaver.difficulty.notes)} />
+            </Tooltip>
+            <Tooltip content="Number of bombs in the map.">
+              <StatValue name="Bombs" value={formatNumberWithCommas(beatsaver.difficulty.bombs)} />
+            </Tooltip>
+            <Tooltip content="Total number of walls in the map.">
+              <StatValue
+                name="Walls"
+                value={formatNumberWithCommas(beatsaver.difficulty.obstacles)}
+              />
+            </Tooltip>
+            {leaderboardData.crouchWalls != null && (
+              <Tooltip content="Number of crouch events: consecutive overhead walls merged within 1 second.">
+                <StatValue name="Crouches" value={formatNumberWithCommas(leaderboardData.crouchWalls)} />
+              </Tooltip>
+            )}
+            {leaderboardData.dodgeWalls != null && (
+              <Tooltip content="Number of dodge events: walls requiring you to sidestep.">
+                <StatValue name="Dodges" value={formatNumberWithCommas(leaderboardData.dodgeWalls)} />
+              </Tooltip>
+            )}
             <StatValue name="Length" value={formatTime(beatsaver.metadata.duration)} />
           </div>
         )}

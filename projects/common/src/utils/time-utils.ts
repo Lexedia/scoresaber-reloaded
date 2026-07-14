@@ -225,7 +225,7 @@ export function formatDate(
     .format(formatMap[format] || 'MMM D, YYYY')
 
   if (format === 'Do MMMM, YYYY' || format === 'Do MMMM, YYYY HH:mm' || format === 'Do MMMM, YYYY HH:mm a') {
-    const day = dayjs(date).date()
+    const day = dayjs(date).utc().date()
     const suffix = getOrdinalSuffix(day)
     return formatted.replace(day.toString(), day + suffix)
   }

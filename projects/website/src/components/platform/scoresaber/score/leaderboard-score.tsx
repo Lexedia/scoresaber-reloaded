@@ -26,10 +26,12 @@ export default function ScoreSaberLeaderboardScore({
   score,
   leaderboard,
   highlightedPlayerId,
+  offsetRank,
 }: {
   score: ScoreSaberScore;
   leaderboard: ScoreSaberLeaderboard;
   highlightedPlayerId?: string;
+  offsetRank?: number;
 }) {
   const [
     detailsExpanded,
@@ -53,9 +55,23 @@ export default function ScoreSaberLeaderboardScore({
       >
         {/* Score Rank */}
         <td className={cn(TABLE_CELL_WIDTH, 'pr-1 pl-3 whitespace-nowrap')}>
-          <p className={getRankColor(score.rank)}>
-            {score.rank !== -1 ? `#${formatNumberWithCommas(score.rank)}` : '-'}
-          </p>
+          {offsetRank != null ? (
+            <SimpleTooltip
+              display={
+                <p className="text-muted-foreground text-sm">
+                  True rank: {score.rank !== -1 ? `#${formatNumberWithCommas(score.rank)}` : '-'}
+                </p>
+              }
+            >
+              <p className={cn(getRankColor(offsetRank), 'cursor-default')}>
+                #{formatNumberWithCommas(offsetRank)}
+              </p>
+            </SimpleTooltip>
+          ) : (
+            <p className={getRankColor(score.rank)}>
+              {score.rank !== -1 ? `#${formatNumberWithCommas(score.rank)}` : '-'}
+            </p>
+          )}
         </td>
 
         {/* Player */}

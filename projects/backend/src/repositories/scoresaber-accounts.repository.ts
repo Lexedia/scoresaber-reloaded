@@ -1,5 +1,5 @@
 import {
-  and, asc, count, eq, gte, ilike, isNotNull, sql,
+  and, asc, count, desc, eq, gte, ilike, isNotNull, sql, type SQL,
 } from 'drizzle-orm'
 import { db } from '../db'
 import { scoreSaberAccountsTable, type ScoreSaberAccountRow } from '../db/schema'
@@ -43,6 +43,60 @@ export class ScoreSaberAccountsRepository {
       .limit(limit)
   }
 
+  public static async searchPlayersRankingPaginated(
+    page: number,
+    itemsPerPage: number,
+    options?: {
+      country?: string;
+      search?: string;
+      includeInactive?: boolean;
+      hmd?: string;
+    },
+  ): Promise<{
+    players: ScoreSaberAccountRow[],
+    total: number
+  }> {
+    const conditions: SQL[] = []
+
+    if (options?.country) {
+      conditions.push(eq(sql`lower(${scoreSaberAccountsTable.country})`, options.country.toLowerCase()))
+    }
+
+    if (options?.search && options.search.length >= 3) {
+      conditions.push(ilike(scoreSaberAccountsTable.name, `%${options.search.replace(/[%_\\]/g, '\\$&')}%`))
+    }
+
+    if (!options?.includeInactive) {
+      conditions.push(eq(scoreSaberAccountsTable.inactive, false))
+    }
+
+    if (options?.hmd) {
+      conditions.push(eq(sql`lower(${scoreSaberAccountsTable.hmd})`, options.hmd.toLowerCase()))
+    }
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined
+
+    const [ countRow ] = await db
+      .select({ count: count() })
+      .from(scoreSaberAccountsTable)
+      .where(whereClause)
+
+    const total = countRow?.count ?? 0
+
+    const players = await db
+      .select()
+      .from(scoreSaberAccountsTable)
+      .where(whereClause)
+      .orderBy(desc(scoreSaberAccountsTable.pp))
+      .limit(itemsPerPage)
+      .offset((page - 1) * itemsPerPage)
+
+    return {
+      players,
+      total,
+    }
+  }
+
   public static async selectHmdCountsActiveAccounts(): Promise<{
     hmd: string | null;
     c: number
@@ -55,6 +109,13 @@ export class ScoreSaberAccountsRepository {
       .from(scoreSaberAccountsTable)
       .where(and(isNotNull(scoreSaberAccountsTable.hmd), eq(scoreSaberAccountsTable.inactive, false)))
       .groupBy(scoreSaberAccountsTable.hmd)
+  }
+
+  public static async selectAllActive() {
+    return db
+      .select()
+      .from(scoreSaberAccountsTable)
+      .where(and(eq(scoreSaberAccountsTable.inactive, false), eq(scoreSaberAccountsTable.banned, false)))
   }
 
   public static async selectIdsNeedingBeatLeaderSeed(limit?: number): Promise<{ id: string }[]> {
@@ -83,11 +144,8 @@ export class ScoreSaberAccountsRepository {
   }
 
   public static async countInactive(): Promise<number> {
-    const [ row ] = await db
-      .select({ c: count() })
-      .from(scoreSaberAccountsTable)
-      .where(eq(scoreSaberAccountsTable.inactive, true))
-    return row?.c ?? 0
+    const counts = await TableCountsRepository.getCounts()
+    return counts.scoresaberInactiveAccounts
   }
 
   public static async countTotal(): Promise<number> {

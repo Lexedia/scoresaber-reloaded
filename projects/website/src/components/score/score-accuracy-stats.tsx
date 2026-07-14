@@ -136,7 +136,7 @@ function HandAccuracy({ scoreStats, hand }: {
   const tooltipLabel = (text: string) => `${capitalizeFirstLetter(hand)} Hand ${text}`
 
   return (
-    <div className={cn('flex min-w-0 flex-1 flex-col gap-3', hand === 'right' ? 'items-end' : 'items-start')}>
+    <div className={cn('flex min-w-0 flex-1 flex-col gap-3', hand === 'right' ? 'items-center md:items-end' : 'items-center md:items-start')}>
       <AccuracyCircle accuracy={accuracy} averageCut={averageCut} hand={hand} />
       <div className="flex w-full max-w-[200px] flex-col gap-1.5">
         <SimpleTooltip display={tooltipLabel('Time-Dependence')} className="cursor-default">
@@ -155,7 +155,7 @@ function HandAccuracy({ scoreStats, hand }: {
 
 export default function ScoreAccuracyStats({ scoreStats }: ScoreAccuracyStatProps) {
   return (
-    <div className="flex w-full items-start justify-between gap-3 overflow-hidden md:gap-6">
+    <div className="flex w-full flex-col items-center justify-between gap-4 overflow-hidden md:flex-row md:items-start md:gap-6">
       <HandAccuracy scoreStats={scoreStats.current} hand="left" />
       <div className="bg-border hidden h-full w-px shrink-0 self-stretch md:block" />
       <HandAccuracy scoreStats={scoreStats.current} hand="right" />

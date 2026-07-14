@@ -199,7 +199,7 @@ export class ScoreSaberMedalsRepository {
   }
 
   public static async syncMedalTotalsForPlayerIds(playerIds: string[]): Promise<void> {
-    const unique = [ ...new Set(playerIds) ]
+    const unique = [ ...new Set(playerIds) ].sort()
     if (unique.length === 0) {
       return
     }
@@ -223,14 +223,16 @@ export class ScoreSaberMedalsRepository {
       totalsByPlayer.set(row.playerId, Number(row.total))
     }
 
-    const valueRows = unique.map(pid => sql`(${pid}::varchar(32), ${totalsByPlayer.get(pid) ?? 0}::int)`)
     await db.transaction(async tx => {
-      await tx.execute(sql`
-        UPDATE "scoresaber-accounts" AS a
-        SET medals = v.medals
-        FROM (VALUES ${sql.join(valueRows, sql`, `)}) AS v(id, medals)
-        WHERE a.id = v.id
-      `)
+      // Sort to enforce deterministic locking order and prevent deadlocks
+      const sortedIds = [ ...unique ].sort()
+      for (const id of sortedIds) {
+        await tx.execute(sql`
+          UPDATE "scoresaber-accounts"
+          SET medals = ${totalsByPlayer.get(id) ?? 0}::int
+          WHERE id = ${id}::varchar(32)
+        `)
+      }
     })
   }
 

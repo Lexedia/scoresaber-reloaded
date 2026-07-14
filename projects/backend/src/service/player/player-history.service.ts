@@ -83,13 +83,16 @@ export class PlayerHistoryService {
       const account = await PlayerCoreService.getOrCreateAccount(player.id, player)
       const statistics = await PlayerHistoryService.trackPlayerHistory(account, now, player)
 
-      // Update the player's inactive status if it has changed
+      await PlayerCoreService.updatePlayer(account.id, {
+        pp: player.pp,
+        rank: player.rank,
+        countryRank: player.countryRank,
+      }, { invalidateCache: false })
+
       if (account.inactive !== player.inactive) {
         PlayerCoreService.updatePlayer(account.id, { inactive: player.inactive })
         redisClient.del(cachedPlayerTokenCacheKey(account.id))
       }
-
-      // If the player has less scores tracked than the total play count, add them to the refresh queue
       if (statistics && (statistics?.totalScores ?? 0) < player.scoreStats.totalPlayCount && !player.banned) {
         PlayerHistoryService.logger.info(
           `Player ${player.id} has missing scores. Adding them to the refresh queue...`,
@@ -255,19 +258,32 @@ export class PlayerHistoryService {
     playerToken: ScoreSaberPlayerToken,
     statistics: ScoreSaberPlayerStatistics,
     count: number,
+    from?: string,
+    to?: string,
   ): Promise<ScoreSaberPlayerHistoryEntries> {
     const today = getMidnightAlignedDate(new Date())
-    const allTime = count === -1
 
-    const alignedStart = allTime ? today : getMidnightAlignedDate(getDaysAgoDate(Math.max(0, count - 1)))
+    let alignedStart: Date
+    let alignedEnd: Date = today
+    let allTime: boolean
 
-    const startTimestamp = alignedStart.getTime()
-    const endTimestamp = today.getTime()
+    if (from && to) {
+      alignedStart = getMidnightAlignedDate(new Date(from))
+      alignedEnd = getMidnightAlignedDate(new Date(to))
+    } else {
+      allTime = count === -1
+      alignedStart = allTime ? new Date(0) : getMidnightAlignedDate(getDaysAgoDate(Math.max(0, count - 1)))
+    }
+
+    /*
+     * const startTimestamp = alignedStart.getTime()
+     * const endTimestamp = alignedEnd.getTime()
+     */
 
     const entries = await PlayerHistoryRepository.getByPlayerOrderedByDateDesc(playerToken.id, {
-      count,
+      count: from && to ? -1 : count,
       alignedStart,
-      today,
+      today: alignedEnd,
     })
 
     const history: ScoreSaberPlayerHistoryEntries = {}
@@ -276,35 +292,31 @@ export class PlayerHistoryService {
       history[dateKey] = playerHistoryRowToType(entry)
     }
 
-    /*
-     * `parseRankHistory()` includes today's rank (playerToken.rank) as the last element.
-     * ScoreSaber's `histories` string ends at yesterday, so we start at "yesterday"
-     * (length - 2) and derive `daysAgo` from the array index to avoid off-by-one drift.
-     */
     const playerRankHistory = parseRankHistory(playerToken)
     const historyLength = playerRankHistory.length
-    const daysDiff = allTime
-      ? Math.max(1, historyLength)
-      : Math.abs(Math.ceil((endTimestamp - startTimestamp) / toMillis(TimeUnit.Day, 1))) + 1
 
     const missingRankUpserts: {
       date: Date;
       rank: number
     }[] = []
-    for (
-      let i = historyLength - 2; // yesterday
-      i >= Math.max(0, historyLength - daysDiff);
-      i--
-    ) {
+    for (let i = historyLength - 2; i >= 0; i--) {
       const rank = playerRankHistory[i]
-      // Player was inactive on this day
       if (rank === INACTIVE_RANK || rank === 0) {
         continue
       }
 
-      // last element is "today" => 0d ago, then 1d ago, etc.
       const daysAgo = historyLength - 1 - i
       const date = getMidnightAlignedDate(getDaysAgoDate(daysAgo))
+
+      // Ensure the generated date falls within our requested window
+      if (date < alignedStart || date > alignedEnd) {
+        // If we've gone further back than our start date, we can stop the loop early
+        if (date < alignedStart) {
+          break
+        }
+        continue
+      }
+
       const dateKey = formatDateMinimal(date)
 
       // If the rank is missing, add it to the history
@@ -331,9 +343,11 @@ export class PlayerHistoryService {
       )
     }
 
-    const todayData = await PlayerHistoryService.getTodayPlayerStatistic(playerToken, statistics)
-    if (todayData) {
-      history[formatDateMinimal(today)] = todayData
+    if (alignedEnd.getTime() === today.getTime()) {
+      const todayData = await PlayerHistoryService.getTodayPlayerStatistic(playerToken, statistics)
+      if (todayData) {
+        history[formatDateMinimal(today)] = todayData
+      }
     }
 
     // Sort history by date
@@ -413,6 +427,9 @@ export class PlayerHistoryService {
       averageRankedAccuracy: statistics.averageRankedAccuracy,
       averageUnrankedAccuracy: statistics.averageUnrankedAccuracy,
       averageAccuracy: statistics.averageAccuracy,
+      medianRankedAccuracy: statistics.medianRankedAccuracy,
+      medianUnrankedAccuracy: statistics.medianUnrankedAccuracy,
+      medianAccuracy: statistics.medianAccuracy,
       rankedScores: existingEntry?.rankedScores ?? 0,
       unrankedScores: existingEntry?.unrankedScores ?? 0,
       rankedScoresImproved: existingEntry?.rankedScoresImproved ?? 0,

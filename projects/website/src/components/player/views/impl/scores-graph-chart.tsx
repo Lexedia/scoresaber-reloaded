@@ -241,6 +241,22 @@ export default function ScoresGraphChart({ player }: { player: ScoreSaberPlayer 
       })
       .sort((a, b) => a.x - b.x)
 
+    // Create median line data (median accuracy per star rating)
+    const medianLineData = Object.entries(groupedByStarRating)
+      .map(([
+        stars,
+        accuracies,
+      ]) => {
+        const sorted = [ ...accuracies ].sort((a, b) => a - b)
+        const mid = Math.floor(sorted.length / 2)
+        const median = sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2
+        return {
+          x: parseFloat(stars),
+          y: median,
+        }
+      })
+      .sort((a, b) => a.x - b.x)
+
     lineDatasets = [
       {
         type: 'line' as const,
@@ -260,6 +276,18 @@ export default function ScoresGraphChart({ player }: { player: ScoreSaberPlayer 
         borderColor: 'rgba(0, 123, 255, 0.8)',
         backgroundColor: 'rgba(0, 123, 255, 0.1)',
         borderWidth: 3,
+        fill: false,
+        pointRadius: 0,
+        tension: 0.1,
+      },
+      {
+        type: 'line' as const,
+        label: 'Median',
+        data: medianLineData,
+        borderColor: 'rgba(255, 165, 0, 0.8)',
+        backgroundColor: 'rgba(255, 165, 0, 0.1)',
+        borderWidth: 3,
+        borderDash: [ 6, 3 ],
         fill: false,
         pointRadius: 0,
         tension: 0.1,
@@ -356,7 +384,6 @@ export default function ScoresGraphChart({ player }: { player: ScoreSaberPlayer 
   return (
     <>
       <div className="h-[400px]">
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         <Line data={datasets as any} options={chartOptions as any} />
       </div>
 

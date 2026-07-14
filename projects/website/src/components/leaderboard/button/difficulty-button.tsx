@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { ScoreSaberLeaderboardDifficulty } from '@ssr/common/schemas/scoresaber/leaderboard/difficulty'
 import { getDifficulty } from '@ssr/common/utils/song-utils'
 import { StarIcon } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
 import { useIsMobile } from '../../../contexts/viewport-context'
 import SimpleLink from '../../simple-link'
 
@@ -11,10 +12,9 @@ type DifficultyButtonProps = {
   selectedId: number;
 }
 
-export function DifficultyButton({ leaderboardDifficulty, selectedId }: DifficultyButtonProps) {
+export function DifficultyButton({ leaderboardDifficulty: { difficulty, id, stars }, selectedId }: DifficultyButtonProps) {
   const isMobile = useIsMobile()
-
-  const { difficulty, id } = leaderboardDifficulty
+  const searchParams = useSearchParams()
 
   const isSelected = id === selectedId
   const difficultyData = getDifficulty(difficulty)
@@ -23,9 +23,11 @@ export function DifficultyButton({ leaderboardDifficulty, selectedId }: Difficul
     ? difficultyData.shortName
     : (difficultyData.displayName ?? difficultyData.mapDifficulty)
 
+  const queryString = searchParams.toString()
+  const href = `/leaderboard/${id}${queryString ? `?${queryString}` : ''}`
   const buttonId = `difficulty-btn-${id}`
   return (
-    <SimpleLink href={`/leaderboard/${id}`}>
+    <SimpleLink href={href}>
       <style>{`
         #${buttonId}.difficulty-button-hover:hover {
           filter: brightness(1) !important;
@@ -45,9 +47,9 @@ export function DifficultyButton({ leaderboardDifficulty, selectedId }: Difficul
         }}
       >
         <span>{name}</span>
-        {leaderboardDifficulty.stars > 0 && (
+        {stars > 0 && (
           <div className="flex items-center gap-1 text-xs">
-            {leaderboardDifficulty.stars.toFixed(isMobile ? 1 : 2)}{' '}
+            {stars.toFixed(isMobile ? 1 : 2)}{' '}
             {!isMobile && <StarIcon className="size-3" />}
           </div>
         )}

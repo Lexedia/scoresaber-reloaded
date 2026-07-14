@@ -60,7 +60,7 @@ export abstract class Queue<T> {
    * @param item the item to add
    */
   public async add(item: T) {
-    if (this.isStopped) {
+    if (!env.ENABLE_QUEUES || this.isStopped) {
       return
     }
 

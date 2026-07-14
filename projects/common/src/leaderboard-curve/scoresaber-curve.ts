@@ -162,35 +162,29 @@ function calcRawPpForExpectedPp(scoresPps: number[], expectedPp = 1) {
 }
 
 /**
- * Gets the amount of raw pp needed to gain the expected weighted pp.
+ * Gets the amount of weighted pp gained by adding a new raw pp score.
  *
  * @param scoresPps The sorted scores PP array.
- * @param expectedPp The expected weighted pp gain.
- * @returns The amount of raw pp needed to gain the expected weighted pp.
+ * @param newRawPp The raw pp of the new score.
+ * @returns The amount of weighted pp gained.
  */
-function getRawPpForWeightedPpGain(scoresPps: number[], expectedPp: number): number {
-  // If there are no existing scores, the amount of raw pp needed is just the expected weighted pp
+function getWeightedPpGainForRawPp(scoresPps: number[], newRawPp: number): number {
   if (!scoresPps.length) {
-    return expectedPp
+    return newRawPp
   }
 
-  // Create a copy of scores and find where the expected weighted pp would fit
   const newScores = [ ...scoresPps ]
-  let insertIndex = newScores.findIndex(pp => expectedPp > pp)
+  let insertIndex = newScores.findIndex(pp => newRawPp > pp)
 
-  // If the expected weighted pp is smaller than all existing scores, add it to the end
   if (insertIndex === -1) {
     insertIndex = newScores.length
   }
 
-  // Insert the expected weighted pp value at the correct position
-  newScores.splice(insertIndex, 0, expectedPp)
+  newScores.splice(insertIndex, 0, newRawPp)
 
-  // Calculate the total weighted PP before and after insertion
   const oldTotal = getTotalWeightedPp(scoresPps)
   const newTotal = getTotalWeightedPp(newScores)
 
-  // The boundary is the difference between the new and old totals
   return newTotal - oldTotal
 }
 
@@ -200,6 +194,6 @@ export const ScoreSaberCurve = {
   getPp,
   getModifier,
   calcRawPpForExpectedPp,
-  getRawPpForWeightedPpGain,
+  getWeightedPpGainForRawPp,
   getTotalWeightedPp,
 }

@@ -122,6 +122,10 @@ export default function ScoreSaberPlayerMedalScores({ player }: { player: ScoreS
     HMD | null,
     (value: HMD | null) => void,
   ]
+  const [
+    accBadgeFilter,
+    setAccBadgeFilter,
+  ] = useQueryState('accBadge', parseAsString)
 
   // Search
   const [
@@ -163,11 +167,13 @@ export default function ScoreSaberPlayerMedalScores({ player }: { player: ScoreS
       debouncedSearchTerm,
       direction,
       hmdFilter,
+      accBadgeFilter,
     ],
     queryFn: async () => {
       const response = await ssrApi.fetchPlayerScoreSaberMedalScores(player.id, page, sort, direction, {
         ...(!invalidSearch ? { search: debouncedSearchTerm } : {}),
         ...(hmdFilter ? { hmd: hmdFilter } : {}),
+        ...(accBadgeFilter ? { accBadge: accBadgeFilter } : {}),
       })
       return response || Pagination.empty()
     },
@@ -258,6 +264,9 @@ export default function ScoreSaberPlayerMedalScores({ player }: { player: ScoreS
       if (debouncedSearchTerm && debouncedSearchTerm.length >= 3) {
         params.set('search', debouncedSearchTerm)
       }
+      if (accBadgeFilter) {
+        params.set('accBadge', accBadgeFilter)
+      }
 
       const queryString = params.toString()
       return `/player/${player.id}/scoresaber?${queryString}`
@@ -267,6 +276,7 @@ export default function ScoreSaberPlayerMedalScores({ player }: { player: ScoreS
       sort,
       direction,
       debouncedSearchTerm,
+      accBadgeFilter,
     ],
   )
 
@@ -378,6 +388,20 @@ export default function ScoreSaberPlayerMedalScores({ player }: { player: ScoreS
               </div>
 
               <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+                {accBadgeFilter && (
+                  <div className="bg-accent/50 text-accent-foreground border-border flex items-center gap-2 rounded-md border px-3 py-1.5 text-xs">
+                    <span>Filter: {accBadgeFilter}</span>
+                    <XIcon
+                      className="hover:text-destructive size-3.5 cursor-pointer transition-colors"
+                      onClick={() => {
+                        setIsLoading(true)
+                        setAccBadgeFilter(null)
+                        setPage(1)
+                        animateLeft()
+                      }}
+                    />
+                  </div>
+                )}
                 <Select
                   value={hmdFilter || 'All Hmds'}
                   onValueChange={value => {

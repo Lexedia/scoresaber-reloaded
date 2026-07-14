@@ -240,7 +240,7 @@ export default class PlaylistService {
       playlistTitle: title,
       playlistAuthor: env.NEXT_PUBLIC_WEBSITE_NAME,
       customData: {
-        syncURL: `${env.NEXT_PUBLIC_API_URL}/playlist/custom-ranked-maps?settings=${settingsBase64}`,
+        syncURL: `${env.NEXT_PUBLIC_API_URL}/playlist/scoresaber-custom-ranked-maps?config=${settingsBase64}`,
       },
       songs: rankedLeaderboards.map(leaderboard => ({
         songName: leaderboard.songName,

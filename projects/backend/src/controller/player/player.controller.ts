@@ -1,8 +1,15 @@
 import { DetailTypeSchema } from '@ssr/common/detail-type'
 import { NotFoundError } from '@ssr/common/error/not-found-error'
+import { MapRecommendationsResponseSchema } from '@ssr/common/schemas/response/player/map-recommendations'
 import { PlayerPpsResponseSchema } from '@ssr/common/schemas/response/player/player-pps'
 import { PlayerRefreshResponseSchema } from '@ssr/common/schemas/response/player/player-refresh'
-import { PlayerScoresChartResponseSchema } from '@ssr/common/schemas/response/player/scores-chart'
+import { PlayerWrappedResponseSchema } from '@ssr/common/schemas/response/player/player-wrapped'
+import { PpSimulationResponseSchema } from '@ssr/common/schemas/response/player/pp-simulation'
+import {
+  DifficultyCurveResponseSchema,
+  PlayerScoresChartResponseSchema,
+  SkillBreakdownResponseSchema,
+} from '@ssr/common/schemas/response/player/scores-chart'
 import { ScoreSaberScoresPageResponseSchema } from '@ssr/common/schemas/response/score/scoresaber-scores-page'
 import { Elysia } from 'elysia'
 import { z } from 'zod'
@@ -15,6 +22,7 @@ import { PlayerRankedService } from '../../service/player/player-ranked.service'
 import { PlayerScoreHistoryService } from '../../service/player/player-score-history.service'
 import { PlayerScoresService } from '../../service/player/player-scores.service'
 import { PlayerSearchService } from '../../service/player/player-search.service'
+import { PlayerWrappedService } from '../../service/player/player-wrapped.service'
 import ScoreSaberPlayerService from '../../service/player/scoresaber-player.service'
 
 export default function playerController(app: Elysia) {
@@ -51,6 +59,38 @@ export default function playerController(app: Elysia) {
           response: PlayerScoresChartResponseSchema,
           detail: {
             description: 'Fetch player score chart data',
+          },
+        },
+      )
+      .get(
+        '/difficulty-curve/:playerId',
+        async ({ params: { playerId } }) => {
+          return PlayerScoresService.getPlayerDifficultyCurve(playerId)
+        },
+        {
+          tags: [ 'Player' ],
+          params: z.object({
+            playerId: z.string(),
+          }),
+          response: DifficultyCurveResponseSchema,
+          detail: {
+            description: 'Fetch player difficulty curve data',
+          },
+        },
+      )
+      .get(
+        '/skill-breakdown/:playerId',
+        async ({ params: { playerId } }) => {
+          return PlayerScoresService.getPlayerSkillBreakdown(playerId)
+        },
+        {
+          tags: [ 'Player' ],
+          params: z.object({
+            playerId: z.string(),
+          }),
+          response: SkillBreakdownResponseSchema,
+          detail: {
+            description: 'Fetch player skill breakdown by characteristic and difficulty',
           },
         },
       )
@@ -122,13 +162,13 @@ export default function playerController(app: Elysia) {
       )
       .get(
         '/history/:playerId',
-        async ({ params: { playerId }, query: { count } }) => {
+        async ({ params: { playerId }, query: { count, from, to } }) => {
           const player = await ScoreSaberApiService.lookupPlayer(playerId)
           if (!player) {
             throw new NotFoundError(`Player "${playerId}" not found`)
           }
           const statistics = await PlayerStatisticsService.getStatistics(player)
-          return await PlayerHistoryService.getPlayerStatisticHistories(player, statistics, count)
+          return await PlayerHistoryService.getPlayerStatisticHistories(player, statistics, count, from, to)
         },
         {
           tags: [ 'Player' ],
@@ -143,6 +183,8 @@ export default function playerController(app: Elysia) {
                 z.number().int().min(1),
               ]),
             ),
+            from: z.string().date().optional(),
+            to: z.string().date().optional(),
           }),
           detail: {
             description: 'Fetch player statistics history',
@@ -164,6 +206,62 @@ export default function playerController(app: Elysia) {
           response: ScoreSaberScoresPageResponseSchema,
           detail: {
             description: 'Fetch player score history for a leaderboard',
+          },
+        },
+      )
+      .post(
+        '/simulate-pp/:playerId',
+        async ({ params: { playerId }, body: { rawPps, realPp } }) => {
+          return await PlayerRankedService.simulatePpGain(playerId, rawPps, realPp)
+        },
+        {
+          tags: [ 'Player' ],
+          params: z.object({
+            playerId: z.string(),
+          }),
+          body: z.object({
+            rawPps: z.array(z.number()),
+            realPp: z.number().optional(),
+          }),
+          response: PpSimulationResponseSchema,
+          detail: {
+            description: 'Simulate exact PP gain if a player sets new scores',
+          },
+        },
+      )
+      .get(
+        '/recommendations/:playerId',
+        async ({ params: { playerId }, query: { limit } }) => {
+          return await PlayerRankedService.getMapRecommendations(playerId, limit)
+        },
+        {
+          tags: [ 'Player' ],
+          params: z.object({
+            playerId: z.string(),
+          }),
+          query: z.object({
+            limit: z.coerce.number().optional().default(10),
+          }),
+          response: MapRecommendationsResponseSchema,
+          detail: {
+            description: 'Get map recommendations based on top plays',
+          },
+        },
+      )
+      .get(
+        '/wrapped/:playerId/:year',
+        async ({ params: { playerId, year } }) => {
+          return await PlayerWrappedService.getWrapped(playerId, year)
+        },
+        {
+          tags: [ 'Player' ],
+          params: z.object({
+            playerId: z.string(),
+            year: z.coerce.number().int().min(2000).max(2100),
+          }),
+          response: PlayerWrappedResponseSchema,
+          detail: {
+            description: 'Get a "Wrapped" yearly summary for a player',
           },
         },
       ),

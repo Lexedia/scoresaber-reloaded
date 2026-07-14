@@ -169,6 +169,11 @@ export function connectWebSocket({
         return
       }
 
+      // after all, why not... why shouldn't i send plain text messages instead of a json object?
+      if (messageEvent.data === 'Connected to the ScoreSaber WSS') {
+        return
+      }
+
       try {
         const command = JSON.parse(messageEvent.data)
         onMessage?.(command)

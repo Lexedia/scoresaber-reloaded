@@ -84,11 +84,10 @@ export default function PlayerActions({ player }: { player: ScoreSaberPlayer }) 
       <PlayerLink
         playerName={player.name}
         name="AccSaber"
-        url={`https://${env.NEXT_PUBLIC_ACCSABER_DOMAIN}/${env.NEXT_PUBLIC_ACCSABER_DOMAIN?.includes('reloaded') ? 'player' : 'profile'}/${player.id}`}
+        url={`https://${env.NEXT_PUBLIC_ACCSABER_DOMAIN}/${env.NEXT_PUBLIC_ACCSABER_DOMAIN?.includes('reloaded') ? 'players' : 'profile'}/${player.id}`}
         icon={<AccSaberLogo size={20} className="select-none" />}
       />
 
-      {/* Social Links */}
       {twitchName && (
         <PlayerLink
           playerName={player.name}

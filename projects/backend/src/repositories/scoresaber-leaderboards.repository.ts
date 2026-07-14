@@ -100,14 +100,177 @@ function buildDifficultyJoin(
   }
 }
 
+const DECORATIVE_MAP: Record<string, string> = {
+  '\u25C7': 'o', // ◇ white diamond
+  '\u25C6': 'o', // ◆ black diamond
+  '\u25CF': 'o', // ● black circle
+  '\u25CB': 'o', // ○ white circle
+  '\u25CE': 'o', // ◎ bullseye
+  '\u2665': '', // ♥ heart
+  '\u266A': '', // ♪ eighth note
+  '\u266B': '', // ♫ beamed eighth notes
+  '\u2605': '', // ★ black star
+  '\u2606': '', // ☆ white star
+  '\u2726': '', // ✦ black four-pointed star
+  '\u2727': '', // ✧ white four-pointed star
+  '\u2756': '', // ❖ black diamond minus white X
+}
+
+const GREEK_MAP: Record<string, string> = {
+  Α: 'A',
+  α: 'a', // Α α
+  Β: 'B',
+  β: 'b', // Β β
+  Γ: 'G',
+  γ: 'g', // Γ γ
+  Δ: 'D',
+  δ: 'd', // Δ δ
+  Ε: 'E',
+  ε: 'e', // Ε ε
+  Ζ: 'Z',
+  ζ: 'z', // Ζ ζ
+  Η: 'I',
+  η: 'i', // Η η
+  Θ: 'Th',
+  θ: 'th', // Θ θ
+  Ι: 'I',
+  ι: 'i', // Ι ι
+  Κ: 'K',
+  κ: 'k', // Κ κ
+  Λ: 'L',
+  λ: 'l', // Λ λ
+  Μ: 'M',
+  μ: 'm', // Μ μ
+  Ν: 'N',
+  ν: 'n', // Ν ν
+  Ξ: 'X',
+  ξ: 'x', // Ξ ξ
+  Ο: 'O',
+  ο: 'o', // Ο ο
+  Π: 'P',
+  π: 'p', // Π π
+  Ρ: 'R',
+  ρ: 'r', // Ρ ρ
+  Σ: 'S',
+  σ: 's',
+  ς: 's', // Σ σ ς
+  Τ: 'T',
+  τ: 't', // Τ τ
+  Υ: 'Y',
+  υ: 'y', // Υ υ
+  Φ: 'F',
+  φ: 'f', // Φ φ
+  Χ: 'Ch',
+  χ: 'ch', // Χ χ
+  Ψ: 'Ps',
+  ψ: 'ps', // Ψ ψ
+  Ω: 'O',
+  ω: 'o', // Ω ω
+  Ϊ: 'I',
+  ϊ: 'i', // Ϊ ϊ
+  Ϋ: 'Y',
+  ϋ: 'y', // Ϋ ϋ
+}
+
+const CYRILLIC_MAP: Record<string, string> = {
+  А: 'A',
+  а: 'a', // А а
+  Б: 'B',
+  б: 'b', // Б б
+  В: 'V',
+  в: 'v', // В в
+  Г: 'G',
+  г: 'g', // Г г
+  Д: 'D',
+  д: 'd', // Д д
+  Е: 'E',
+  е: 'e', // Е е
+  Ё: 'Yo',
+  ё: 'yo', // Ё ё
+  Ж: 'Zh',
+  ж: 'zh', // Ж ж
+  З: 'Z',
+  з: 'z', // З з
+  И: 'I',
+  и: 'i', // И и
+  Й: 'Y',
+  й: 'y', // Й й
+  К: 'K',
+  к: 'k', // К к
+  Л: 'L',
+  л: 'l', // Л л
+  М: 'M',
+  м: 'm', // М м
+  Н: 'N',
+  н: 'n', // Н н
+  О: 'O',
+  о: 'o', // О о
+  П: 'P',
+  п: 'p', // П п
+  Р: 'R',
+  р: 'r', // Р р
+  С: 'S',
+  с: 's', // С с
+  Т: 'T',
+  т: 't', // Т т
+  У: 'U',
+  у: 'u', // У у
+  Ф: 'F',
+  ф: 'f', // Ф ф
+  Х: 'Kh',
+  х: 'kh', // Х х
+  Ц: 'Ts',
+  ц: 'ts', // Ц ц
+  Ч: 'Ch',
+  ч: 'ch', // Ч ч
+  Ш: 'Sh',
+  ш: 'sh', // Ш ш
+  Щ: 'Shch',
+  щ: 'shch', // Щ щ
+  Ъ: '',
+  ъ: '', // Ъ ъ
+  Ы: 'Y',
+  ы: 'y', // Ы ы
+  Ь: '',
+  ь: '', // Ь ь
+  Э: 'E',
+  э: 'e', // Э э
+  Ю: 'Yu',
+  ю: 'yu', // Ю ю
+  Я: 'Ya',
+  я: 'ya', // Я я
+}
+
+function applyMap(char: string, map: Record<string, string>): string | undefined {
+  return map[char]
+}
+
+export function normalizeSearchQuery(query: string): string {
+  let normalized = query.normalize('NFKD')
+
+  normalized = [ ...normalized ]
+    .map(c => applyMap(c, DECORATIVE_MAP) ?? applyMap(c, GREEK_MAP) ?? applyMap(c, CYRILLIC_MAP) ?? c)
+    .join('')
+
+  // eslint-disable-next-line no-control-regex
+  return normalized.replace(/[^\x00-\x7F]/g, '').trim()
+}
+
+function buildSearchVector(tableAlias: LeaderboardAlias): SQL {
+  return sql`to_tsvector('english', translate(${tableAlias.songName}, '◇◆●○◎', 'ooooo') || ' '
+  || translate(${tableAlias.songSubName}, '◇◆●○◎', 'ooooo') || ' '
+  || translate(${tableAlias.songAuthorName}, '◇◆●○◎', 'ooooo') || ' '
+  || translate(${tableAlias.levelAuthorName}, '◇◆●○◎', 'ooooo'))`
+}
+
 export function aliasFtsMatch(tableAlias: LeaderboardAlias, search: string): SQL {
-  return sql`to_tsvector('english', ${tableAlias.songName} || ' 
-  ' || ${tableAlias.songSubName} || ' ' || ${tableAlias.songAuthorName} || ' ' || ${tableAlias.levelAuthorName}) @@ plainto_tsquery('english', ${search})`
+  const normalized = normalizeSearchQuery(search)
+  return sql`${buildSearchVector(tableAlias)} @@ plainto_tsquery('english', ${normalized})`
 }
 
 export function aliasTsRankExpr(tableAlias: LeaderboardAlias, search: string): SQL {
-  return sql`ts_rank(to_tsvector('english', ${tableAlias.songName} || ' 
-  ' || ${tableAlias.songSubName} || ' ' || ${tableAlias.songAuthorName} || ' ' || ${tableAlias.levelAuthorName}), plainto_tsquery('english', ${search}))`
+  const normalized = normalizeSearchQuery(search)
+  return sql`ts_rank(${buildSearchVector(tableAlias)}, plainto_tsquery('english', ${normalized}))`
 }
 
 /**
@@ -425,6 +588,8 @@ export class ScoreSaberLeaderboardsRepository {
       cachedSongArt: false,
       trendingScore: 0,
       timestamp: lb.timestamp,
+      crouchWalls: lb.crouchWalls ?? null,
+      dodgeWalls: lb.dodgeWalls ?? null,
     }))
 
     await db

@@ -48,6 +48,26 @@ const datasetConfig: DatasetConfig[] = [
     labelFormatter: (value: number) => `Average Ranked Accuracy: ${value.toFixed(3)}%`,
   },
   {
+    title: 'Median Ranked Accuracy',
+    field: 'medianRankedAccuracy',
+    color: '#ffa500',
+    axisId: 'y',
+    axisConfig: {
+      reverse: false,
+      display: false,
+      hideOnMobile: false,
+      displayName: 'Median Ranked Accuracy',
+      position: 'left',
+      valueFormatter: value => {
+        if (isWholeNumber(value)) {
+          return value.toString()
+        }
+        return value.toFixed(1)
+      },
+    },
+    labelFormatter: (value: number) => `Median Ranked Accuracy: ${value.toFixed(3)}%`,
+  },
+  {
     title: 'Average Unranked Accuracy',
     field: 'averageUnrankedAccuracy',
     color: '#ff4848', // Changed to red
@@ -66,6 +86,46 @@ const datasetConfig: DatasetConfig[] = [
       },
     },
     labelFormatter: (value: number) => `Average Unranked Accuracy: ${value.toFixed(3)}%`,
+  },
+  {
+    title: 'Median Unranked Accuracy',
+    field: 'medianUnrankedAccuracy',
+    color: '#ff8c8c', // Light red
+    axisId: 'y1',
+    axisConfig: {
+      reverse: false,
+      display: false,
+      hideOnMobile: false,
+      displayName: 'Median Unranked Accuracy',
+      position: 'left',
+      valueFormatter: value => {
+        if (isWholeNumber(value)) {
+          return value.toString()
+        }
+        return value.toFixed(1)
+      },
+    },
+    labelFormatter: (value: number) => `Median Unranked Accuracy: ${value.toFixed(3)}%`,
+  },
+  {
+    title: 'Median Accuracy',
+    field: 'medianAccuracy',
+    color: '#8cff9a', // Light green
+    axisId: 'y2',
+    axisConfig: {
+      reverse: false,
+      display: false,
+      hideOnMobile: false,
+      displayName: 'Median Accuracy',
+      position: 'right',
+      valueFormatter: value => {
+        if (isWholeNumber(value)) {
+          return value.toString()
+        }
+        return value.toFixed(1)
+      },
+    },
+    labelFormatter: (value: number) => `Median Accuracy: ${value.toFixed(3)}%`,
   },
 ]
 

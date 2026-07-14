@@ -2,6 +2,9 @@ import Card from '@/components/card'
 import { ScoreOverview } from '@/components/platform/scoresaber/score/score-views/score-overview'
 import { MapStats } from '@/components/score/map-stats'
 import ScoreDetails from '@/components/score/page/components/score-details'
+import ReplayCutMetrics from '@/components/score/replay-cut-metrics'
+import ReplayMissGrid from '@/components/score/replay-miss-grid'
+import ScoreGridAccuracy from '@/components/score/score-grid-accuracy'
 import { env } from '@ssr/common/env'
 import { getDecodedReplay } from '@ssr/common/replay/replay-utils'
 import { formatNumberWithCommas, formatPp } from '@ssr/common/utils/number-utils'
@@ -57,7 +60,7 @@ export async function generateMetadata(props: ScorePageProps): Promise<Metadata>
     `${score.accuracy.toFixed(2)}%`,
     ppOrScore,
     diffLabel,
-    formatDate(score.timestamp, 'Do MMMM, YYYY HH:mm a'),
+    formatDate(score.timestamp, 'Do MMMM, YYYY HH:mm'),
   ].join(' · ')
 
   return {
@@ -150,17 +153,28 @@ export default async function ScorePage({ params }: ScorePageProps) {
           {scoreStats && (
             <>
               <ScoreOverview score={score.score} scoreStats={scoreStats} leaderboard={score.leaderboard} />
+              <Card className="rounded-xl p-4 md:p-6">
+                <ScoreGridAccuracy scoreStats={scoreStats.current} />
+              </Card>
             </>
           )}
 
           {replay && (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <CutDistributionChart cutDistribution={replay.cutDistribution} />
-              <SwingSpeedChart
-                swingSpeed={replay.swingSpeed}
-                replayLengthSeconds={replay.replayLengthSeconds}
-              />
-            </div>
+            <>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <CutDistributionChart cutDistribution={replay.cutDistribution} />
+                <SwingSpeedChart
+                  swingSpeed={replay.swingSpeed}
+                  replayLengthSeconds={replay.replayLengthSeconds}
+                />
+              </div>
+
+              <Card className="rounded-xl p-4">
+                <ReplayMissGrid analysis={replay.analysis} />
+              </Card>
+
+              <ReplayCutMetrics cutMetrics={replay.analysis.cutMetrics} />
+            </>
           )}
         </div>
       )}

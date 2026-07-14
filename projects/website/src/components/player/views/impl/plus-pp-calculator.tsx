@@ -180,7 +180,7 @@ export default function PlusPpCalculator({ player }: { player: ScoreSaberPlayer 
 
   /** Unrounded weighted pp gain from the current star/accuracy combo. */
   const weightedGain = useMemo(
-    () => (sortedPps.length === 0 ? 0 : ScoreSaberCurve.getRawPpForWeightedPpGain(sortedPps, rawPpFromPlay)),
+    () => (sortedPps.length === 0 ? 0 : ScoreSaberCurve.getWeightedPpGainForRawPp(sortedPps, rawPpFromPlay)),
     [
       sortedPps,
       rawPpFromPlay,

@@ -8,6 +8,7 @@ import { redisClient } from '../../common/redis'
 import CachePerformanceMetric from '../../metrics/impl/backend/cache-performance'
 
 export enum CacheId {
+  PLAYER_SCORE_STATISTICS = 'player_score_statistics',
   BEATSAVER_MAP = 'beatsaver_map',
   SCORESABER_PLAYER = 'scoresaber_player',
   SCORESABER_PLAYER_EXISTS = 'scoresaber_player_exists',
@@ -34,6 +35,10 @@ export default class CacheService {
     mode: CacheMode
   }> = {
     // Memory caches
+    [CacheId.PLAYER_SCORE_STATISTICS]: {
+      ttl: toSeconds(TimeUnit.Hour, 1),
+      mode: 'MEMORY',
+    },
     [CacheId.SCORESABER_PLAYER]: {
       ttl: toSeconds(TimeUnit.Minute, 2),
       mode: 'MEMORY',

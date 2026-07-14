@@ -43,4 +43,26 @@ export default function appController(app: Elysia) {
         },
       },
     )
+    .get(
+      '/queues',
+      async () => {
+        const { QueueManager } = await import('../../queue/queue-manager')
+        const queues = QueueManager.getQueues()
+
+        return Promise.all(
+          queues.map(async (queue) => ({
+            id: queue.id,
+            size: await queue.getSize(),
+            activeWorkers: queue.getActiveWorkers(),
+            concurrency: queue.concurrency,
+          })),
+        )
+      },
+      {
+        tags: [ 'App' ],
+        detail: {
+          description: 'Return status of background queues',
+        },
+      },
+    )
 }

@@ -14,11 +14,18 @@ import { LeaderboardsPageResponse } from '../schemas/response/leaderboard/leader
 import { PlaysByHmdResponse } from '../schemas/response/leaderboard/plays-by-hmd'
 import { RankingQueueLeaderboardsResponse } from '../schemas/response/leaderboard/ranking-queue-leaderboards'
 import { MiniRankingResponse } from '../schemas/response/player/around-player'
+import { MapRecommendationsResponse } from '../schemas/response/player/map-recommendations'
 import { PlayerPpsResponse } from '../schemas/response/player/player-pps'
 import { PlayerRankingsResponse } from '../schemas/response/player/player-rankings'
 import { PlayerSearchResponse } from '../schemas/response/player/player-search'
+import { PlayerWrappedResponse } from '../schemas/response/player/player-wrapped'
 import { PpGainResponse } from '../schemas/response/player/pp-boundary'
-import { PlayerScoresChartResponse } from '../schemas/response/player/scores-chart'
+import { PpSimulationResponse } from '../schemas/response/player/pp-simulation'
+import {
+  DifficultyCurveResponse,
+  PlayerScoresChartResponse,
+  SkillBreakdownResponse,
+} from '../schemas/response/player/scores-chart'
 import { PlayerMedalRankingsResponse } from '../schemas/response/ranking/medal-rankings'
 import { AccSaberScoresPageResponse } from '../schemas/response/score/accsaber-scores-page'
 import { PlayerScoresPageResponse } from '../schemas/response/score/player-scores'
@@ -144,6 +151,29 @@ class SSRApi {
   }
 
   /**
+   * Simulates the PP gain if a player sets new scores with the specified raw PPs.
+   *
+   * @param playerId the player's id
+   * @param rawPps the raw pp values to simulate
+   */
+  async simulatePpGain(playerId: string, rawPps: number[], realPp?: number) {
+    return await this.request<PpSimulationResponse>(`/player/simulate-pp/${playerId}`, undefined, {
+      rawPps,
+      realPp,
+    })
+  }
+
+  /**
+   * Gets map recommendations for a player based on what similar players have played.
+   *
+   * @param playerId the player's id
+   * @param limit maximum number of recommendations
+   */
+  async getMapRecommendations(playerId: string, limit: number = 10) {
+    return await this.request<MapRecommendationsResponse>(`/player/recommendations/${playerId}`, { limit: limit.toString() })
+  }
+
+  /**
    * Gets the players around a player.
    *
    * @param playerId the player to get around
@@ -190,6 +220,24 @@ class SSRApi {
    */
   async getPlayerScoresChart(playerId: string) {
     return await this.request<PlayerScoresChartResponse>(`/player/scores-chart/${playerId}`)
+  }
+
+  /**
+   * Gets the player's difficulty curve data.
+   *
+   * @param playerId the player's id
+   */
+  async getPlayerDifficultyCurve(playerId: string) {
+    return await this.request<DifficultyCurveResponse>(`/player/difficulty-curve/${playerId}`)
+  }
+
+  /**
+   * Gets the player's skill breakdown by characteristic and difficulty.
+   *
+   * @param playerId the player's id
+   */
+  async getPlayerSkillBreakdown(playerId: string) {
+    return await this.request<SkillBreakdownResponse>(`/player/skill-breakdown/${playerId}`)
   }
 
   /**
@@ -291,6 +339,9 @@ class SSRApi {
     if (filters.playerIds && filters.playerIds.length > 0) {
       queryParams.playerIds = filters.playerIds.join(',')
     }
+    if (filters.accBadge) {
+      queryParams.accBadge = filters.accBadge
+    }
     return await this.request<PlayerScoresPageResponse>(
       `/scores/player/ssr/${id}/${sort}/${direction}/${page}`,
       queryParams,
@@ -324,6 +375,9 @@ class SSRApi {
     if (filters.playerIds && filters.playerIds.length > 0) {
       queryParams.playerIds = filters.playerIds.join(',')
     }
+    if (filters.accBadge) {
+      queryParams.accBadge = filters.accBadge
+    }
     return await this.request<PlayerScoresPageResponse>(
       `/scores/player/medals/${id}/${sort}/${direction}/${page}`,
       queryParams,
@@ -336,10 +390,16 @@ class SSRApi {
    * @param leaderboardId the id of the leaderboard
    * @param page the page to lookup
    * @param country the country to get scores in
+   * @param hmd the HMD filter
+   * @param sort the sort field
+   * @param direction the sort direction
    */
-  async fetchLeaderboardScores(leaderboardId: string, page: number, country?: string) {
+  async fetchLeaderboardScores(leaderboardId: string, page: number, country?: string, hmd?: string, sort?: string, direction?: string) {
     return await this.request<LeaderboardScoresResponse>(`/scores/leaderboard/${leaderboardId}/${page}`, {
       ...(country ? { country: country } : {}),
+      ...(hmd ? { hmd: hmd } : {}),
+      ...(sort ? { sort: sort } : {}),
+      ...(direction ? { direction: direction } : {}),
     })
   }
 
@@ -350,10 +410,15 @@ class SSRApi {
    * @param count the number of days to get the statistic history for
    * @returns the statistic history
    */
-  async getPlayerStatisticHistory(playerId: string, count: number) {
-    return await this.request<ScoreSaberPlayerHistoryEntries>(`/player/history/${playerId}`, {
+  async getPlayerStatisticHistory(playerId: string, count: number, from?: string, to?: string) {
+    const query: Record<string, string> = {
       count: count.toString(),
-    })
+    }
+    if (from && to) {
+      query.from = from
+      query.to = to
+    }
+    return await this.request<ScoreSaberPlayerHistoryEntries>(`/player/history/${playerId}`, query)
   }
 
   /**
@@ -400,12 +465,14 @@ class SSRApi {
       country?: string;
       search?: string;
       includeInactive?: boolean;
+      hmd?: string;
     },
   ) {
     return await this.request<PlayerRankingsResponse>(`/ranking/${page}`, {
       ...(options?.country ? { country: options.country } : {}),
       ...(options?.search ? { search: options.search } : {}),
       ...(options?.includeInactive ? { includeInactive: options.includeInactive.toString() } : {}),
+      ...(options?.hmd ? { hmd: options.hmd } : {}),
     })
   }
 
@@ -469,6 +536,16 @@ class SSRApi {
    */
   async fetchTopScores(page: number) {
     return await this.request<TopScoresPageResponse>(`/scores/top/${page}`)
+  }
+
+  /**
+   * Gets the "Wrapped" yearly summary for a player.
+   *
+   * @param playerId the player's id
+   * @param year the year to get the summary for
+   */
+  async getPlayerWrapped(playerId: string, year: number) {
+    return await this.request<PlayerWrappedResponse>(`/player/wrapped/${playerId}/${year}`)
   }
 }
 

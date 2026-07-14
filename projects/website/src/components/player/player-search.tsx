@@ -28,6 +28,10 @@ type PlayerSearchProps = {
    * Player IDs to exclude from search results.
    */
   excludePlayerIds?: string[];
+  /**
+   * Optional filter function applied to results before displaying.
+   */
+  filterFn?: (player: ScoreSaberPlayer) => boolean;
 }
 
 const PlayerSearch = ({
@@ -36,6 +40,7 @@ const PlayerSearch = ({
   onPlayerSelect,
   placeholder = 'Search for a player...',
   excludePlayerIds = [],
+  filterFn,
 }: PlayerSearchProps) => {
   const [
     query,
@@ -96,12 +101,13 @@ const PlayerSearch = ({
             <Users className="size-3.5" />
             <span>Players</span>
             <span className="text-muted-foreground/50">
-              ({results.players.filter(player => !excludePlayerIds.includes(player.id)).length})
+              ({results.players.filter(player => !excludePlayerIds.includes(player.id)).filter(player => (filterFn ? filterFn(player) : true)).length})
             </span>
           </div>
           <div className="flex flex-col gap-0.5">
             {results.players
               .filter(player => !excludePlayerIds.includes(player.id))
+              .filter(player => (filterFn ? filterFn(player) : true))
               .sort((a, b) => a.rank - b.rank)
               .map(player => (
                 <PlayerSearchResultItem

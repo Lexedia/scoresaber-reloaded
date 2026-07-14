@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 
 import { cn } from '@/common/utils'
-import { useIsMobile } from '@/contexts/viewport-context'
 
 import FallbackLink from '@/components/fallback-link'
 import ScoreSaberScoreButtons from '@/components/platform/scoresaber/score/buttons/score-buttons'
@@ -40,7 +39,6 @@ export default function ScoreSaberScoreDisplay({
     isPreviousScore?: boolean;
   };
 }) {
-  const isMobile = useIsMobile('2xl')
   const [
     baseScore,
     setBaseScore,
@@ -146,31 +144,29 @@ export default function ScoreSaberScoreDisplay({
         </div>
 
         {/* Score Page */}
-        {!isMobile && (
-          <FallbackLink href={isTracked ? `/score/${score.scoreId}` : undefined}>
-            <SimpleTooltip
-              display={isTracked ? 'Open score page' : 'No score data found :('}
-              className="pl-1.5"
+        <FallbackLink href={isTracked ? `/score/${score.scoreId}` : undefined}>
+          <SimpleTooltip
+            display={isTracked ? 'Open score page' : 'No score data found :('}
+            className="pl-1.5"
+          >
+            <svg
+              className={cn(
+                'h-8 w-3',
+                isTracked
+                  ? 'text-muted-foreground hover:text-primary/80 cursor-pointer transition-colors duration-200'
+                  : 'cursor-not-allowed text-red-400',
+              )}
+              fill="none"
+              viewBox="0 0 6 32"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
-              <svg
-                className={cn(
-                  'h-8 w-3',
-                  isTracked
-                    ? 'text-muted-foreground hover:text-primary/80 cursor-pointer transition-colors duration-200'
-                    : 'cursor-not-allowed text-red-400',
-                )}
-                fill="none"
-                viewBox="0 0 6 32"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M0.5 2 L7.5 16 L0.5 30" />
-              </svg>
-            </SimpleTooltip>
-          </FallbackLink>
-        )}
+              <path d="M0.5 2 L7.5 16 L0.5 30" />
+            </svg>
+          </SimpleTooltip>
+        </FallbackLink>
       </div>
 
       <ScoreDetailsDropdown

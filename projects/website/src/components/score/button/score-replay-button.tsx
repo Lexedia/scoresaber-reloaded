@@ -1,11 +1,12 @@
 'use client'
 
-import BeatSaberPepeLogo from '@/components/logos/logos/beatsaber-pepe-logo'
+import ArcViewerLogo from '@/components/logos/logos/arcviewer-logo'
 import ScoreButton from '@/components/score/button/score-button'
 import useDatabase from '@/hooks/use-database'
 import { useStableLiveQuery } from '@/hooks/use-stable-live-query'
 import { BeatLeaderScore } from '@ssr/common/schemas/beatleader/score/score'
 import { getBeatLeaderReplayRedirectUrl } from '@ssr/common/utils/beatleader-utils'
+import BeatSaberPepeLogo from '../../logos/logos/beatsaber-pepe-logo'
 
 type ScoreReplayButtonProps = {
   score: BeatLeaderScore | undefined;
@@ -26,7 +27,7 @@ export function ScoreReplayButton({ score, size = 28 }: ScoreReplayButtonProps) 
       tooltip={<p>Click to view the score replay!</p>}
       size={size}
     >
-      <BeatSaberPepeLogo />
+      {viewer.id === 'arcviewer' ? <ArcViewerLogo size={size} /> : <BeatSaberPepeLogo size={size} />}
     </ScoreButton>
   )
 }

@@ -34,6 +34,8 @@ export const env = createEnv({
     DISCORD_CHANNEL_MEDAL_SCORES_FEED: z.string().optional(),
     DISCORD_CHANNEL_BACKEND_LOGS: z.string().optional(),
     DISCORD_CHANNEL_BEATSAVER_LOGS: z.string().optional(),
+    DISCORD_BOT_OWNER_ID: z.string().optional(),
+    DISCORD_ROLE_RANKED_BATCH: z.string().optional(),
   },
 
   client: {
@@ -99,6 +101,8 @@ export const env = createEnv({
     DISCORD_CHANNEL_MEDAL_SCORES_FEED: process.env.DISCORD_CHANNEL_MEDAL_SCORES_FEED,
     DISCORD_CHANNEL_BACKEND_LOGS: process.env.DISCORD_CHANNEL_BACKEND_LOGS,
     DISCORD_CHANNEL_BEATSAVER_LOGS: process.env.DISCORD_CHANNEL_BEATSAVER_LOGS,
+    DISCORD_BOT_OWNER_ID: process.env.DISCORD_BOT_OWNER_ID,
+    DISCORD_ROLE_RANKED_BATCH: process.env.DISCORD_ROLE_RANKED_BATCH,
 
     // Minio
     S3_ENDPOINT: process.env.S3_ENDPOINT,
@@ -119,7 +123,7 @@ export const env = createEnv({
 
     // Analytics
     NEXT_PUBLIC_ANALYTICS_WEBSITE_ID: process.env.NEXT_PUBLIC_ANALYTICS_WEBSITE_ID,
-    NEXT_PUBLIC_ANALYTICS_SCRIPT_URL: process.env.NEXT_PUBLIC_ANALYTICS_SCRIPT_URL,
+    NEXT_PUBLIC_ANALYTICS_SCRIPT_URL: process.env.NEXT_PUBLIC_ANALYTICS_SCRIPT_URL ?? 'https://pl.is-a.pet/js/pa-tVdmuOlbNHHQLIvu9vjhA.js',
 
     // External Services
     NEXT_PUBLIC_SCORESABER_DOMAIN: process.env.NEXT_PUBLIC_SCORESABER_DOMAIN ?? 'scoresaber.com',
@@ -131,7 +135,7 @@ export const env = createEnv({
     NEXT_PUBLIC_ARCVIEWER_URL: process.env.NEXT_PUBLIC_ARCVIEWER_URL ?? 'https://allpoland.github.io/ArcViewer',
     NEXT_PUBLIC_MAPCHECK_URL: process.env.NEXT_PUBLIC_MAPCHECK_URL ?? 'https://kivalevan.me/BeatSaber-MapCheck',
     NEXT_PUBLIC_GITHUB_URL: process.env.NEXT_PUBLIC_GITHUB_URL ?? 'https://github.com/Lexedia/scoresaber-reloaded',
-    NEXT_PUBLIC_GRAFANA_URL: process.env.NEXT_PUBLIC_GRAFANA_URL ?? 'http://grafana.lexedia.moe',
+    NEXT_PUBLIC_GRAFANA_URL: process.env.NEXT_PUBLIC_GRAFANA_URL ?? 'https://grafana.lexedia.moe',
     NEXT_PUBLIC_TWITTER_URL: process.env.NEXT_PUBLIC_TWITTER_URL,
     NEXT_PUBLIC_DISCORD_URL: process.env.NEXT_PUBLIC_DISCORD_URL,
   },

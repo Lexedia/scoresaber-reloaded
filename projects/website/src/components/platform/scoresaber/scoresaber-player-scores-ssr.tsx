@@ -13,6 +13,7 @@ import { PlayerScoresPageResponse } from '@ssr/common/schemas/response/score/pla
 import { ScoreSaberScoreSortField } from '@ssr/common/schemas/score/query/sort/scoresaber-scores-sort'
 import { SortDirection } from '@ssr/common/schemas/score/query/sort/sort-direction'
 import { capitalizeFirstLetter } from '@ssr/common/string-utils'
+import { getScoreBadgeFromName } from '@ssr/common/utils/song-utils'
 import { ssrApi } from '@ssr/common/utils/ssr-api'
 import { useQuery } from '@tanstack/react-query'
 import { useDebounce, useDocumentTitle } from '@uidotdev/usehooks'
@@ -91,6 +92,16 @@ const SORT_OPTIONS: SortOption[] = [
   },
 ]
 
+const BADGE_OPTIONS = [
+  'GOD',
+  'SS+',
+  'SS',
+  'S+',
+  'S',
+  'A',
+  '-',
+]
+
 export default function ScoreSaberPlayerScoresSSR({ player }: { player: ScoreSaberPlayer }) {
   const { animateLeft, animateRight, setIsLoading } = usePageTransition()
 
@@ -122,6 +133,10 @@ export default function ScoreSaberPlayerScoresSSR({ player }: { player: ScoreSab
     HMD | null,
     (value: HMD | null) => void,
   ]
+  const [
+    accBadgeFilter,
+    setAccBadgeFilter,
+  ] = useQueryState('accBadge', parseAsString)
 
   // Search
   const [
@@ -163,11 +178,13 @@ export default function ScoreSaberPlayerScoresSSR({ player }: { player: ScoreSab
       debouncedSearchTerm,
       direction,
       hmdFilter,
+      accBadgeFilter,
     ],
     queryFn: async () => {
       const response = await ssrApi.fetchPlayerScoreSaberScores(player.id, page, sort, direction, {
         ...(!invalidSearch ? { search: debouncedSearchTerm } : {}),
         ...(hmdFilter ? { hmd: hmdFilter } : {}),
+        ...(accBadgeFilter ? { accBadge: accBadgeFilter } : {}),
       })
       return response || Pagination.empty()
     },
@@ -259,6 +276,9 @@ export default function ScoreSaberPlayerScoresSSR({ player }: { player: ScoreSab
       if (debouncedSearchTerm && debouncedSearchTerm.length >= 3) {
         params.set('search', debouncedSearchTerm)
       }
+      if (accBadgeFilter) {
+        params.set('accBadge', accBadgeFilter)
+      }
 
       const queryString = params.toString()
       return `/player/${player.id}?${queryString}`
@@ -268,6 +288,7 @@ export default function ScoreSaberPlayerScoresSSR({ player }: { player: ScoreSab
       sort,
       direction,
       debouncedSearchTerm,
+      accBadgeFilter,
     ],
   )
 
@@ -378,6 +399,30 @@ export default function ScoreSaberPlayerScoresSSR({ player }: { player: ScoreSab
               </div>
 
               <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+                <Select
+                  value={accBadgeFilter || 'All Badges'}
+                  onValueChange={value => {
+                    setIsLoading(true)
+                    setAccBadgeFilter(value === 'All Badges' ? null : value)
+                    setPage(1)
+                    animateLeft()
+                  }}
+                >
+                  <SelectTrigger className="h-8 w-full text-xs sm:w-32">
+                    <SelectValue placeholder="Badge Filter" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="All Badges">All Badges</SelectItem>
+                    {BADGE_OPTIONS.map(badge => {
+                      const info = getScoreBadgeFromName(badge)
+                      return (
+                        <SelectItem key={badge} value={badge}>
+                          <span style={{ color: info.textColor }}>{badge}</span>
+                        </SelectItem>
+                      )
+                    })}
+                  </SelectContent>
+                </Select>
                 <Select
                   value={hmdFilter || 'All Hmds'}
                   onValueChange={value => {

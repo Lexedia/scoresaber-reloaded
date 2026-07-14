@@ -30,6 +30,7 @@ export default function PlayerScoreAccuracyChart({ scoreStats, leaderboard }: Pr
     accuracy: [],
     previousAccuracy: [],
     pp: [],
+    previousPp: [],
   }
   const labels: string[] = []
 
@@ -37,8 +38,13 @@ export default function PlayerScoreAccuracyChart({ scoreStats, leaderboard }: Pr
     labels.push(formatTime(seconds))
     const acc = currentGraph[seconds] * 100
     histories['accuracy'].push(acc)
+
     if (previousGraph) {
-      histories['previousAccuracy'].push(previousGraph[seconds] * 100)
+      const prevAcc = previousGraph[seconds] * 100
+      histories['previousAccuracy'].push(prevAcc)
+      if (leaderboard.ranked) {
+        histories['previousPp'].push(ScoreSaberCurve.getPp(leaderboard.stars, prevAcc))
+      }
     }
 
     if (leaderboard.ranked) {
@@ -92,6 +98,24 @@ export default function PlayerScoreAccuracyChart({ scoreStats, leaderboard }: Pr
             position: 'right' as const,
           },
           labelFormatter: (value: number) => `PP: ${value.toFixed(2)}pp`,
+        },
+      ]
+      : []),
+    ...(leaderboard.ranked && scoreStats.previous
+      ? [
+        {
+          title: 'Previous PP',
+          field: 'previousPp',
+          color: '#8b5cf6',
+          axisId: 'y1',
+          axisConfig: {
+            reverse: false,
+            display: true,
+            hideOnMobile: true,
+            displayName: 'PP',
+            position: 'right' as const,
+          },
+          labelFormatter: (value: number) => `Previous PP: ${value.toFixed(2)}pp`,
         },
       ]
       : []),

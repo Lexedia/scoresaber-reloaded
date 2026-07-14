@@ -161,8 +161,23 @@ export default function scoresController(app: Elysia) {
       )
       .get(
         '/leaderboard/:leaderboardId/:page',
-        async ({ params: { leaderboardId, page }, query: { country } }) => {
-          return await ScoreSaberLeaderboardScoresService.getLeaderboardScores(leaderboardId, page, country)
+        async ({
+          params: { leaderboardId, page },
+          query: {
+            country,
+            hmd,
+            sort,
+            direction,
+          },
+        }) => {
+          return await ScoreSaberLeaderboardScoresService.getLeaderboardScores(
+            leaderboardId,
+            page,
+            country,
+            hmd,
+            sort,
+            direction,
+          )
         },
         {
           tags: [ 'Scores' ],
@@ -172,6 +187,9 @@ export default function scoresController(app: Elysia) {
           }),
           query: z.object({
             country: z.string().optional(),
+            hmd: z.string().optional(),
+            sort: ScoreSaberScoreSortFieldSchema.optional(),
+            direction: SortDirectionSchema.optional(),
           }),
           detail: {
             description: 'Fetch leaderboard scores',

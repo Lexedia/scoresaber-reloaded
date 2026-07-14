@@ -157,12 +157,12 @@ export const app = new Elysia()
   )
   .use(
     cron({
-      name: 'refresh-table-counts',
-      pattern: '*/5 * * * *', // Every 5 minutes
+      name: 'reconcile-table-counts',
+      pattern: '0 3 * * * *', // Every day at 3:00 utc
       timezone: 'UTC',
       protect: true,
       run: async () => {
-        await TableCountsRepository.refreshConcurrently()
+        await TableCountsRepository.reconcile()
       },
     }),
   )

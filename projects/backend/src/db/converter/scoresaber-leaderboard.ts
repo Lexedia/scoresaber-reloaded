@@ -56,10 +56,12 @@ export function leaderboardRowToType(
       stars: row.stars ?? 0,
       rankedDate: row.rankedDate ?? undefined,
       qualifiedDate: row.qualifiedDate ?? undefined,
-      status,
       plays: row.plays,
       dailyPlays: row.dailyPlays,
       timestamp: row.timestamp instanceof Date ? row.timestamp : new Date(row.timestamp),
+      crouchWalls: row.crouchWalls ?? undefined,
+      dodgeWalls: row.dodgeWalls ?? undefined,
+      status: status,
     },
     { reportInput: true },
   )

@@ -3,6 +3,7 @@
 import { getRankingColumnWidth } from '@/common/player-utils'
 import Card from '@/components/card'
 import CountrySelector from '@/components/country-selector'
+import HmdSelector from '@/components/hmd-selector'
 import SimpleLink from '@/components/simple-link'
 import SimplePagination from '@/components/simple-pagination'
 import CountryFlag from '@/components/ui/country-flag'
@@ -55,6 +56,10 @@ export default function RankingData({ initialPage, initialCountry }: RankingData
     currentSearch,
     setCurrentSearch,
   ] = useState<string | undefined>(undefined)
+  const [
+    currentHmd,
+    setCurrentHmd,
+  ] = useState<string | undefined>(undefined)
 
   const debouncedSearch = useDebounce(currentSearch, 500)
   const isValidSearch = debouncedSearch != undefined && debouncedSearch.length >= 3
@@ -71,12 +76,14 @@ export default function RankingData({ initialPage, initialCountry }: RankingData
       currentCountry,
       isValidSearch,
       showInactive,
+      currentHmd,
     ],
     queryFn: async () =>
       ssrApi.searchPlayersRanking(currentPage, {
         country: currentCountry,
         search: isValidSearch ? debouncedSearch : undefined,
         includeInactive: showInactive,
+        hmd: currentHmd,
       }),
     refetchIntervalInBackground: false,
     placeholderData: prev => prev,
@@ -160,22 +167,30 @@ export default function RankingData({ initialPage, initialCountry }: RankingData
               />
 
               <div className="flex flex-col gap-2">
-                {rankingData.items.map(player => (
-                  <div key={player.id} className="grid grid-cols-[1fr_25px] gap-3">
-                    <div className="grow">
-                      <ScoreSaberPlayerRanking
-                        player={player}
-                        firstColumnWidth={firstColumnWidth}
-                        mainPlayer={mainPlayer}
-                        relativePerformancePoints={showRelativePPDifference}
-                      />
-                    </div>
+                {rankingData.items.map((player, index) => {
+                  const offsetRank = currentHmd
+                    ? ((currentPage - 1) * rankingData.metadata.itemsPerPage) + index + 1
+                    : undefined
 
-                    <div className="flex h-full w-full items-center justify-center">
-                      <AddFriend player={player} className="bg-ssr rounded-full p-1.5" iconOnly />
+                  return (
+                    <div key={player.id} className="grid grid-cols-[1fr_25px] gap-3">
+                      <div className="grow">
+                        <ScoreSaberPlayerRanking
+                          player={player}
+                          firstColumnWidth={firstColumnWidth}
+                          mainPlayer={mainPlayer}
+                          relativePerformancePoints={showRelativePPDifference}
+                          getRank={offsetRank != null ? () => offsetRank : undefined}
+                          getActiveRank={offsetRank != null ? p => p.contextualRank ?? p.rank : undefined}
+                        />
+                      </div>
+
+                      <div className="flex h-full w-full items-center justify-center">
+                        <AddFriend player={player} className="bg-ssr rounded-full p-1.5" iconOnly />
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
 
               <SimplePagination
@@ -237,6 +252,21 @@ export default function RankingData({ initialPage, initialCountry }: RankingData
                   setShowInactive(checked)
                   setCurrentPage(1)
                 }}
+              />
+            </FilterRow>
+          </FilterField>
+
+          <FilterField label="HMD">
+            <FilterRow>
+              <HmdSelector
+                value={currentHmd}
+                onValueChange={newHmd => {
+                  setCurrentHmd(newHmd)
+                  setCurrentPage(1)
+                }}
+                className="h-10 w-full"
+                clearable
+                placeholder="Select HMD..."
               />
             </FilterRow>
           </FilterField>

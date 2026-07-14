@@ -13,6 +13,9 @@ export const useLeaderboardScores = (
   page: number,
   mode: ScoreModeEnum,
   country?: string,
+  hmd?: string,
+  sort?: string,
+  direction?: string,
 ) => {
   const database = useDatabase()
   const friendIds = useStableLiveQuery(() => database.getFriendIds())
@@ -26,13 +29,16 @@ export const useLeaderboardScores = (
       page,
       mode,
       country,
+      hmd,
+      sort,
+      direction,
       friendIds,
       mainPlayer,
     ],
     queryFn: async () => {
       switch (mode) {
         case ScoreModeEnum.Global: {
-          const response = await ssrApi.fetchLeaderboardScores(leaderboardId.toString(), page, country)
+          const response = await ssrApi.fetchLeaderboardScores(leaderboardId.toString(), page, country, hmd, sort, direction)
 
           if (response) {
             return {

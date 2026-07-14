@@ -45,16 +45,25 @@ export enum SettingIds {
   CustomBackgroundUrl = 'customBackgroundCover',
   ShowKitty = 'showKitty',
   SnowParticles = 'snowParticles',
+  PrimaryColor = 'primaryColor',
+  AccentColor = 'accentColor',
+  UseGradient = 'useGradient',
   WhatIfRange = 'whatIfRange',
   ChartLegends = 'chartLegends',
   OverlaySettings = 'overlaySettings',
   ReplayViewer = 'replayViewer',
   Friends = 'friends',
+  Rivals = 'rivals',
   DefaultLeaderboardCountry = 'defaultLeaderboardCountry',
   WebsiteLanding = 'websiteLanding',
   PlusPpDefaultAccuracy = 'plusPpDefaultAccuracy',
   HistoryMode = 'historyMode',
+  EnabledPlayerViews = 'enabledPlayerViews',
+  DeveloperMode = 'developerMode',
 }
+
+export const DEFAULT_PRIMARY_COLOR = '#5555FF'
+export const DEFAULT_ACCENT_COLOR = '#9900FF'
 
 export const DEFAULT_WHAT_IF_RANGE: [number, number] = [
   90,
@@ -69,6 +78,17 @@ const DEFAULT_SHOW_KITTY: boolean = false
 const DEFAULT_SNOW_PARTICLES: boolean = false
 const DEFAULT_REPLAY_VIEWER: ReplayViewerTypes = 'beatleader'
 const DEFAULT_PLUS_PP_DEFAULT_ACCURACY: number = 95
+const DEFAULT_ENABLED_PLAYER_VIEWS: number[] = [
+  0,
+  1,
+  2,
+  3,
+  4,
+  7,
+  8,
+  10,
+]
+const DEFAULT_DEVELOPER_MODE: boolean = false
 
 export enum WebsiteLanding {
   PLAYER_HOME = 'playerHome',
@@ -226,6 +246,74 @@ export default class Database extends Dexie {
       }
     }
     return friends
+  }
+
+  /**
+   * Adds a rival
+   *
+   * @param id the id of the rival
+   */
+  async addRival(id: string) {
+    const rivals = await this.getRivalIds()
+    if (!rivals.includes(id)) {
+      rivals.push(id)
+      await this.setSetting(SettingIds.Rivals, rivals)
+    }
+  }
+
+  /**
+   * Removes a rival
+   *
+   * @param id the id of the rival
+   */
+  async removeRival(id: string) {
+    const rivals = await this.getRivalIds()
+    const index = rivals.indexOf(id)
+    if (index > -1) {
+      rivals.splice(index, 1)
+      await this.setSetting(SettingIds.Rivals, rivals)
+    }
+  }
+
+  /**
+   * Gets the ids of all rivals
+   *
+   * @returns the ids of all rivals
+   */
+  async getRivalIds(): Promise<string[]> {
+    return (await this.getSetting<string[]>(SettingIds.Rivals, [])) ?? []
+  }
+
+  /**
+   * Checks if a player is a rival
+   *
+   * @param id the id of the player
+   * @returns whether the player is a rival
+   */
+  async isRival(id: string): Promise<boolean> {
+    return (await this.getRivalIds()).includes(id)
+  }
+
+  /**
+   * Gets the accounts of all rivals
+   *
+   * @returns the accounts
+   */
+  async getRivals(): Promise<ScoreSaberPlayer[]> {
+    const rivals = await this.getRivalIds()
+    if (rivals.length === 0) {
+      return []
+    }
+
+    const players = await Promise.all(
+      rivals.map(async id => {
+        return this.getPlayer(id)
+      }),
+    )
+
+    return players
+      .filter((player): player is ScoreSaberPlayer => player !== undefined)
+      .sort((a, b) => a.rank - b.rank)
   }
 
   /**
@@ -569,6 +657,96 @@ export default class Database extends Dexie {
    */
   async setHistoryMode(historyMode: HistoryMode) {
     await this.setSetting(SettingIds.HistoryMode, historyMode)
+  }
+
+  /**
+   * Gets the enabled player views from the database
+   *
+   * @returns array of enabled view indices
+   */
+  async getEnabledPlayerViews(): Promise<number[]> {
+    return (await this.getSetting<number[]>(SettingIds.EnabledPlayerViews, DEFAULT_ENABLED_PLAYER_VIEWS))!
+  }
+
+  /**
+   * Sets the enabled player views in the database
+   *
+   * @param views array of enabled view indices
+   */
+  async setEnabledPlayerViews(views: number[]) {
+    await this.setSetting(SettingIds.EnabledPlayerViews, views)
+  }
+
+  /**
+   * Gets whether developer mode is enabled
+   *
+   * @returns whether developer mode is enabled
+   */
+  async getDeveloperMode(): Promise<boolean> {
+    return (await this.getSetting<boolean>(SettingIds.DeveloperMode, DEFAULT_DEVELOPER_MODE))!
+  }
+
+  /**
+   * Sets whether developer mode is enabled
+   *
+   * @param enabled whether developer mode is enabled
+   */
+  async setDeveloperMode(enabled: boolean) {
+    await this.setSetting(SettingIds.DeveloperMode, enabled)
+  }
+
+  /**
+   * Gets the primary color from the database
+   *
+   * @returns the primary color
+   */
+  async getPrimaryColor(): Promise<string> {
+    return (await this.getSetting<string>(SettingIds.PrimaryColor, DEFAULT_PRIMARY_COLOR))!
+  }
+
+  /**
+   * Sets the primary color in the database
+   *
+   * @param color the primary color
+   */
+  async setPrimaryColor(color: string) {
+    await this.setSetting(SettingIds.PrimaryColor, color)
+  }
+
+  /**
+   * Gets the accent color from the database
+   *
+   * @returns the accent color
+   */
+  async getAccentColor(): Promise<string> {
+    return (await this.getSetting<string>(SettingIds.AccentColor, DEFAULT_ACCENT_COLOR))!
+  }
+
+  /**
+   * Sets the accent color in the database
+   *
+   * @param color the accent color
+   */
+  async setAccentColor(color: string) {
+    await this.setSetting(SettingIds.AccentColor, color)
+  }
+
+  /**
+   * Gets the use gradient setting from the database
+   *
+   * @returns whether to use the accent color as a gradient
+   */
+  async getUseGradient(): Promise<boolean> {
+    return (await this.getSetting<boolean>(SettingIds.UseGradient, false))!
+  }
+
+  /**
+   * Sets the use gradient setting in the database
+   *
+   * @param useGradient whether to use the accent color as a gradient
+   */
+  async setUseGradient(useGradient: boolean) {
+    await this.setSetting(SettingIds.UseGradient, useGradient)
   }
 
   /**

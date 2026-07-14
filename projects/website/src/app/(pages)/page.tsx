@@ -1,15 +1,15 @@
 import { SearchButton } from '@/components/landing/search-button'
 import SimpleLink from '@/components/simple-link'
-import { Button } from '@/components/ui/button'
 import { env } from '@ssr/common/env'
 import {
   ArrowRight, BarChart3, Database, Globe, Heart, Monitor, Star, Users,
 } from 'lucide-react'
 
+import LandingDynamic from '@/components/landing/landing-dynamic'
+
 export default async function LandingPage() {
   return (
     <div className="w-full">
-      {/* Hero Section */}
       <section className="mx-auto max-w-6xl px-(--spacing-xl) py-(--spacing-3xl) md:px-(--spacing-2xl)">
         <div className="text-center">
           <div className="mb-(--spacing-2xl)">
@@ -39,7 +39,7 @@ export default async function LandingPage() {
           <div className="flex flex-col items-center gap-(--spacing-lg) sm:flex-row sm:justify-center">
             <SearchButton />
 
-            <SimpleLink href="https://discord.gg/kmNfWGA4A8" target="_blank">
+            {/* <SimpleLink href="https://discord.gg/kmNfWGA4A8" target="_blank">
               <Button
                 size="lg"
                 variant="outline"
@@ -50,12 +50,13 @@ export default async function LandingPage() {
                 group-hover:opacity-100" />
                 <span className="relative z-10 font-semibold">Join Discord</span>
               </Button>
-            </SimpleLink>
+            </SimpleLink> */}
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
+      <LandingDynamic />
+
       <section className="py-(--spacing-3xl)">
         <div className="mx-auto max-w-6xl px-(--spacing-xl) md:px-(--spacing-2xl)">
           <div className="mb-(--spacing-3xl) text-center">
@@ -105,8 +106,6 @@ export default async function LandingPage() {
             />
           </div>
         </div>
-
-        {/* Buttom Padding */}
         <div className="h-64" />
       </section>
     </div>

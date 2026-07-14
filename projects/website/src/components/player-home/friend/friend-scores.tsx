@@ -16,10 +16,7 @@ export function FriendScores() {
   const mainPlayerId = useStableLiveQuery(() => database.getMainPlayerId())
   const friendIds = useStableLiveQuery(async () => database.getFriendIds(true))
 
-  const [
-    page,
-    setPage,
-  ] = useState(1)
+  const [ page, setPage ] = useState(1)
 
   const {
     data: scoreData,
@@ -49,14 +46,12 @@ export function FriendScores() {
         </p>
       </div>
 
-      {/* Loading */}
       {isLoading && !scoreData && (
         <div className="flex w-full justify-center py-(--spacing-2xl)">
           <Spinner size="md" className="text-primary" />
         </div>
       )}
 
-      {/* Scores */}
       {scoreData && (
         <div className="flex flex-col gap-(--spacing-lg)">
           <div className="flex flex-col gap-(--spacing-md)">

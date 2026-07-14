@@ -15,5 +15,6 @@ export const PlayerScoresQuerySchema = z.object({
   search: z.string().optional(),
   hmd: HmdSchema.optional(),
   playerIds: PlayerIdsSchema.optional(),
+  accBadge: z.string().optional(),
 })
 export type PlayerScoresQuery = z.infer<typeof PlayerScoresQuerySchema>

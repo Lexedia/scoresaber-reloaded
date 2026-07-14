@@ -23,8 +23,11 @@ RUN bun install --frozen-lockfile
 
 # Copy source code after dependencies are installed
 COPY eslint.config.mjs ./
-COPY projects/common ./projects/common
-COPY projects/website ./projects/website
+COPY projects/common/tsconfig.json ./projects/common/
+COPY projects/common/src ./projects/common/src
+COPY projects/website/components.json projects/website/config.ts projects/website/next-env.d.ts projects/website/next.config.ts projects/website/postcss.config.mjs projects/website/tsconfig.json ./projects/website/
+COPY projects/website/public ./projects/website/public
+COPY projects/website/src ./projects/website/src
 
 # Build the common library
 RUN cd projects/common && bun run build

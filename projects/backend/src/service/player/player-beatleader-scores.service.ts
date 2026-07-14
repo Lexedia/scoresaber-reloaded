@@ -180,7 +180,8 @@ export class PlayerBeatLeaderScoresService {
 
     if (currentPage !== 1) {
       PlayerBeatLeaderScoresService.logger.info(
-        'Player %s fetched %s page(s), tracked %s new score(s), in %s',
+        'Player %s (%s) fetched %s page(s), tracked %s new score(s), in %s',
+        account.name,
         playerId,
         formatNumberWithCommas(result.totalPagesFetched),
         formatNumberWithCommas(result.newScoresTracked),
