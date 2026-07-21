@@ -36,6 +36,12 @@ export const ReplayViewers: Record<string, ReplayViewer> = {
     generateUrl: (id, replayUrl) =>
       `${env.NEXT_PUBLIC_ARCVIEWER_URL}/${replayUrl ? `?replayURL=${replayUrl}` : `?scoreID=${id}`}`,
   },
+  chroviewer: {
+    id: 'chroviewer',
+    name: 'ChroViewer',
+    generateUrl: (id, replayUrl) =>
+      `${env.NEXT_PUBLIC_CHROVIEWER_URL}/${replayUrl ? `?replayUrl=${replayUrl}` : `?scoreIdBL=${id}`}`,
+  },
 }
 
 export type ReplayViewerTypes = keyof typeof ReplayViewers
