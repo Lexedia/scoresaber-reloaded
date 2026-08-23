@@ -23,9 +23,15 @@ export function ScoreSaberScoreHMD({
               <span className="font-semibold">{score.hmd}</span>
             </div>
           ) : (
-            <div>
-              <p>An unknown HMD was used (outdated mod?)</p>
-              {score.leftController === "Touch" && <p>Likely a Quest variant was used</p>}
+            <div className="flex flex-col gap-1">
+              <p className="font-semibold">Headset not recognized</p>
+              <p className="text-muted-foreground">
+                Recorded with an unrecognized headset — usually an outdated mod version or a newly released
+                headset. Updating the mod may resolve this.
+              </p>
+              {score.leftController === "Touch" && (
+                <p className="text-muted-foreground">Likely recorded on a Meta Quest.</p>
+              )}
             </div>
           )}
 
@@ -33,8 +39,8 @@ export function ScoreSaberScoreHMD({
             <div>
               <p className="font-semibold">Controllers</p>
               <div>
-                <p>Left: {score.leftController}</p>
-                <p>Right: {score.rightController}</p>
+                <p>Left: {score.leftController === "Unknown" ? "Not recorded" : score.leftController}</p>
+                <p>Right: {score.rightController === "Unknown" ? "Not recorded" : score.rightController}</p>
               </div>
             </div>
           )}
