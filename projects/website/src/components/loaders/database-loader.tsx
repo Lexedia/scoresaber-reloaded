@@ -1,6 +1,5 @@
 "use client";
 
-import { isServer } from "@ssr/common/utils/utils";
 import { createContext, ReactNode, useEffect, useState } from "react";
 import Database, { getDatabase } from "../../common/database/database";
 import FullscreenLoader from "./fullscreen-loader";
@@ -26,11 +25,6 @@ export default function DatabaseLoader({ children }: DatabaseLoaderProps) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isServer()) {
-      setIsLoading(false);
-      return;
-    }
-
     const initializeDatabase = async () => {
       try {
         // Use singleton pattern

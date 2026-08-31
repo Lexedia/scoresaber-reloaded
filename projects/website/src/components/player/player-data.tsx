@@ -27,7 +27,7 @@ interface PlayerDataProps {
   player: ScoreSaberPlayer;
 }
 
-export default function PlayerData({ player }: PlayerDataProps) {
+export default function PlayerData({ player: playerProp }: PlayerDataProps) {
   const isMobile = useIsMobile("xl");
 
   const { value: selectedPlatform, setValue: setSelectedPlatform } = useQueryParamSelector({
@@ -38,13 +38,13 @@ export default function PlayerData({ player }: PlayerDataProps) {
   });
 
   const { data: playerData } = useQuery({
-    queryKey: ["player", player.id],
-    queryFn: () => ssrApi.getScoreSaberPlayer(player.id, "full"),
-    initialData: player,
+    queryKey: ["player", playerProp.id],
+    queryFn: () => ssrApi.getScoreSaberPlayer(playerProp.id, "full"),
+    initialData: playerProp,
     staleTime: 60_000,
     refetchOnMount: false,
   });
-  player = playerData ?? player;
+  const player = playerData ?? playerProp;
 
   const { data: availablePlatforms = [] } = useQuery({
     queryKey: ["available-platforms", player.id],

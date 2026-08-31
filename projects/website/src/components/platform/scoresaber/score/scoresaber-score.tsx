@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { cn } from "@/common/utils";
 import { useIsMobile } from "@/contexts/viewport-context";
@@ -45,13 +45,17 @@ export default function ScoreSaberScoreDisplay({
   const [detailsExpanded, setDetailsExpanded] = useState(false);
   const [isDetailsLoading, setIsDetailsLoading] = useState(false);
 
-  useEffect(() => {
+  const [prevScoreId, setPrevScoreId] = useState(score.scoreId);
+  if (prevScoreId !== score.scoreId) {
+    setPrevScoreId(score.scoreId);
     setDetailsExpanded(false);
-  }, [score.scoreId]);
+  }
 
-  useEffect(() => {
+  const [prevScore, setPrevScore] = useState(score);
+  if (prevScore !== score) {
+    setPrevScore(score);
     setBaseScore(score.score);
-  }, [score]);
+  }
 
   const accuracy = (baseScore / leaderboard.maxScore) * 100;
   const pp = baseScore === score.score ? score.pp : ScoreSaberCurve.getPp(leaderboard.stars, accuracy);

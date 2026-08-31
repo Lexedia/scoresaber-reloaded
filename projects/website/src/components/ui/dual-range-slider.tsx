@@ -45,7 +45,7 @@ export function DualRangeSlider({
   };
 
   const showLabel = labelPosition !== "none" && (!showLabelOnHover || isHovering || isDragging);
-  label =
+  const labelFormatter =
     label ??
     ((val: number | undefined) => (
       <span className="text-xs">
@@ -89,7 +89,7 @@ export function DualRangeSlider({
                 transform: `translateX(calc(-50% + ${getLabelOffsetPx(index)}px))`,
               }}
             >
-              {label(val)}
+              {labelFormatter(val)}
             </span>
           )}
         </SliderPrimitive.Thumb>

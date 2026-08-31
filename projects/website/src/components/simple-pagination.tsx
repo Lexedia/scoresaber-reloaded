@@ -158,7 +158,7 @@ export type SimplePaginationProps = {
 };
 
 export default function SimplePagination({
-  page,
+  page: pageProp,
   totalItems,
   itemsPerPage,
   loadingPage,
@@ -167,7 +167,7 @@ export default function SimplePagination({
 }: SimplePaginationProps) {
   const isMobile = useIsMobile();
 
-  page = page == 0 ? 1 : page;
+  const page = pageProp == 0 ? 1 : pageProp;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   // Calculate loading state once and ensure it's consistent
